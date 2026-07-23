@@ -43,6 +43,7 @@ shutong-dev-workflow/
 ├── LICENSE                          # MIT License
 ├── README.md                        # Chinese version
 ├── README_EN.md                     # This file (English)
+├── CONTRIBUTING.md                  # Contributing guide
 ├── CHANGELOG.md                     # Chinese changelog
 ├── CHANGELOG_EN.md                  # English changelog
 ├── prompts/                         # Stage prompts (use in order)
@@ -146,6 +147,35 @@ See [docs/en/comparison_en.md](docs/en/comparison_en.md)
 - **v1.1** — Git safety, exception handling hardening, PROBE scope limiting, execution discipline
 
 See [CHANGELOG_EN.md](CHANGELOG_EN.md) | [CHANGELOG.md](CHANGELOG.md)
+
+---
+
+## Contributing
+
+This project is currently a **prompt-based playbook** — you follow it by copy-pasting. It works, but it's manual.
+
+**We're looking for developers who want to turn this workflow into something programmable.**
+
+### What we want to build
+
+| Tool | Description |
+|------|-------------|
+| **CLI tool** | `shutong init`, `shutong probe`, `shutong verify` — run stages from terminal |
+| **VS Code extension** | Side panel with stage buttons, auto-paste prompts, status tracking |
+| **Web dashboard** | Visual stage pipeline, progress overview, log viewer |
+| **API / SDK** | Embed the workflow into any AI coding tool as a middleware layer |
+| **GitHub Action** | Auto-run PROBE on PR, VERIFY on push |
+
+### How to contribute
+
+1. Fork this repo
+2. Pick an idea above (or propose your own)
+3. Open an issue to discuss your approach
+4. Submit a PR
+
+The prompts in `prompts/` are the spec — your tool should wrap them programmatically so users don't need to copy-paste.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 

@@ -43,6 +43,7 @@ shutong-dev-workflow/
 ├── LICENSE                          # MIT 许可证
 ├── README.md                        # 本文件（中文）
 ├── README_EN.md                     # English version
+├── CONTRIBUTING.md                  # 贡献指南（英文优先）
 ├── CHANGELOG.md                     # 版本记录
 ├── CHANGELOG_EN.md                  # English changelog
 ├── prompts/                         # 各阶段提示词（按编号顺序使用）
@@ -146,6 +147,35 @@ shutong-dev-workflow/
 - **v1.1** — Git保障、异常话术强化、PROBE范围限定、执行纪律强化
 
 详见 [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG_EN.md](CHANGELOG_EN.md)
+
+---
+
+## 参与贡献
+
+本项目目前是一个**基于提示词的操作手册** — 用户通过复制粘贴来执行。能用，但全靠手动操作。
+
+**欢迎有能力的开发者，把这个工作流变成可编程的工具。**
+
+### 我们想做的工具
+
+| 工具 | 描述 |
+|------|------|
+| **CLI 工具** | `shutong init`、`shutong probe`、`shutong verify` — 在终端里跑阶段 |
+| **VS Code 插件** | 侧边栏阶段按钮、自动粘贴提示词、进度追踪 |
+| **Web 仪表盘** | 可视化阶段流水线、进度概览、日志查看 |
+| **API / SDK** | 把工作流作为中间层嵌入任何 AI 编码工具 |
+| **GitHub Action** | PR 时自动跑 PROBE，push 时自动跑 VERIFY |
+
+### 如何贡献
+
+1. Fork 本仓库
+2. 选一个上面的方向（或提出你自己的想法）
+3. 开 issue 讨论你的方案
+4. 提交 PR
+
+`prompts/` 目录中的提示词就是规格说明 — 你的工具应该把它们程序化封装，让用户不需要手动复制粘贴。
+
+详见 [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
