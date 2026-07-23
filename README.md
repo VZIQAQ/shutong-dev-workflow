@@ -1,5 +1,7 @@
 # Shutong Dev Workflow（书童开发工作流）
 
+> [English](README_EN.md) | 中文
+
 > 非程序员的AI辅助开发防偏航完整剧本
 
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
@@ -39,8 +41,10 @@
 ```text
 shutong-dev-workflow/
 ├── LICENSE                          # MIT 许可证
-├── README.md                        # 本文件
+├── README.md                        # 本文件（中文）
+├── README_EN.md                     # English version
 ├── CHANGELOG.md                     # 版本记录
+├── CHANGELOG_EN.md                  # English changelog
 ├── prompts/                         # 各阶段提示词（按编号顺序使用）
 │   ├── 00-setup.md                  # 开局初始化
 │   ├── 01-probe.md                  # PROBE：摸清现状
@@ -50,12 +54,27 @@ shutong-dev-workflow/
 │   ├── 05-verify.md                 # VERIFY：运行验证
 │   ├── 06-done.md                   # DONE：清理完成
 │   ├── 07-exception-handling.md     # 异常处理速查表
-│   └── 08-git-safety.md            # Git 安全保障
+│   ├── 08-git-safety.md            # Git 安全保障
+│   └── en/                          # English prompts
+│       ├── 00-setup_en.md
+│       ├── 01-probe_en.md
+│       ├── 02-design_en.md
+│       ├── 03-contract_en.md
+│       ├── 04-code_en.md
+│       ├── 05-verify_en.md
+│       ├── 06-done_en.md
+│       ├── 07-exception-handling_en.md
+│       └── 08-git-safety_en.md
 ├── docs/                            # 设计文档
 │   ├── comparison.md                # 与现有方案对比
-│   └── why-two-ai.md               # 为什么需要双AI
+│   ├── why-two-ai.md               # 为什么需要双AI
+│   └── en/                          # English docs
+│       ├── comparison_en.md
+│       └── why-two-ai_en.md
 └── examples/
-    └── example-session.md           # 完整对话实录示例
+    ├── example-session.md           # 完整对话实录示例
+    └── en/
+        └── example-session_en.md    # English example session
 ```
 
 ---
@@ -126,7 +145,7 @@ shutong-dev-workflow/
 - **v1.0** — 7阶段完整工作流（PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE）
 - **v1.1** — Git保障、异常话术强化、PROBE范围限定、执行纪律强化
 
-详见 [CHANGELOG.md](CHANGELOG.md)
+详见 [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG_EN.md](CHANGELOG_EN.md)
 
 ---
 
