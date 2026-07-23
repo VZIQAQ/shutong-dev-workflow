@@ -18,6 +18,20 @@ You don't need to know code — you just need to know how to **copy-paste** and 
 
 ---
 
+## The Problem This Solves
+
+The most dangerous pitfall in AI-assisted programming isn't errors — it's **requirement drift**. The code runs, but the direction is wrong.
+
+Symptoms include:
+- AI gradually drifts from the original requirement without realizing it
+- Code is built on wrong assumptions, compounding the mistake
+- Changing multiple files at once breaks the call chain — no errors on the surface, but the underlying logic is broken
+- User can't code, so they can't tell whether AI went off track
+
+**A single AI cannot self-check this problem** — it won't question its own output. This workflow uses a dual-AI division of labor (Strategy AI reviews direction + Execution AI writes code) with checkpoints at every stage to prevent requirement drift at its root.
+
+---
+
 ## Quick Start (3 Steps)
 
 ```text
