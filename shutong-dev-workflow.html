@@ -168,7 +168,7 @@ body.th-c{--accent:#f97316;--accent-hi:#fb923c}
 <body class="th-b">
 
 <div class="topbar">
-  <div class="logo">📋 书童开发工作流</div>
+  <div class="logo"><span style="cursor:pointer" onclick="goHome()">📋 书童开发工作流</span></div>
   <div class="modes" id="modeBtns"></div>
   <div class="tools">
     <button class="tbtn" onclick="exportState()">📥 导出</button>
@@ -1209,6 +1209,9 @@ function importState(){
 function resetState(){
   if(!confirm('确定要重新开始吗？当前进度将丢失。'))return;
   S=null;localStorage.removeItem(STATE_KEY);render();
+}
+function goHome(){
+  S=null;render();
 }
 function exportReport(){
   const m=P[S.mode];
