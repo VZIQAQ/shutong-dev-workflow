@@ -188,13 +188,13 @@ body.th-c{--accent:#f97316;--accent-hi:#fb923c}
 <body class="th-b">
 
 <div class="topbar">
-  <div class="logo"><span style="cursor:pointer" onclick="goHome()">${lang==='zh'?'📋 书童开发工作流':'📋 Shutong Dev Workflow'}</span></div>
+  <div class="logo"><span id="logoText" style="cursor:pointer" onclick="goHome()">📋 书童开发工作流</span></div>
   <div class="modes" id="modeBtns"></div>
   <div class="tools">
     <button class="tbtn" onclick="toggleLang()" id="langBtn">EN</button>
-    <button class="tbtn" onclick="exportState()">📥 导出</button>
-    <button class="tbtn" onclick="importState()">📤 导入</button>
-    <button class="tbtn" onclick="resetState()">🔄 重置</button>
+    <button class="tbtn" onclick="exportState()" id="expBtn">📥 导出</button>
+    <button class="tbtn" onclick="importState()" id="impBtn">📤 导入</button>
+    <button class="tbtn" onclick="resetState()" id="rstBtn">🔄 重置</button>
   </div>
 </div>
 
@@ -1617,6 +1617,10 @@ function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(S))}
 // ========== 渲染 ==========
 function render(){
   document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
+  document.getElementById('logoText').textContent=lang==='zh'?'📋 书童开发工作流':'📋 Shutong Dev Workflow';
+  document.getElementById('expBtn').textContent=t('exp');
+  document.getElementById('impBtn').textContent=t('imp');
+  document.getElementById('rstBtn').textContent=t('reset');
   if(!S){renderWelcome();return}
   if(S.isPreReview){
     document.body.className=P[S.mode].themeCls;
