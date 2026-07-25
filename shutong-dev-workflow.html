@@ -226,9 +226,9 @@ body.th-c{--accent:#f97316;--accent-hi:#fb923c}
 // ========== 提示词数据 ==========
 const P={
 modeA:{
-  name:'从零新建项目',theme:'green',themeCls:'th-a',
+  name:'从零新建项目',nameEn:'New Project',theme:'green',themeCls:'th-a',
   steps:[
-    {id:'init',name:'初始化',desc:'跟AI聊清楚用什么技术、怎么组织文件、做完怎么验收',
+    {id:'init',name:'初始化',nameEn:'Init',desc:'跟AI聊清楚用什么技术、怎么组织文件、做完怎么验收',descEn:'Clarify tech stack, file structure, and acceptance criteria with AI',
      exec:`【阶段：初始化】从零新建项目，先搭建骨架，不改代码。
 
 需求：{{你的项目需求}}
@@ -246,7 +246,7 @@ modeA:{
 - 只输出设计，不生成代码
 - 如果有不确定的技术选型，列出选项和利弊，等待用户确认
 - 输出 [INIT_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'项目开始时',expect:'7个答案 + [INIT_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'项目开始时',whenEn:'When project starts',expect:'7个答案 + [INIT_DONE]',expectEn:'7 answers + [INIT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】初始化阶段
 
 请审查以下初始化方案：
@@ -261,8 +261,8 @@ modeA:{
 状态判断：直接通过 / 需补充 / 需调整
 
 如通过，输出下一步指令：进入「设计」阶段`,
-     stratU:{to:'窗口A（策略AI）',when:'收到初始化方案后',expect:'审查结论 + 下一步指令',next:'进入「设计」阶段'},
-     checks:['技术选型匹配项目需求','目录结构符合最佳实践','依赖版本稳定且兼容','验收标准具体可验证'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到初始化方案后',expect:'审查结论 + 下一步指令',next:'进入「设计」阶段'},
+     checks:['技术选型匹配项目需求','目录结构符合最佳实践','依赖版本稳定且兼容','验收标准具体可验证'],checksEn:['Tech stack matches project requirements','Directory structure follows best practices','Dependency versions stable and compatible','验收标准具体可验证'],
     execEn:`[Stage: INIT] Build new project from scratch. Design skeleton first, no code changes.
 
 Requirement: {{your project requirement}}
@@ -337,7 +337,7 @@ If review passes, output [DESIGN-Architecture] instruction.
 [Review Passed! Next Step]
 -> Go to Design stage, copy Execution AI Prompt`},
 
-    {id:'design',name:'设计',desc:'画清楚数据怎么流转、先搭什么后搭什么',
+    {id:'design',name:'设计',nameEn:'Design',desc:'画清楚数据怎么流转、先搭什么后搭什么',descEn:'Map out data flow and build order',
      exec:`【阶段：设计】从零新建项目的架构设计
 
 基于初始化方案，请设计：
@@ -349,7 +349,7 @@ If review passes, output [DESIGN-Architecture] instruction.
 6. 【风险点】可能遇到的问题和预防措施
 
 要求：只输出设计，不生成代码。输出 [DESIGN_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'初始化通过后',expect:'架构设计 + [DESIGN_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'初始化通过后',expect:'架构设计 + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】设计阶段
 
 请审查以下架构设计：
@@ -364,8 +364,8 @@ If review passes, output [DESIGN-Architecture] instruction.
 状态判断：通过 / 需补充
 
 如通过，进入「契约」阶段`,
-     stratU:{to:'窗口A（策略AI）',when:'收到设计方案后',expect:'审查结论',next:'进入「契约」阶段'},
-     checks:['数据流设计完整','骨架搭建顺序合理','模块依赖无循环','风险点已识别'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到设计方案后',whenEn:'After receiving design plan',expect:'审查结论',next:'进入「契约」阶段'},
+     checks:['数据流设计完整','骨架搭建顺序合理','模块依赖无循环','风险点已识别'],checksEn:['Data flow design complete','Build order is reasonable','Module dependencies have no cycles','Risk points identified'],
     execEn:`[Stage: DESIGN-Architecture] Answer design questions only. No code, no commands.
 
 Based on the confirmed Init plan, this goal: {{repeat your project requirement}}
@@ -412,7 +412,7 @@ If review passes, output [CONTRACT-Interface] instruction.
 [Review Passed! Next Step]
 -> Go to Contract stage, copy Execution AI Prompt`},
 
-    {id:'contract',name:'契约',desc:'把接口、字段、规则定死，防止AI乱写',
+    {id:'contract',name:'契约',nameEn:'Contract',desc:'把接口、字段、规则定死，防止AI乱写',descEn:'Lock down interfaces, fields, and rules',
      exec:`【阶段：契约】从零新建项目的接口与数据模型设计
 
 请设计：
@@ -424,7 +424,7 @@ If review passes, output [CONTRACT-Interface] instruction.
 6. 【编码纪律】禁止破坏性操作、必须遵循的规范
 
 要求：输出 [CONTRACT_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】契约阶段
 
 请审查以下契约设计：
@@ -439,8 +439,8 @@ If review passes, output [CONTRACT-Interface] instruction.
 状态判断：通过 / 需补充
 
 如通过，进入「编码」阶段`,
-     stratU:{to:'窗口A（策略AI）',when:'收到契约设计后',expect:'审查结论',next:'进入「编码」阶段'},
-     checks:['接口定义清晰','数据结构完整','异常处理已定义','编码纪律已确认'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约设计后',expect:'审查结论',next:'进入「编码」阶段'},
+     checks:['接口定义清晰','数据结构完整','异常处理已定义','编码纪律已确认'],checksEn:['Interface definitions clear','Data structures complete','Error handling defined','Coding discipline confirmed'],
     execEn:`[Stage: CONTRACT-FromScratch] Design interfaces and data models. No code, no commands.
 
 Based on DESIGN confirmed architecture:
@@ -487,7 +487,7 @@ If review passes, output [CODE-Skeleton1] instruction.
 [Review Passed! Next Step]
 -> Go to Code stage, copy Execution AI Prompt - Config Layer`},
 
-    {id:'code',name:'编码',desc:'一层一层搭，配置→工具→入口→业务',isLayered:true,
+    {id:'code',name:'编码',nameEn:'Code',desc:'一层一层搭，配置→工具→入口→业务',descEn:'Build layer by layer: config -> utility -> entry -> business',isLayered:true,
      layers:[
        {name:'配置层',exec:`【阶段：编码 - 第1层：配置层】搭建配置层
 
@@ -522,7 +522,7 @@ If review passes, output [CODE-Skeleton1] instruction.
 
 要求：基于第1-3层，逐文件实现。每完成一个文件运行验证。输出 [CODE_DONE]`}
      ],
-     execU:{to:'窗口B（执行AI）',when:'契约通过后',expect:'每层代码 + 验证 + 层完成标记',next:'每层完成后复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'每层代码 + 验证 + 层完成标记',expectEn:'Layer code + verification + layer done marker',next:'每层完成后复制给策略AI审查'},
      strat:`【策略AI审查】编码阶段
 
 请审查以下编码结果：
@@ -536,8 +536,8 @@ If review passes, output [CODE-Skeleton1] instruction.
 状态判断：
 - 通过 → 进入下一层（或验证，如果是最后一层）
 - 需修复 → 指出问题，在当前层重新编码`,
-     stratU:{to:'窗口A（策略AI）',when:'每层编码结果后',expect:'每层审查结论',next:'通过进入下一层，全部完成后进入验证'},
-     checks:['代码符合契约','无破坏性操作','运行验证通过'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'每层编码结果后',whenEn:'After each layer coding result',expect:'每层审查结论',next:'通过进入下一层，全部完成后进入验证'},
+     checks:['代码符合契约','无破坏性操作','运行验证通过'],checksEn:['Code matches contract','No destructive operations','Runtime verification passed'],
     execEn:`[Stage: CODE-Skeleton-Config] Create config files only. Do not touch others.
 
 [Absolute Rules]
@@ -593,7 +593,7 @@ Please review the following skeleton build result from Execution AI.
 -> More layers: copy next CODE instruction to Execution AI
 -> Last layer done: go to Verify stage`},
 
-    {id:'verify',name:'验证',desc:'照着验收清单一个个测',
+    {id:'verify',name:'验证',nameEn:'Verify',desc:'照着验收清单一个个测',descEn:'Check against acceptance criteria one by one',
      exec:`【阶段：验证】从零新建项目的功能验收
 
 按INIT阶段定义的验收条件逐项检查：
@@ -602,7 +602,7 @@ Please review the following skeleton build result from Execution AI.
 3. 【汇总表】验收结果汇总
 
 要求：逐项验证，不通过的要说明原因。输出 [VERIFY_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'编码完成后',expect:'验收报告 + [VERIFY_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'编码完成后',expect:'验收报告 + [VERIFY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】验证阶段
 
 请审查以下验证结果：
@@ -615,8 +615,8 @@ Please review the following skeleton build result from Execution AI.
 状态判断：
 - 全部通过 → 进入「部署」
 - 部分不通过 → 回退到「编码」修复`,
-     stratU:{to:'窗口A（策略AI）',when:'收到验收结果后',expect:'审查结论',next:'通过进入部署，不通过回退编码'},
-     checks:['功能清单全部验证','异常场景已测试','验收结果有结论'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到验收结果后',expect:'审查结论',next:'通过进入部署，不通过回退编码'},
+     checks:['功能清单全部验证','异常场景已测试','验收结果有结论'],checksEn:['功能清单全部验证','Exception scenarios tested','验收结果有结论'],
     execEn:`[Stage: VERIFY-FromScratch] Execute acceptance testing with progress markers.
 
 [Execution Rules]
@@ -667,7 +667,7 @@ For each failure, analyze root cause
 -> All pass: go to Deploy stage
 -> Failures: back to Code stage to fix`},
 
-    {id:'deploy',name:'部署',desc:'部署到服务器，跑通冒烟测试',
+    {id:'deploy',name:'部署',nameEn:'Deploy',desc:'部署到服务器，跑通冒烟测试',descEn:'Deploy to server, run smoke test',
      exec:`【阶段：部署】部署上线
 
 步骤清单：
@@ -683,7 +683,7 @@ For each failure, analyze root cause
 - 数据迁移失败时，如何恢复？
 
 输出 [DEPLOY_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'验证通过后',expect:'部署报告 + [DEPLOY_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'验证通过后',whenEn:'After verification passes',expect:'部署报告 + [DEPLOY_DONE]',expectEn:'Deploy report + [DEPLOY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】部署阶段
 
 请审查以下部署结果：
@@ -697,8 +697,8 @@ For each failure, analyze root cause
 状态判断：通过 / 需修复
 
 如通过，进入「完成」阶段`,
-     stratU:{to:'窗口A（策略AI）',when:'收到部署结果后',expect:'审查结论',next:'通过进入完成'},
-     checks:['环境检查通过','依赖安装成功','冒烟测试通过','回退策略已确认'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到部署结果后',whenEn:'After receiving deploy result',expect:'审查结论',next:'通过进入完成'},
+     checks:['环境检查通过','依赖安装成功','冒烟测试通过','回退策略已确认'],checksEn:['Environment check passed','Dependencies installed','Smoke test passed','回退策略已确认'],
     execEn:`[Stage: DEPLOY] Deploy to production with progress markers.
 
 [Execution Rules]
@@ -750,7 +750,7 @@ Please analyze the following deploy result from Execution AI.
 [Review Passed! Next Step]
 -> All pass: go to Done stage`},
 
-    {id:'done',name:'完成',desc:'写README、打tag、收尾',
+    {id:'done',name:'完成',nameEn:'Done',desc:'写README、打tag、收尾',descEn:'Write README, tag, wrap up',
      exec:`【阶段：完成】项目收尾，完成新建
 
 1. 补全项目文档：README.md（项目说明、安装步骤、启动方式）
@@ -760,7 +760,7 @@ Please analyze the following deploy result from Execution AI.
 5. 冒烟测试：按README步骤从零克隆安装，确认能跑通
 
 输出 [ALL_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'部署通过后',expect:'文档 + 归档 + [ALL_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'部署通过后',whenEn:'After deploy passes',expect:'文档 + 归档 + [ALL_DONE]',expectEn:'Docs + archive + [ALL_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】完成阶段
 
 请审查以下收尾结果：
@@ -772,8 +772,8 @@ Please analyze the following deploy result from Execution AI.
 3. 归档是否正确？
 
 状态判断：通过 → 项目完成！`,
-     stratU:{to:'窗口A（策略AI）',when:'收到收尾结果后',expect:'最终审查',next:'项目完成！'},
-     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查',next:'项目完成！'},
+     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成'],checksEn:['README complete','Env config docs clear','Handover checklist generated','git archive complete'],
     execEn:`[Stage: DONE-FromScratch] Project wrap-up, complete new build.
 
 Verification passed:
@@ -791,9 +791,9 @@ Output [ALL_DONE]`}
   ]
 },
 modeB:{
-  name:'新增功能/模块',theme:'blue',themeCls:'th-b',
+  name:'新增功能/模块',nameEn:'Add Feature',theme:'blue',themeCls:'th-b',
   steps:[
-    {id:'probe',name:'探测',desc:'找到代码里该插在哪、改了会影响什么',
+    {id:'probe',name:'探测',nameEn:'Probe',desc:'找到代码里该插在哪、改了会影响什么',descEn:'Find where to insert in code, assess impact',
      exec:`【阶段：探测】新增功能，定位插入点
 
 目标功能：{{你要新增的功能}}
@@ -807,7 +807,7 @@ modeB:{
 6. 【数据对接】新功能需要读写哪些现有数据？
 
 要求：只探测，不改代码。输出 [PROBE_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'新增功能开始时',expect:'6个答案 + [PROBE_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'新增功能开始时',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】探测阶段
 
 请审查以下探测结果：
@@ -822,8 +822,8 @@ modeB:{
 A. 无相关代码，需新增 → 进入「设计」
 B. 有残留/新旧混杂 → 进入「设计」（诊断分支）
 C. 功能已存在且正常 → 结束`,
-     stratU:{to:'窗口A（策略AI）',when:'收到探测结果后',expect:'状态判断 + 下一步指令',next:'按指令进入设计'},
-     checks:['插入点已定位','影响范围已评估','技术约束已识别'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到探测结果后',expect:'状态判断 + 下一步指令',next:'按指令进入设计'},
+     checks:['插入点已定位','影响范围已评估','技术约束已识别'],checksEn:['Insertion point located','Impact scope assessed','Technical constraints identified'],
     execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
 
 Requirement: {{your requirement}}
@@ -873,7 +873,7 @@ If review passes, output [DESIGN-Add Feature] instruction.
 [Review Passed! Next Step]
 -> Go to Design stage, copy Execution AI Prompt`},
 
-    {id:'design',name:'设计',desc:'想清楚新功能怎么加、怎么跟现有代码对接',
+    {id:'design',name:'设计',nameEn:'Design',desc:'想清楚新功能怎么加、怎么跟现有代码对接',descEn:'Plan how to add the feature and integrate with existing code',
      exec:`【阶段：设计】新增功能的架构设计
 
 请设计：
@@ -885,7 +885,7 @@ If review passes, output [DESIGN-Add Feature] instruction.
 6. 【验证方案】新增后如何验证
 
 要求：只设计，不编码。输出 [DESIGN_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'探测通过后',expect:'设计方案 + [DESIGN_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'探测通过后',expect:'设计方案 + [DESIGN_DONE]',expectEn:'Design plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】设计阶段
 
 请审查以下设计方案：
@@ -899,8 +899,8 @@ If review passes, output [DESIGN-Add Feature] instruction.
 状态判断：通过 / 需补充
 
 如通过，进入「契约」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到设计方案后',expect:'审查结论',next:'进入契约'},
-     checks:['新增架构清晰','对接方案可行','回退策略已定义'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到设计方案后',whenEn:'After receiving design plan',expect:'审查结论',next:'进入契约'},
+     checks:['新增架构清晰','对接方案可行','回退策略已定义'],checksEn:['New architecture clear','Integration plan feasible','Rollback strategy defined'],
     execEn:`[Stage: DESIGN] Answer design questions only. No code, no commands.
 
 Based on code you just probed, this feature goal: {{repeat your requirement}}
@@ -944,7 +944,7 @@ If review passes, output [CONTRACT-Confirmation] instruction.
 [Review Passed! Next Step]
 -> Go to Contract stage, copy Execution AI Prompt`},
 
-    {id:'contract',name:'契约',desc:'定好新接口的字段和规则',
+    {id:'contract',name:'契约',nameEn:'Contract',desc:'定好新接口的字段和规则',descEn:'Define new interface fields and rules',
      exec:`【阶段：契约】新增功能的接口确认
 
 请确认：
@@ -956,7 +956,7 @@ If review passes, output [CONTRACT-Confirmation] instruction.
 6. 【编码纪律】禁止超出契约范围的修改
 
 要求：输出 [CONTRACT_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】契约阶段
 
 请审查以下契约：
@@ -970,8 +970,8 @@ If review passes, output [CONTRACT-Confirmation] instruction.
 状态判断：通过 / 需补充
 
 如通过，进入「编码」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到契约后',expect:'审查结论',next:'进入编码'},
-     checks:['新增接口清晰','数据变更有评估','降级路径已定义','编码纪律已确认'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约后',whenEn:'After receiving contract',expect:'审查结论',next:'进入编码'},
+     checks:['新增接口清晰','数据变更有评估','降级路径已定义','编码纪律已确认'],checksEn:['New interface clear','Data changes assessed','Degradation path defined','Coding discipline confirmed'],
     execEn:`[Stage: CONTRACT] Confirm interface. No code, no commands.
 
 [New Module]
@@ -1012,7 +1012,7 @@ If review passes, output [CODE-File1] instruction.
 [Review Passed! Next Step]
 -> Go to Code stage, copy Execution AI Prompt`},
 
-    {id:'code',name:'编码',desc:'按约定写代码，一个文件一个文件来',
+    {id:'code',name:'编码',nameEn:'Code',desc:'按约定写代码，一个文件一个文件来',descEn:'Implement per contract, one file at a time',
      exec:`【阶段：编码】新增功能实现
 
 请按契约实现：
@@ -1022,7 +1022,7 @@ If review passes, output [CODE-File1] instruction.
 4. 新增功能代码标注
 
 要求：禁止超出契约范围的修改。输出 [CODE_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'契约通过后',expect:'代码实现 + [CODE_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】编码阶段
 
 请审查以下编码结果：
@@ -1036,8 +1036,8 @@ If review passes, output [CODE-File1] instruction.
 状态判断：通过 / 需修复
 
 如通过，进入「验证」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到编码结果后',expect:'审查结论',next:'进入验证'},
-     checks:['按契约实现','无破坏性操作','运行验证通过'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到编码结果后',expect:'审查结论',next:'进入验证'},
+     checks:['按契约实现','无破坏性操作','运行验证通过'],checksEn:['Implemented per contract','No destructive operations','Runtime verification passed'],
     execEn:`[Stage: CODE-File1] Modify only this file. Do not touch others.
 
 [Absolute Rules]
@@ -1089,7 +1089,7 @@ Please review the following code changes from Execution AI.
 -> More files: continue Code
 -> Last file: go to Verify stage`},
 
-    {id:'verify',name:'验证',desc:'测新功能能不能用、老功能有没有坏',
+    {id:'verify',name:'验证',nameEn:'Verify',desc:'测新功能能不能用、老功能有没有坏',descEn:'Test new feature works and existing features intact',
      exec:`【阶段：验证】新增功能验证
 
 1. 【功能验证】新增功能是否按契约工作
@@ -1098,7 +1098,7 @@ Please review the following code changes from Execution AI.
 4. 【汇总】验证结果
 
 要求：输出 [VERIFY_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'编码完成后',expect:'验证报告 + [VERIFY_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'编码完成后',expect:'验证报告 + [VERIFY_DONE]',expectEn:'Verify report + [VERIFY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】验证阶段
 
 请审查以下验证结果：
@@ -1111,8 +1111,8 @@ Please review the following code changes from Execution AI.
 状态判断：
 - 通过 → 进入「完成」
 - 需修复 → 回退到「编码」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到验证结果后',expect:'审查结论',next:'通过进入完成'},
-     checks:['新增功能验证通过','回归验证通过','异常场景已测试'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到验证结果后',whenEn:'After receiving verify result',expect:'审查结论',next:'通过进入完成'},
+     checks:['新增功能验证通过','回归验证通过','异常场景已测试'],checksEn:['New feature verified','Regression test passed','Exception scenarios tested'],
     execEn:`[Stage: VERIFY] Execute verification flow with progress markers.
 
 [Execution Rules]
@@ -1156,7 +1156,7 @@ Please analyze the following verification logs from Execution AI.
 -> Feature works: go to Done stage
 -> Need fix: back to Code stage`},
 
-    {id:'done',name:'完成',desc:'清理临时代码、更新文档、提交',
+    {id:'done',name:'完成',nameEn:'Done',desc:'清理临时代码、更新文档、提交',descEn:'Clean up, update docs, commit',
      exec:`【阶段：完成】新增功能收尾
 
 1. 代码清理：删除临时文件、注释
@@ -1165,7 +1165,7 @@ Please analyze the following verification logs from Execution AI.
 4. 功能摘要：本次新增的内容清单
 
 输出 [DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'验证通过后',expect:'清理 + 文档 + 提交 + [DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'验证通过后',whenEn:'After verification passes',expect:'清理 + 文档 + 提交 + [DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】完成阶段
 
 请审查以下收尾结果：
@@ -1177,8 +1177,8 @@ Please analyze the following verification logs from Execution AI.
 3. 提交是否规范？
 
 状态判断：通过 → 触发合并计划`,
-     stratU:{to:'窗口A（策略AI）',when:'收到收尾结果后',expect:'最终审查 + 合并确认',next:'确认合并，回到主流程'},
-     checks:['代码清理完成','文档已更新','git提交规范'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查 + 合并确认',next:'确认合并，回到主流程',nextEn:'Confirm merge, return to main flow'},
+     checks:['代码清理完成','文档已更新','git提交规范'],checksEn:['Code cleanup complete','Documentation updated','Git commit规范'],
     execEn:`[Stage: DONE] Clean up probes, complete modification.
 
 Verification passed:
@@ -1194,9 +1194,9 @@ Output [ALL_DONE]`}
   ]
 },
 modeC:{
-  name:'修复现有问题',theme:'orange',themeCls:'th-c',
+  name:'修复现有问题',nameEn:'Fix Issue',theme:'orange',themeCls:'th-c',
   steps:[
-    {id:'probe',name:'探测',desc:'搞清楚问题表现、影响多大',
+    {id:'probe',name:'探测',nameEn:'Probe',desc:'搞清楚问题表现、影响多大',descEn:'Understand symptoms and impact scope',
      exec:`【阶段：探测】诊断现有问题
 
 问题描述：{{你发现的问题}}
@@ -1210,7 +1210,7 @@ modeC:{
 6. 【环境信息】开发环境、依赖版本？
 
 要求：只诊断，不改代码。输出 [PROBE_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'发现问题时',expect:'6个答案 + [PROBE_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'发现问题时',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】探测阶段
 
 请审查以下诊断结果：
@@ -1225,8 +1225,8 @@ modeC:{
 A. 问题明确，可直接修复 → 进入「设计」
 B. 问题复杂，需进一步分析 → 补充探测
 C. 非代码问题 → 直接给出修复建议`,
-     stratU:{to:'窗口A（策略AI）',when:'收到诊断结果后',expect:'状态判断 + 下一步指令',next:'按指令执行'},
-     checks:['症状描述清晰','影响范围已评估','根因已初步定位'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到诊断结果后',whenEn:'After receiving diagnosis result',expect:'状态判断 + 下一步指令',next:'按指令执行'},
+     checks:['症状描述清晰','影响范围已评估','根因已初步定位'],checksEn:['Symptom description clear','Impact scope assessed','Root cause initially identified'],
     execEn:`[Stage: PROBE] Diagnose existing problem. Query only, no code changes.
 
 Problem description: {{describe your issue, as specific as possible}}
@@ -1265,7 +1265,7 @@ If review passes, output [DESIGN-Diagnosis] instruction.
 [Review Passed! Next Step]
 -> Go to Diagnose stage, copy Execution AI Prompt`},
 
-    {id:'design',name:'设计',desc:'找到根本原因，想个最小改动的修复办法',
+    {id:'design',name:'设计',nameEn:'Design',desc:'找到根本原因，想个最小改动的修复办法',descEn:'Find root cause, design minimal fix',
      exec:`【阶段：设计】诊断修复方案
 
 请设计：
@@ -1277,7 +1277,7 @@ If review passes, output [DESIGN-Diagnosis] instruction.
 6. 【预防措施】如何避免类似问题
 
 要求：只设计，不编码。输出 [DESIGN_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'诊断通过后',expect:'修复方案 + [DESIGN_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'诊断通过后',expect:'修复方案 + [DESIGN_DONE]',expectEn:'Fix plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】设计阶段
 
 请审查以下修复方案：
@@ -1291,8 +1291,8 @@ If review passes, output [DESIGN-Diagnosis] instruction.
 状态判断：通过 / 需补充
 
 如通过，进入「契约」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到修复方案后',expect:'审查结论',next:'进入契约'},
-     checks:['根因分析准确','修复方案最小化','回退方案已定义'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到修复方案后',whenEn:'After receiving fix plan',expect:'审查结论',next:'进入契约'},
+     checks:['根因分析准确','修复方案最小化','回退方案已定义'],checksEn:['Root cause analysis accurate','Fix方案minimal','Rollback plan defined'],
     execEn:`[Stage: DESIGN-Diagnosis] No code changes, only design troubleshooting plan.
 
 PROBE findings:
@@ -1331,7 +1331,7 @@ If review passes, output [CONTRACT-Fix Interface] instruction.
 [Review Passed! Next Step]
 -> Go to Contract stage, copy Execution AI Prompt`},
 
-    {id:'contract',name:'契约',desc:'定好改哪些文件、不影响数据',
+    {id:'contract',name:'契约',nameEn:'Contract',desc:'定好改哪些文件、不影响数据',descEn:'Define fix scope, ensure data safety',
      exec:`【阶段：契约】修复问题的接口确认
 
 请确认：
@@ -1342,7 +1342,7 @@ If review passes, output [CONTRACT-Fix Interface] instruction.
 5. 【编码纪律】禁止扩大修复范围
 
 要求：输出 [CONTRACT_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'修复方案通过后',expect:'修复契约 + [CONTRACT_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'修复方案通过后',whenEn:'After fix plan passes',expect:'修复契约 + [CONTRACT_DONE]',expectEn:'Fix contract + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】契约阶段
 
 请审查以下修复契约：
@@ -1356,8 +1356,8 @@ If review passes, output [CONTRACT-Fix Interface] instruction.
 状态判断：通过 / 需补充
 
 如通过，进入「编码」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到契约后',expect:'审查结论',next:'进入编码'},
-     checks:['修复范围最小化','接口变更已评估','数据安全性已确认'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约后',whenEn:'After receiving contract',expect:'审查结论',next:'进入编码'},
+     checks:['修复范围最小化','接口变更已评估','数据安全性已确认'],checksEn:['Fix scope minimal','Interface changes assessed','Data safety confirmed'],
     execEn:`[Stage: CONTRACT] Confirm fix scope. No code, no commands.
 
 [Fix Module]
@@ -1397,7 +1397,7 @@ If review passes, output [CODE-Fix] instruction.
 [Review Passed! Next Step]
 -> Go to Code stage, copy Execution AI Prompt`},
 
-    {id:'code',name:'编码',desc:'按约定改代码，尽量少动',
+    {id:'code',name:'编码',nameEn:'Code',desc:'按约定改代码，尽量少动',descEn:'Fix per contract, minimal changes',
      exec:`【阶段：编码】修复问题
 
 请按契约修复：
@@ -1406,7 +1406,7 @@ If review passes, output [CODE-Fix] instruction.
 3. 运行验证
 
 要求：禁止超出契约范围的修改。输出 [CODE_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'契约通过后',expect:'修复代码 + [CODE_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'修复代码 + [CODE_DONE]',expectEn:'Fix code + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】编码阶段
 
 请审查以下修复结果：
@@ -1420,8 +1420,8 @@ If review passes, output [CODE-Fix] instruction.
 状态判断：通过 / 需修复
 
 如通过，进入「验证」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到修复结果后',expect:'审查结论',next:'进入验证'},
-     checks:['按契约修复','无超出范围修改','运行验证通过'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到修复结果后',expect:'审查结论',next:'进入验证'},
+     checks:['按契约修复','无超出范围修改','运行验证通过'],checksEn:['Fixed per contract','No changes超出 scope','Runtime verification passed'],
     execEn:`[Stage: CODE-Fix] Modify only this file. Do not touch others.
 
 [Absolute Rules]
@@ -1470,7 +1470,7 @@ Please review the following fix result from Execution AI.
 -> More files: continue Code
 -> Last file: go to Verify stage`},
 
-    {id:'verify',name:'验证',desc:'确认问题解决了、没引入新问题',
+    {id:'verify',name:'验证',nameEn:'Verify',desc:'确认问题解决了、没引入新问题',descEn:'Confirm issue resolved, no new problems',
      exec:`【阶段：验证】修复验证
 
 1. 【问题修复验证】原问题是否已解决
@@ -1479,7 +1479,7 @@ Please review the following fix result from Execution AI.
 4. 【汇总】验证结果
 
 要求：输出 [VERIFY_DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'修复完成后',expect:'验证报告 + [VERIFY_DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'修复完成后',whenEn:'After fix is complete',expect:'验证报告 + [VERIFY_DONE]',expectEn:'Verify report + [VERIFY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】验证阶段
 
 请审查以下验证结果：
@@ -1492,8 +1492,8 @@ Please review the following fix result from Execution AI.
 状态判断：
 - 通过 → 进入「完成」
 - 需修复 → 回退到「编码」`,
-     stratU:{to:'窗口A（策略AI）',when:'收到验证结果后',expect:'审查结论',next:'通过进入完成'},
-     checks:['原问题已解决','回归验证通过','边界条件已测试'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到验证结果后',whenEn:'After receiving verify result',expect:'审查结论',next:'通过进入完成'},
+     checks:['原问题已解决','回归验证通过','边界条件已测试'],checksEn:['Original issue resolved','Regression test passed','Boundary conditions tested'],
     execEn:`[Stage: VERIFY] Execute verification flow with progress markers.
 
 [Execution Rules]
@@ -1533,7 +1533,7 @@ Please analyze the following verification logs from Execution AI.
 -> Fixed: go to Done stage
 -> Not fixed: back to Code stage`},
 
-    {id:'done',name:'完成',desc:'清理、提交、写修复说明',
+    {id:'done',name:'完成',nameEn:'Done',desc:'清理、提交、写修复说明',descEn:'Clean up, commit, write fix summary',
      exec:`【阶段：完成】修复收尾
 
 1. 代码清理
@@ -1542,7 +1542,7 @@ Please analyze the following verification logs from Execution AI.
 4. 修复摘要
 
 输出 [DONE]`,
-     execU:{to:'窗口B（执行AI）',when:'验证通过后',expect:'清理 + 提交 + [DONE]',next:'复制给策略AI审查'},
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'验证通过后',whenEn:'After verification passes',expect:'清理 + 提交 + [DONE]',expectEn:'Cleanup + commit + [DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】完成阶段
 
 请审查以下收尾结果：
@@ -1553,8 +1553,8 @@ Please analyze the following verification logs from Execution AI.
 2. 提交描述是否准确？
 
 状态判断：通过 → 修复完成！`,
-     stratU:{to:'窗口A（策略AI）',when:'收到收尾结果后',expect:'最终审查',next:'修复完成！'},
-     checks:['代码清理完成','git提交描述准确'],
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查',next:'修复完成！'},
+     checks:['代码清理完成','git提交描述准确'],checksEn:['Code cleanup complete','Git commit message accurate'],
     execEn:`[Stage: DONE] Clean up probes, complete fix.
 
 Verification passed:
@@ -1796,19 +1796,25 @@ function renderStep(){
   const sd=S.stepsData[S.step];
   const total=m.steps.length;
   const isLayered=s.isLayered;
+  const L=lang==='en';
 
-  const curExec=isLayered?(lang==='en'&&s.layers[S.layer].execEn?s.layers[S.layer].execEn:s.layers[S.layer].exec):(lang==='en'&&s.execEn?s.execEn:s.exec);
-  const curStrat=lang==='en'&&s.stratEn?s.stratEn:s.strat;
+  const curExec=isLayered?(L&&s.layers[S.layer].execEn?s.layers[S.layer].execEn:s.layers[S.layer].exec):(L&&s.execEn?s.execEn:s.exec);
+  const curStrat=L&&s.stratEn?s.stratEn:s.strat;
+  const stepName=L&&s.nameEn?s.nameEn:s.name;
+  const stepDesc=L&&s.descEn?s.descEn:s.desc;
+  const modeName=L&&m.nameEn?m.nameEn:m.name;
+  const checks=L&&s.checksEn?s.checksEn:s.checks;
 
-  let bc=`<div class="breadcrumb"><span>${m.name}</span>`;
+  let bc=`<div class="breadcrumb"><span>${modeName}</span>`;
   S.branchStack.forEach(b=>{bc+=` > 🔀 ${b.name}`});
-  bc+=` > <span>${s.name}${isLayered?' ('+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length+': '+s.layers[S.layer].name+')':''}</span></div>`;
+  bc+=` > <span>${stepName}${isLayered?' ('+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length+': '+s.layers[S.layer].name+')':''}</span></div>`;
 
   let prog='<div class="progress">';
   m.steps.forEach((st,i)=>{
     if(i>0)prog+=`<div class="dot-line${i<=S.step?' done':''}"></div>`;
     const cls=i<S.step?'done':i===S.step?'now':'';
-    prog+=`<div class="dot-wrap"><div class="dot ${cls}"><span>${i+1}</span><div class="dot-label">${st.name}</div></div></div>`;
+    const dotName=L&&st.nameEn?st.nameEn:st.name;
+    prog+=`<div class="dot-wrap"><div class="dot ${cls}"><span>${i+1}</span><div class="dot-label">${dotName}</div></div></div>`;
   });
   prog+='</div>';
 
@@ -1818,23 +1824,25 @@ function renderStep(){
   let html=bc+prog;
   html+=`<div class="step-card">`;
   html+=`<div class="step-head"><div class="step-num">${t('step')} ${S.step+1} / ${total}${isLayered?' · '+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length:''}</div>`;
-  html+=`<div class="step-title">${s.name}${isLayered?' - '+s.layers[S.layer].name:''}</div>`;
-  html+=`<div class="step-desc">${s.desc}</div></div>`;
+  html+=`<div class="step-title">${stepName}${isLayered?' - '+s.layers[S.layer].name:''}</div>`;
+  html+=`<div class="step-desc">${stepDesc}</div></div>`;
 
+  const eu=s.execU;
   html+=`<div class="usage"><span class="ul">${t('usage')}</span><br>`;
-  html+=`<span class="ul">${t('sendTo')}</span><span class="uv">${s.execU.to}</span><br>`;
-  html+=`<span class="ul">${t('timing')}</span><span class="uv">${s.execU.when}</span><br>`;
-  html+=`<span class="ul">${t('expect')}</span><span class="uv">${s.execU.expect}</span><br>`;
-  html+=`<span class="ul">${t('nextStep')}</span><span class="uv">${s.execU.next}</span></div>`;
+  html+=`<span class="ul">${t('sendTo')}</span><span class="uv">${L&&eu.toEn?eu.toEn:eu.to}</span><br>`;
+  html+=`<span class="ul">${t('timing')}</span><span class="uv">${L&&eu.whenEn?eu.whenEn:eu.when}</span><br>`;
+  html+=`<span class="ul">${t('expect')}</span><span class="uv">${L&&eu.expectEn?eu.expectEn:eu.expect}</span><br>`;
+  html+=`<span class="ul">${t('nextStep')}</span><span class="uv">${L&&eu.nextEn?eu.nextEn:eu.next}</span></div>`;
   html+=`<div class="pblock"><div class="phead"><span class="ptag ptag-e">${t('execTag')}</span><button class="copybtn" onclick="cpBlock(this)">${t('copy')}</button></div>`;
   html+=`<div class="pbody">${esc(curExec)}</div></div>`;
 
   if(curStrat){
+    const su=s.stratU;
     html+=`<div class="usage"><span class="ul">${t('usage')}</span><br>`;
-    html+=`<span class="ul">${t('sendTo')}</span><span class="uv">${s.stratU.to}</span><br>`;
-    html+=`<span class="ul">${t('timing')}</span><span class="uv">${s.stratU.when}</span><br>`;
-    html+=`<span class="ul">${t('expect')}</span><span class="uv">${s.stratU.expect}</span><br>`;
-    html+=`<span class="ul">${t('nextStep')}</span><span class="uv">${s.stratU.next}</span></div>`;
+    html+=`<span class="ul">${t('sendTo')}</span><span class="uv">${L&&su.toEn?su.toEn:su.to}</span><br>`;
+    html+=`<span class="ul">${t('timing')}</span><span class="uv">${L&&su.whenEn?su.whenEn:su.when}</span><br>`;
+    html+=`<span class="ul">${t('expect')}</span><span class="uv">${L&&su.expectEn?su.expectEn:su.expect}</span><br>`;
+    html+=`<span class="ul">${t('nextStep')}</span><span class="uv">${L&&su.nextEn?su.nextEn:su.next}</span></div>`;
     html+=`<div class="pblock"><div class="phead"><span class="ptag ptag-s">${t('stratTag')}</span><button class="copybtn" onclick="cpBlock(this)">${t('copy')}</button></div>`;
     html+=`<div class="pbody">${esc(curStrat)}</div></div>`;
   }
@@ -1848,7 +1856,7 @@ function renderStep(){
   html+=`</div></div>`;
 
   html+=`<div class="checks"><h4>${t('checks')}</h4>`;
-  s.checks.forEach((c,i)=>{
+  checks.forEach((c,i)=>{
     const checked=sd.checks.includes(i)?'checked':'';
     html+=`<label><input type="checkbox" ${checked} onchange="toggleCheck(${i},this)"> ${c}</label>`;
   });
@@ -1869,21 +1877,23 @@ function renderMerge(){
 
   let html=`<div class="step-card"><div class="step-head">`;
   html+=`<div class="step-num">🔀 分支合并</div>`;
-  html+=`<div class="step-title">合并计划</div>`;
-  html+=`<div class="step-desc">分支流程已完成，选择合并回主流程的位置</div></div>`;
+  html+=`<div class="step-title">${lang==='zh'?'合并计划':'Merge Plan'}</div>`;
+  html+=`<div class="step-desc">${lang==='zh'?'分支流程已完成，选择合并回主流程的位置':'Branch flow complete, choose where to merge back'}</div></div>`;
 
-  html+=`<div class="merge-plan"><h4>🔀 分支完成 - 合并计划</h4>`;
+  html+=`<div class="merge-plan"><h4>🔀 ${t('mergeTitle')}</h4>`;
   html+=`<div class="summary">`;
-  html+=`<div><strong>分支类型：</strong>${top.name}</div>`;
-  html+=`<div><strong>涉及阶段：</strong>${P[top.branchType].steps.map(s=>s.name).join(' → ')}</div>`;
-  html+=`<div><strong>插入点：</strong>${fromStep.name} 阶段</div>`;
+  html+=`<div><strong>${lang==='zh'?'分支类型：':'Branch type: '}</strong>${top.name}</div>`;
+  html+=`<div><strong>${lang==='zh'?'涉及阶段：':'Stages: '}</strong>${P[top.branchType].steps.map(s=>lang==='en'&&s.nameEn?s.nameEn:s.name).join(' → ')}</div>`;
+  html+=`<div><strong>${lang==='zh'?'插入点：':'Insert point: '}</strong>${lang==='en'&&fromStep.nameEn?fromStep.nameEn:fromStep.name}</div>`;
   html+=`</div>`;
 
   html+=`<div style="margin-bottom:12px;font-weight:600">${lang==='zh'?'合并后回到主流程的位置：':'Where to merge back:'}</div>`;
-  html+=`<label><input type="radio" name="merge" value="current" checked> ${lang==='zh'?'回到':'Return to'}「${fromStep.name}」${lang==='zh'?'阶段（继续主流程）':'stage (continue main flow)'}</label>`;
+  const fromName=lang==='en'&&fromStep.nameEn?fromStep.nameEn:fromStep.name;
+  html+=`<label><input type="radio" name="merge" value="current" checked> ${lang==='zh'?'回到':'Return to'}「${fromName}」${lang==='zh'?'阶段（继续主流程）':'stage (continue main flow)'}</label>`;
   const nextIdx=top.fromStep+1;
   if(nextIdx<m.steps.length){
-    html+=`<label><input type="radio" name="merge" value="next"> ${lang==='zh'?'跳到':'Skip to'}「${m.steps[nextIdx].name}」${lang==='zh'?'阶段（分支已完成该阶段工作）':'stage (branch already completed this)'}</label>`;
+    const nextName=lang==='en'&&m.steps[nextIdx].nameEn?m.steps[nextIdx].nameEn:m.steps[nextIdx].name;
+    html+=`<label><input type="radio" name="merge" value="next"> ${lang==='zh'?'跳到':'Skip to'}「${nextName}」${lang==='zh'?'阶段（分支已完成该阶段工作）':'stage (branch already completed this)'}</label>`;
   }
   html+=`</div>`;
 
