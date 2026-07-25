@@ -47,6 +47,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
 .step-num{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px}
 .step-title{font-size:22px;font-weight:700;margin-bottom:4px}
 .step-desc{font-size:14px;color:var(--text2)}
+.step-tip{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--text2);font-size:11px;cursor:help;margin-left:8px;position:relative;vertical-align:middle}
+.step-tip:hover{background:var(--accent);color:#fff}
+.step-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);white-space:normal;width:260px;line-height:1.6;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.4);font-weight:400}
+.step-tip:hover .tip-text{display:block}
 /* 使用说明 */
 .usage{margin:16px 20px;padding:14px 16px;border:1px dashed var(--border);border-radius:8px;font-size:13px;line-height:1.9}
 .usage .ul{font-weight:700;margin-right:4px}
@@ -900,7 +904,7 @@ function renderStep(){
   let html=bc+prog;
   html+=`<div class="step-card">`;
   html+=`<div class="step-head"><div class="step-num">步骤 ${S.step+1} / ${total}${isLayered?' · 第'+(S.layer+1)+'层/'+s.layers.length+'层':''}</div>`;
-  html+=`<div class="step-title">${s.name}${isLayered?' - '+s.layers[S.layer].name:''}</div>`;
+  html+=`<div class="step-title">${s.name}${isLayered?' - '+s.layers[S.layer].name:''}<span class="step-tip">?<span class="tip-text">${s.desc}${isLayered?'<br>当前层：'+s.layers[S.layer].name:''}</span></span></div>`;
   html+=`<div class="step-desc">${s.desc}</div></div>`;
 
   // 执行AI
