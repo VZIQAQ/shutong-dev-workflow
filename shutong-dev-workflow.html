@@ -149,6 +149,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
 .mc-b h3{color:var(--accent)}
 .mc-c{border-color:#f97316}.mc-c:hover{border-color:#f97316}
 .mc-c h3{color:#f97316}
+/* 预审页 */
+.pre-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;max-width:860px;margin:0 auto}
+.pre-head{padding:20px 24px;border-bottom:1px solid var(--border)}
+.pre-head h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.pre-head p{font-size:13px;color:var(--text2)}
+.pre-step{padding:16px 24px}
+.pre-step h4{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--accent)}
+.pre-step textarea{width:100%;min-height:200px;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;outline:none;font-family:inherit;line-height:1.6}
+.pre-step textarea:focus{border-color:var(--accent)}
+.pre-radios{margin-top:10px}
+.pre-radios label{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;cursor:pointer;color:var(--text2)}
+.pre-radios input[type=radio]{margin-top:3px;accent-color:var(--accent)}
+.pre-radios .opt-a{color:var(--ok)}
+.pre-radios .opt-b{color:var(--accent)}
+.pre-radios .opt-c{color:var(--err)}
+.mc-btns{display:flex;gap:8px;margin-top:14px}
+.mc-btn{flex:1;padding:8px 0;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;transition:.2s;text-align:center}
+.mc-btn:hover{border-color:var(--accent);color:var(--accent)}
+.mc-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.mc-btn.primary:hover{background:var(--accent-hi)}
 /* 主题跟随 */
 body.th-a{--accent:#22c55e;--accent-hi:#4ade80}
 body.th-b{--accent:#3b82f6;--accent-hi:#60a5fa}
@@ -812,7 +832,9 @@ function defaultState(mode){
     layer:0,
     branchStack:[],
     stepsData:m.steps.map(()=>({review:'',verdict:null,checks:[]})),
-    done:false
+    done:false,
+    preReview:null,
+    isPreReview:false
   };
 }
 
@@ -824,6 +846,11 @@ function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(S))}
 // ========== 渲染 ==========
 function render(){
   if(!S){renderWelcome();return}
+  if(S.isPreReview){
+    document.body.className=P[S.mode].themeCls;
+    renderModeBtns();
+    renderPreReview();return;
+  }
   const m=P[S.mode];
   document.body.className=m.themeCls;
   renderModeBtns();
@@ -841,20 +868,32 @@ function renderWelcome(){
     <h2>📋 书童开发工作流</h2>
     <p>选择你的场景，按步骤操作即可</p>
     <div class="mode-cards">
-      <div class="mode-card mc-a" onclick="startMode('A')">
+      <div class="mode-card mc-a">
         <h3>🆕 从零新建项目</h3>
         <p>没有代码，从头搭建</p>
         <p style="margin-top:8px;font-size:12px;color:var(--text2)">初始化→设计→契约→编码→验证→部署→完成</p>
+        <div class="mc-btns">
+          <button class="mc-btn primary" onclick="startMode('A')">🚀 从零开始</button>
+          <button class="mc-btn" onclick="startPreReview('A')">📄 已有MVP文档</button>
+        </div>
       </div>
-      <div class="mode-card mc-b" onclick="startMode('B')">
+      <div class="mode-card mc-b">
         <h3>➕ 新增功能/模块</h3>
         <p>有代码，要加新功能</p>
         <p style="margin-top:8px;font-size:12px;color:var(--text2)">探测→设计→契约→编码→验证→完成</p>
+        <div class="mc-btns">
+          <button class="mc-btn primary" onclick="startMode('B')">🚀 从零开始</button>
+          <button class="mc-btn" onclick="startPreReview('B')">📄 已有MVP文档</button>
+        </div>
       </div>
-      <div class="mode-card mc-c" onclick="startMode('C')">
+      <div class="mode-card mc-c">
         <h3>🔧 修复现有问题</h3>
         <p>有代码，功能坏了</p>
         <p style="margin-top:8px;font-size:12px;color:var(--text2)">探测→设计→契约→编码→验证→完成</p>
+        <div class="mc-btns">
+          <button class="mc-btn primary" onclick="startMode('C')">🚀 从零开始</button>
+          <button class="mc-btn" onclick="startPreReview('C')">📄 已有MVP文档</button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -1002,6 +1041,136 @@ function startMode(mode){
   S=defaultState('mode'+mode);
   saveState();
   render();
+}
+
+// ========== 文档预审 ==========
+const PRE_REVIEW_PROMPT=`【文档预审】MVP文档质量审查
+
+你是一位资深技术负责人。请审查以下MVP文档，判断它是否具备进入工程执行的条件。
+
+MVP文档：
+{{粘贴你的MVP文档}}
+
+请按以下维度逐项审查，每项给出「✅ 具备 / ⚠️ 有缺口 / ❌ 缺失」：
+
+1. 【需求边界】功能范围是否清晰？有没有"等等""之类""相关"等模糊词？
+2. 【用户场景】这个功能给谁用？在什么场景下用？是否明确？
+3. 【技术选型】是否指定了技术栈（语言/框架/数据库/部署方式）？
+4. 【数据结构】核心数据有哪些字段？类型是什么？是否定义？
+5. 【接口定义】输入输出是否明确？参数和返回值有说明吗？
+6. 【验收标准】怎么证明这个功能"做完了"？有可验证的标准吗？
+7. 【异常处理】错误场景有考虑吗？（网络失败、数据为空、权限不足、并发冲突等）
+8. 【依赖关系】这个功能依赖哪些外部系统/模块/第三方服务？
+9. 【性能要求】有并发量、响应时间、数据量等要求吗？
+10. 【安全约束】有权限控制、鉴权机制、数据安全等要求吗？
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 文档质量评分：X / 10 分
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【评分标准】
+- 10分：10项全部✅具备，文档可直接进入编码
+- 8-9分：1-2项⚠️有缺口，补充后可直接推进
+- 5-7分：3-5项有缺口，需要补充信息后再进入工作流
+- 0-4分：超过5项缺失，建议重新梳理需求
+
+缺口清单（逐项列出有缺口/缺失的项）：
+- 缺口1：...（具体说明缺了什么）
+- 缺口2：...
+
+建议进入阶段：
+○ A. 文档完整 → 可直接进入「设计」阶段（技术选型已确认，只需细化架构）
+○ B. 有缺口 → 先进入「初始化」补充缺口信息，再按流程推进
+○ C. 质量不足 → 建议回退到「初始化」重新梳理需求，把现有文档当作原始输入
+
+如选B，请列出需要补充的具体问题清单（用户可以直接复制给执行AI）。`;
+
+const PRE_KW={
+  A:['完整','8分','9分','10分','直接进入设计','进入设计','进入契约','进入编码','A.'],
+  B:['有缺口','5分','6分','7分','补充','初始化','先补充','B.'],
+  C:['不足','0分','1分','2分','3分','4分','重新梳理','重新来','C.']
+};
+
+function startPreReview(mode){
+  S={mode:'mode'+mode,isPreReview:true,preReview:{document:'',result:'',verdict:null},step:0,layer:0,branchStack:[],stepsData:[],done:false};
+  document.body.className=P[S.mode].themeCls;
+  renderModeBtns();
+  saveState();
+  render();
+}
+
+function renderPreReview(){
+  const m=P[S.mode];
+  const pr=S.preReview;
+  document.getElementById('actionBar').style.display='none';
+  let h=`<div class="pre-card">`;
+  h+=`<div class="pre-head"><h2>📄 文档预审</h2><p>模式：${m.name} ｜ 正式进入工作流之前，先审查文档质量</p></div>`;
+
+  h+=`<div class="pre-step"><h4>第1步：粘贴你的MVP文档</h4>`;
+  h+=`<textarea placeholder="在此粘贴你和AI讨论产出的MVP文档完整内容..." oninput="S.preReview.document=this.value;saveState()">${pr.document}</textarea></div>`;
+
+  h+=`<div class="pre-step"><h4>第2步：发给策略AI审查</h4>`;
+  h+=`<div class="usage"><span class="ul">📋 使用说明</span><br>`;
+  h+=`<span class="ul">发给：</span><span class="uv">窗口A（策略AI / Kimi）</span><br>`;
+  h+=`<span class="ul">时机：</span><span class="uv">正式进入工作流之前，先审查文档质量</span><br>`;
+  h+=`<span class="ul">预期：</span><span class="uv">10项审查维度评分 + 缺口清单 + 分流建议</span><br>`;
+  h+=`<span class="ul">下一步：</span><span class="uv">根据审查结论选择进入阶段</span></div>`;
+  h+=`<div class="pblock"><div class="phead"><span class="ptag ptag-s">S 审查提示词</span><button class="copybtn" onclick="cpBlock(this)">一键复制</button></div>`;
+  h+=`<div class="pbody">${esc(PRE_REVIEW_PROMPT)}</div></div></div>`;
+
+  h+=`<div class="pre-step"><h4>第3步：粘贴策略AI的审查结论</h4>`;
+  h+=`<textarea placeholder="在此粘贴策略AI的审查回复..." oninput="onPreReviewInput(this)">${pr.result}</textarea></div>`;
+
+  h+=`<div class="pre-step"><h4>第4步：根据审查结论，选择进入工作流的阶段</h4>`;
+  h+=`<div class="pre-radios">`;
+  h+=`<label class="opt-a"><input type="radio" name="preVerdict" value="A" ${pr.verdict==='A'?'checked':''} onclick="S.preReview.verdict='A';saveState()"> ✅ A. 文档完整（8-10分）→ 直接进入「设计」阶段</label>`;
+  h+=`<label class="opt-b"><input type="radio" name="preVerdict" value="B" ${pr.verdict==='B'?'checked':''} onclick="S.preReview.verdict='B';saveState()"> ⚠️ B. 有缺口（5-7分）→ 进入「初始化」补充缺口后推进</label>`;
+  h+=`<label class="opt-c"><input type="radio" name="preVerdict" value="C" ${pr.verdict==='C'?'checked':''} onclick="S.preReview.verdict='C';saveState()"> ❌ C. 质量不足（0-4分）→ 进入「初始化」重新梳理需求</label>`;
+  h+=`</div></div>`;
+
+  h+=`<div style="padding:16px 24px;display:flex;gap:10px;border-top:1px solid var(--border)">`;
+  h+=`<button class="abtn" onclick="goHome()">⬅️ 返回首页</button>`;
+  h+=`<button class="abtn primary" onclick="enterWorkflowFromPreReview()" style="margin-left:auto">确认，进入工作流 ➡️</button>`;
+  h+=`</div></div>`;
+
+  document.getElementById('app').innerHTML=h;
+}
+
+function onPreReviewInput(ta){
+  S.preReview.result=ta.value;
+  const text=ta.value;
+  let detected=null;
+  for(const kw of PRE_KW.A){if(text.includes(kw)){detected='A';break}}
+  if(!detected)for(const kw of PRE_KW.B){if(text.includes(kw)){detected='B';break}}
+  if(!detected)for(const kw of PRE_KW.C){if(text.includes(kw)){detected='C';break}}
+  if(detected){
+    S.preReview.verdict=detected;
+    document.querySelectorAll('input[name=preVerdict]').forEach(r=>{r.checked=r.value===detected});
+  }
+  saveState();
+}
+
+function enterWorkflowFromPreReview(){
+  if(!S||!S.isPreReview)return;
+  const verdict=S.preReview.verdict;
+  if(!verdict){alert('请先选择审查结论（A/B/C）');return}
+  const mode=S.mode;
+  const m=P[mode];
+  const pr=S.preReview;
+
+  S=defaultState(mode);
+  S.preReview=pr;
+
+  if(verdict==='A'){
+    S.step=1;
+    S.stepsData[0].review=pr.document;
+  } else if(verdict==='B'){
+    S.stepsData[0].review=pr.result;
+    S.stepsData[0].verdict='补充';
+  } else {
+    S.stepsData[0].review='参考文档（质量不足，需重新梳理）：\n'+pr.document.substring(0,500)+'...';
+  }
+  saveState();render();
 }
 
 function switchMode(mode){
