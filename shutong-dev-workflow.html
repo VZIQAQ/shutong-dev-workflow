@@ -948,7 +948,7 @@ function renderStep(){
 function renderMerge(){
   const m=P[S.mode];
   const top=S.branchStack[S.branchStack.length-1];
-  const fromStep=P['mode'+top.fromMode].steps[top.fromStep];
+  const fromStep=P[top.fromMode].steps[top.fromStep];
 
   let html=`<div class="step-card"><div class="step-head">`;
   html+=`<div class="step-num">🔀 分支合并</div>`;
@@ -958,7 +958,7 @@ function renderMerge(){
   html+=`<div class="merge-plan"><h4>🔀 分支完成 - 合并计划</h4>`;
   html+=`<div class="summary">`;
   html+=`<div><strong>分支类型：</strong>${top.name}</div>`;
-  html+=`<div><strong>涉及阶段：</strong>${P['mode'+top.branchType].steps.map(s=>s.name).join(' → ')}</div>`;
+  html+=`<div><strong>涉及阶段：</strong>${P[top.branchType].steps.map(s=>s.name).join(' → ')}</div>`;
   html+=`<div><strong>插入点：</strong>${fromStep.name} 阶段</div>`;
   html+=`</div>`;
 
@@ -997,15 +997,15 @@ function renderDone(){
 
 // ========== 交互 ==========
 function startMode(mode){
-  S=defaultState(mode);
+  S=defaultState('mode'+mode);
   saveState();
   render();
 }
 
 function switchMode(mode){
-  if(S&&S.mode===mode)return;
+  if(S&&S.mode===('mode'+mode))return;
   if(S&&S.step>0&&!confirm('切换模式将重置当前进度，确定吗？'))return;
-  S=defaultState(mode);
+  S=defaultState('mode'+mode);
   saveState();
   render();
 }
@@ -1089,7 +1089,7 @@ function doBranch(){
     name:name,
     fromMode:S.mode,
     fromStep:S.step,
-    branchType:'B',
+    branchType:'modeB',
     savedState:JSON.parse(JSON.stringify({step:S.step,layer:S.layer,stepsData:S.stepsData})),
     mergePending:false
   });
@@ -1109,7 +1109,7 @@ function confirmMerge(){
   if(val==='current'){
     S.step=top.fromStep;
   } else {
-    S.step=Math.min(top.fromStep+1,P['mode'+top.fromMode].steps.length-1);
+    S.step=Math.min(top.fromStep+1,P[top.fromMode].steps.length-1);
   }
   S.layer=0;
   saveState();render();
