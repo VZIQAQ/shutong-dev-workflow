@@ -1586,6 +1586,21 @@ const TROUBLE=`<h5>卡住话术</h5>
 • 每阶段后：<code onclick="cp(this)">git add -A && git commit -m "阶段名: 简述"</code>
 • 回退：<code onclick="cp(this)">git checkout -- 文件</code> 或 <code onclick="cp(this)">git reset HEAD~1</code>
 • 禁止：git push -f, git reset --hard, git clean -fd`;
+const TROUBLE_EN=`<h5>Stuck Phrases</h5>
+• AI not responding / incomplete response：<code onclick="cp(this)">Please re-output per current stage requirements, ensure markers are included</code>
+• AI skips steps：<code onclick="cp(this)">Please go back to current stage requirements, complete before continuing</code>
+• AI generates code instead of analysis：<code onclick="cp(this)">Current stage is analysis only, no coding. Please output analysis results</code>
+• AI response too long/short：<code onclick="cp(this)">Please answer per checklist items, no omissions or over-expansion</code>
+<h5>Violation Phrases</h5>
+• AI wants to delete files：<code onclick="cp(this)">Do not delete any files, mark as deprecated with comments</code>
+• AI wants to modify files outside contract：<code onclick="cp(this)">Do not modify files outside contract scope, update contract first</code>
+• AI wants to execute dangerous operations：<code onclick="cp(this)">Do not execute rm/rf/drop or other destructive operations</code>
+• AI wants to skip verification：<code onclick="cp(this)">Verification stage cannot be skipped, check each item</code>
+<h5>Git Safety Quick Reference</h5>
+• Before starting：<code onclick="cp(this)">git status</code>
+• After each stage：<code onclick="cp(this)">git add -A && git commit -m "阶段名: 简述"</code>
+• Rollback：<code onclick="cp(this)">git checkout -- 文件</code> 或 <code onclick="cp(this)">git reset HEAD~1</code>
+• Forbidden：git push -f, git reset --hard, git clean -fd`;
 
 const REVIEW_KW={
   pass:['通过','进入下一步','进入设计','进入契约','进入编码','进入验证','进入部署','进入完成','审查通过'],
@@ -1863,8 +1878,8 @@ function renderStep(){
   html+=`</div>`;
 
   // 问题折叠
-  html+=`<div class="trouble"><button class="trouble-btn" onclick="this.nextElementSibling.classList.toggle('open')">⚠️ 遇到问题？<span>▶</span></button>`;
-  html+=`<div class="trouble-body">${TROUBLE}</div></div>`;
+  html+=`<div class="trouble"><button class="trouble-btn" onclick="this.nextElementSibling.classList.toggle('open')">${lang==='zh'?'⚠️ 遇到问题？':'⚠️ Having trouble?'}<span>▶</span></button>`;
+  html+=`<div class="trouble-body">${lang==='en'?TROUBLE_EN:TROUBLE}</div></div>`;
 
   html+=`</div>`;
   document.getElementById('app').innerHTML=html;
@@ -2082,9 +2097,9 @@ function enterWorkflowFromPreReview(){
     S.step=1;
     S.stepsData[0].review=pr.document;
   } else if(verdict==='B'){
-    S.stepsData[0].review='参考文档（有缺口，需补充）：\n'+pr.document.substring(0,500)+'...';
+    S.stepsData[0].review=(lang==='zh'?'参考文档（有缺口，需补充）：':'Reference doc (has gaps, needs补充): ')+'\n'+pr.document.substring(0,500)+'...';
   } else {
-    S.stepsData[0].review='参考文档（质量不足，需重新梳理）：\n'+pr.document.substring(0,500)+'...';
+    S.stepsData[0].review=(lang==='zh'?'参考文档（质量不足，需重新梳理）：':'Reference doc (insufficient, needs re-scoping): ')+'\n'+pr.document.substring(0,500)+'...';
   }
   saveState();render();
 }
@@ -2229,13 +2244,13 @@ function cpNP(id){
   const d=loadNP();const it=d[npType].find(n=>n.id===id);if(!it)return;
   navigator.clipboard.writeText(it.body).then(()=>{
     const btn=document.querySelector('[data-cp="'+id+'"]');
-    if(btn){btn.textContent='已复制';setTimeout(()=>btn.textContent='复制',1200)}
+    if(btn){btn.textContent=lang==='zh'?'已复制':'Copied';setTimeout(()=>btn.textContent=lang==='zh'?'复制':'Copy',1200)}
   });
 }
 function exportNP(){
-  const d=loadNP();let t='=== 需求 ===\n\n';
+  const d=loadNP();let t=lang==='zh'?'=== 需求 ===\n\n':'=== Requirements ===\n\n';
   d.req.forEach(n=>{t+='## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'});
-  t+='=== 笔记 ===\n\n';
+  t+=lang==='zh'?'=== 笔记 ===\n\n':'=== Notes ===\n\n';
   d.note.forEach(n=>{t+='## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'});
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));
   a.download='notepads.txt';a.click();
@@ -2288,7 +2303,7 @@ function importState(){
   input.onchange=e=>{
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=ev=>{try{S=JSON.parse(ev.target.result);saveState();render();alert('导入成功')}catch(e){alert('导入失败：文件格式错误')}};
+    reader.onload=ev=>{try{S=JSON.parse(ev.target.result);saveState();render();alert(lang==='zh'?'导入成功':'Import successful')}catch(e){alert(lang==='zh'?'导入失败：文件格式错误':'Import failed: invalid file format')}};
     reader.readAsText(file);
   };
   input.click();
@@ -2302,15 +2317,15 @@ function goHome(){
 }
 function exportReport(){
   const m=P[S.mode];
-  let r=`书童开发工作流 - 执行报告\n${'='.repeat(40)}\n\n`;
-  r+=`模式：${m.name}\n`;
-  r+=`总步骤：${m.steps.length}\n`;
-  r+=`分支数：${S.branchStack.length}\n\n`;
-  r+=`步骤明细：\n`;
+  let r=`${lang==='zh'?'书童开发工作流':'Shutong Dev Workflow'} - ${lang==='zh'?'执行报告':'Execution Report'}\n${'='.repeat(40)}\n\n`;
+  r+=(lang==='zh'?'模式：':'Mode: ')+`${m.name}\n`;
+  r+=(lang==='zh'?'总步骤：':'Total steps: ')+`${m.steps.length}\n`;
+  r+=(lang==='zh'?'分支数：':'Branches: ')+`${S.branchStack.length}\n\n`;
+  r+=(lang==='zh'?'步骤明细：':'Step details:\n`;
   m.steps.forEach((s,i)=>{
     const sd=S.stepsData[i]||{};
     const v=sd.verdict||'未审查';
-    r+=`  ${i+1}. ${s.name} [${v}]\n`;
+    r+=`  ${i+1}. ${lang==='en'&&s.nameEn?s.nameEn:s.name} [${v}]\n`;
   });
   const blob=new Blob([r],{type:'text/plain'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
