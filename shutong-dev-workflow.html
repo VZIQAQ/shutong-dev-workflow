@@ -488,40 +488,72 @@ If review passes, output [CODE-Skeleton1] instruction.
 -> Go to Code stage, copy Execution AI Prompt - Config Layer`},
 
     {id:'code',name:'编码',nameEn:'Code',desc:'一层一层搭，配置→工具→入口→业务',descEn:'Build layer by layer: config -> utility -> entry -> business',isLayered:true,
-     layers:[
-       {name:'配置层',exec:`【阶段：编码 - 第1层：配置层】搭建配置层
+      layers:[
+        {name:'配置层',nameEn:'Config Layer',exec:`【阶段：编码 - 第1层：配置层】搭建配置层
 
 请创建：
 1. 配置文件（如 .env, config.py 等）
 2. 依赖清单（requirements.txt, package.json 等）
 3. 基础配置加载代码
 
-要求：每个文件创建后必须能独立运行。输出 [CODE_L1_DONE]`},
-       {name:'工具层',exec:`【阶段：编码 - 第2层：工具层】搭建工具层
+要求：每个文件创建后必须能独立运行。输出 [CODE_L1_DONE]`,
+         execEn:`[Stage: CODE - Layer 1: Config] Build config layer
+
+Please create:
+1. Config files (e.g. .env, config.py)
+2. Dependency list (requirements.txt, package.json)
+3. Basic config loading code
+
+Requirements: Each file must run independently after creation. Output [CODE_L1_DONE]`},
+        {name:'工具层',nameEn:'Utility Layer',exec:`【阶段：编码 - 第2层：工具层】搭建工具层
 
 请创建：
 1. 数据库连接工具
 2. 日志工具
 3. 通用工具函数
 
-要求：基于第1层配置，每个文件创建后运行验证。输出 [CODE_L2_DONE]`},
-       {name:'入口层',exec:`【阶段：编码 - 第3层：入口层】搭建入口层
+要求：基于第1层配置，每个文件创建后运行验证。输出 [CODE_L2_DONE]`,
+         execEn:`[Stage: CODE - Layer 2: Utility] Build utility layer
+
+Please create:
+1. Database connection utility
+2. Logging utility
+3. Common utility functions
+
+Requirements: Based on Layer 1 config, verify each file after creation. Output [CODE_L2_DONE]`},
+        {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层
 
 请创建：
 1. 主入口文件（如 app.py, main.js 等）
 2. 路由/控制器骨架
 3. 启动脚本
 
-要求：基于第1-2层，运行验证能启动不报错。输出 [CODE_L3_DONE]`},
-       {name:'业务层',exec:`【阶段：编码 - 第4层：业务层】实现业务逻辑
+要求：基于第1-2层，运行验证能启动不报错。输出 [CODE_L3_DONE]`,
+         execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer
+
+Please create:
+1. Main entry file (e.g. app.py, main.js)
+2. Router/controller skeleton
+3. Startup script
+
+Requirements: Based on Layers 1-2, verify it starts without errors. Output [CODE_L3_DONE]`},
+        {name:'业务层',nameEn:'Business Layer',exec:`【阶段：编码 - 第4层：业务层】实现业务逻辑
 
 请创建：
 1. 业务模块代码
 2. 接口实现
 3. 前端页面（如需要）
 
-要求：基于第1-3层，逐文件实现。每完成一个文件运行验证。输出 [CODE_DONE]`}
-     ],
+要求：基于第1-3层，逐文件实现。每完成一个文件运行验证。输出 [CODE_DONE]`,
+         execEn:`[Stage: CODE - Layer 4: Business] Implement business logic
+
+Please create:
+1. Business module code
+2. Interface implementations
+3. Frontend pages (if needed)
+
+Requirements: Based on Layers 1-3, implement file by file. Verify each file after creation. Output [CODE_DONE]`}
+      ],
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'每层代码 + 验证 + 层完成标记',expectEn:'Layer code + verification + layer done marker',next:'每层完成后复制给策略AI审查'},
      strat:`【策略AI审查】编码阶段
 
@@ -1822,7 +1854,8 @@ function renderStep(){
 
   let bc=`<div class="breadcrumb"><span>${modeName}</span>`;
   S.branchStack.forEach(b=>{bc+=` > 🔀 ${b.name}`});
-  bc+=` > <span>${stepName}${isLayered?' ('+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length+': '+s.layers[S.layer].name+')':''}</span></div>`;
+  const layerName=isLayered?(L&&s.layers[S.layer].nameEn?s.layers[S.layer].nameEn:s.layers[S.layer].name):'';
+  bc+=` > <span>${stepName}${isLayered?' ('+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length+': '+layerName+')':''}</span></div>`;
 
   let prog='<div class="progress">';
   m.steps.forEach((st,i)=>{
@@ -1839,7 +1872,7 @@ function renderStep(){
   let html=bc+prog;
   html+=`<div class="step-card">`;
   html+=`<div class="step-head"><div class="step-num">${t('step')} ${S.step+1} / ${total}${isLayered?' · '+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length:''}</div>`;
-  html+=`<div class="step-title">${stepName}${isLayered?' - '+s.layers[S.layer].name:''}</div>`;
+  html+=`<div class="step-title">${stepName}${isLayered?' - '+layerName:''}</div>`;
   html+=`<div class="step-desc">${stepDesc}</div></div>`;
 
   const eu=s.execU;
