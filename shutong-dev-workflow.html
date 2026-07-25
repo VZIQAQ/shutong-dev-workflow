@@ -108,8 +108,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
 .done-summary .stats{display:flex;justify-content:center;gap:24px;margin-bottom:16px;font-size:14px}
 .done-summary .stat-val{font-size:24px;font-weight:700;color:var(--accent)}
 /* 记事本 */
-.np-toggle{position:fixed;right:0;top:50%;transform:translateY(-50%);width:24px;height:60px;background:var(--card);border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;z-index:99;transition:.2s}
+.np-toggle{position:fixed;right:0;top:50%;transform:translateY(-50%);width:24px;height:60px;background:var(--card);border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;z-index:99;transition:.3s}
 .np-toggle:hover{color:var(--accent);border-color:var(--accent)}
+.np-toggle.shifted{right:300px}
 .np-panel{position:fixed;right:0;top:0;bottom:0;width:300px;background:var(--card);border-left:1px solid var(--border);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:.3s}
 .np-panel.open{transform:translateX(0)}
 .np-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -180,7 +181,7 @@ body.th-c{--accent:#f97316;--accent-hi:#fb923c}
 <div class="np-toggle" onclick="toggleNP()" id="npToggle">◀</div>
 <div class="np-panel" id="npPanel">
   <div class="np-head">
-    <h3>📋 记事本</h3>
+    <h3>📋 记事本 <span style="cursor:pointer;margin-left:8px;font-size:16px" onclick="toggleNP()">✕</span></h3>
     <div class="np-tabs">
       <button class="np-tab on" onclick="setNPType('req')">需求</button>
       <button class="np-tab" onclick="setNPType('note')">笔记</button>
@@ -1152,9 +1153,11 @@ function exportNP(){
   a.download='notepads.txt';a.click();
 }
 function toggleNP(){
-  document.getElementById('npPanel').classList.toggle('open');
+  const panel=document.getElementById('npPanel');
   const btn=document.getElementById('npToggle');
-  btn.textContent=document.getElementById('npPanel').classList.contains('open')?'▶':'◀';
+  panel.classList.toggle('open');
+  btn.classList.toggle('shifted');
+  btn.textContent=panel.classList.contains('open')?'▶':'◀';
 }
 function renderNP(){
   const d=loadNP();const list=d[npType];
