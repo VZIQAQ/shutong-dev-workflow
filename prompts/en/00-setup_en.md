@@ -48,7 +48,48 @@ Now waiting for the user to provide requirements and stage instructions.
 
 ---
 
-## Step 3: Prepare This Playbook
+## Step 3: Choose Project Mode
+
+Please confirm your project status:
+
+```text
+Choose your mode:
+A. Modify existing project (codebase exists) → Start from 01-probe_en.md PROBE branch
+B. Build from scratch (no codebase) → Start from 01-probe_en.md INIT branch
+```
+
+### Mode A: Modify Existing Project
+
+For projects with an existing codebase that need modifications or feature enhancements.
+
+Flow: `PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE`
+
+Proceed to [01-probe_en.md](01-probe_en.md) PROBE branch.
+
+### Mode B: Build from Scratch
+
+For projects with no codebase that need to be built from the ground up.
+
+Flow: `INIT → DESIGN → CONTRACT → CODE → VERIFY → DEPLOY → DONE`
+
+**Mode B initialization supplement** (send to Window B):
+
+```text
+【Supplement: Build from Scratch Mode】
+You will be building a project from scratch. Additional rules:
+1. INIT stage only outputs design, does not generate code
+2. Every new file must be runnable independently (at least no ImportError)
+3. Skeleton build order: config files → utility/shared modules → entry files → business modules
+4. After building each layer, verify the skeleton doesn't collapse (run/import check)
+5. Tech stack selection must wait for user confirmation before proceeding
+6. Acceptance criteria defined by user in INIT stage, checked against in VERIFY
+```
+
+Proceed to [01-probe_en.md](01-probe_en.md) INIT branch.
+
+---
+
+## Step 4: Prepare This Playbook
 
 Clone this repository locally, follow the prompts in the `prompts/` directory in order.
 
@@ -69,4 +110,4 @@ Each stage:
 
 ## Next
 
-After initialization, proceed to [01-probe_en.md](01-probe_en.md) to begin the PROBE stage.
+Based on your chosen mode, proceed to [01-probe_en.md](01-probe_en.md) to begin.

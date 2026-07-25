@@ -50,6 +50,41 @@ AI 编程最隐蔽的坑不是报错，而是**需求漂移** — 代码能跑�
 
 ---
 
+## 两种模式
+
+### 模式A：改造现有项目
+
+适用于已有代码库，需要修改或增强功能的场景。
+
+```text
+PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE
+```
+
+- PROBE：摸清现有代码现状
+- DESIGN：冻结改造方案
+- CONTRACT：确认接口契约
+- CODE：单文件逐步修改
+- VERIFY：验证改造生效
+- DONE：清理完成
+
+### 模式B：从零新建项目
+
+适用于没有代码库，需要从零搭建一个全新项目的场景。
+
+```text
+INIT → DESIGN → CONTRACT → CODE → VERIFY → DEPLOY → DONE
+```
+
+- INIT：技术选型、目录结构、依赖规划
+- DESIGN：冻结架构设计
+- CONTRACT：设计数据模型和API接口
+- CODE：按层级逐步搭建骨架
+- VERIFY：功能验收（按INIT定义的验收条件）
+- DEPLOY：部署上线、冒烟测试
+- DONE：清理完成
+
+---
+
 ## 目录结构
 
 ```text
@@ -61,8 +96,8 @@ shutong-dev-workflow/
 ├── CHANGELOG.md                     # 版本记录
 ├── CHANGELOG_EN.md                  # English changelog
 ├── prompts/                         # 各阶段提示词（按编号顺序使用）
-│   ├── 00-setup.md                  # 开局初始化
-│   ├── 01-probe.md                  # PROBE：摸清现状
+│   ├── 00-setup.md                  # 开局初始化（含模式选择）
+│   ├── 01-probe.md                  # PROBE：摸清现状 / INIT：从零初始化
 │   ├── 02-design.md                 # DESIGN：冻结架构
 │   ├── 03-contract.md               # CONTRACT：接口契约
 │   ├── 04-code.md                   # CODE：单文件推进
@@ -70,6 +105,7 @@ shutong-dev-workflow/
 │   ├── 06-done.md                   # DONE：清理完成
 │   ├── 07-exception-handling.md     # 异常处理速查表
 │   ├── 08-git-safety.md            # Git 安全保障
+│   ├── 09-deploy.md                 # DEPLOY：部署上线（从零模式）
 │   └── en/                          # English prompts
 │       ├── 00-setup_en.md
 │       ├── 01-probe_en.md
@@ -87,7 +123,7 @@ shutong-dev-workflow/
 │       ├── comparison_en.md
 │       └── why-two-ai_en.md
 └── examples/
-    ├── example-session.md           # 完整对话实录示例
+    ├── example-session.md           # 完整对话实录示例（含改造+从零案例）
     └── en/
         └── example-session_en.md    # English example session
 ```
@@ -95,6 +131,8 @@ shutong-dev-workflow/
 ---
 
 ## 阶段流程
+
+### 改造模式（模式A）
 
 ```text
 ┌─────────┐     ┌─────────┐     ┌──────────┐     ┌──────┐     ┌────────┐     ┌──────┐
@@ -111,8 +149,25 @@ shutong-dev-workflow/
                               VERIFY失败时回退到CODE
 ```
 
+### 从零模式（模式B）
+
+```text
+┌──────────┐     ┌─────────┐     ┌──────────┐     ┌──────┐     ┌────────┐     ┌────────┐     ┌──────┐
+│   INIT   │────▶│ DESIGN  │────▶│ CONTRACT │────▶│ CODE │────▶│ VERIFY │────▶│ DEPLOY │────▶│ DONE │
+│ 技术选型  │     │ 架构设计 │     │ 接口契约  │     │ 搭骨架│     │ 功能验收 │     │ 部署上线 │     │ 清理  │
+└──────────┘     └─────────┘     └──────────┘     └──────┘     └────────┘     └────────┘     └──────┘
+                                            │           │               │
+                                            │     ┌─────┴─────┐         │
+                                            │     ▼           ▼         │
+                                            │  配置层 → 工具层 → 业务层   │
+                                            │  逐层搭建，逐层验证         │
+                                            │                           │
+                                            └───────────────────────────┘
+                                                     VERIFY失败时回退到CODE
+```
+
 每个阶段：
-- 执行AI产出内容 + 状态标记（如 `[PROBE_DONE]`）
+- 执行AI产出内容 + 状态标记（如 `[INIT_DONE]`）
 - 用户复制给策略AI审查
 - 策略AI生成下一阶段指令
 - 用户复制给执行AI执行
@@ -130,6 +185,7 @@ shutong-dev-workflow/
 | 异常恢复 | 重启对话 | 从指定步骤继续 |
 | 版本控制 | 无 | Git保障（可回退） |
 | 接口契约 | 无 | CONTRACT阶段冻结 |
+| 支持场景 | 仅改造 | **改造 + 从零新建** |
 
 详见 [docs/comparison.md](docs/comparison.md)
 
@@ -141,6 +197,7 @@ shutong-dev-workflow/
 - 有想法但不知道怎么跟AI沟通的用户
 - 之前用AI改代码改崩过、想有安全保障的用户
 - 需要可重复、可回退的开发流程的团队
+- **想从零开始搭建项目的非程序员**（v1.2新增）
 
 ---
 
@@ -152,6 +209,7 @@ shutong-dev-workflow/
 4. **用户只做开关** — 确认、回退、下一步、从第X步继续，不需要懂代码
 5. **方向偏离比报错更危险** — 系统正常运行但底层逻辑错误，只能靠PROBE+VERIFY层层验证
 6. **不确定就停** — 任何阶段发现异常，立即停止，等策略AI判断
+7. **从零模式逐层搭建** — 配置层→工具层→业务层，每层验证通过再搭下一层（v1.2新增）
 
 ---
 
@@ -159,6 +217,7 @@ shutong-dev-workflow/
 
 - **v1.0** — 7阶段完整工作流（PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE）
 - **v1.1** — Git保障、异常话术强化、PROBE范围限定、执行纪律强化
+- **v1.2** — 从零新建项目模式（INIT阶段、DEPLOY阶段、逐层搭建、功能验收）
 
 详见 [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG_EN.md](CHANGELOG_EN.md)
 

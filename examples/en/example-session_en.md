@@ -2,7 +2,9 @@
 
 > A fictional complete transformation dialogue showing dual-AI collaboration in action.
 >
-> **Scenario**: User has a chatbot project and wants to change keyword extraction from "regex tokenization" to "AI model extraction".
+> Contains two cases:
+> - **Case 1**: Modify existing project — Change keyword extraction from "regex tokenization" to "AI model extraction"
+> - **Case 2**: Build from scratch — Build a todo list management tool
 
 ---
 
@@ -452,4 +454,473 @@ Files involved: chat/keyword_extractor.py
 Verification result: AI model normally returns semantic keywords, no degradation triggered
 
 Next: For new requirements, restart from PROBE stage.
+```
+
+---
+
+## Case 2: Build from Scratch
+
+> **Scenario**: User can't code and wants to build a "todo list management tool" (CLI version) from scratch.
+>
+> **Requirement**: A command-line todo tool that can add, view, complete, and delete tasks, with data stored in a local JSON file.
+
+### Initialization
+
+#### User selects Mode B
+
+```text
+Choose your mode:
+B. Build from scratch (no codebase) → Start from 01-probe_en.md INIT branch
+```
+
+#### User sends initialization + supplement to Window B (Execution AI)
+
+```text
+【Role】You are the development workflow executor.
+【Absolute Rules】(same as Case 1, abbreviated)
+
+【Supplement: Build from Scratch Mode】
+You will be building a project from scratch. Additional rules:
+1. INIT stage only outputs design, does not generate code
+2. Every new file must be runnable independently (at least no ImportError)
+3. Skeleton build order: config files → utility/shared modules → entry files → business modules
+4. After building each layer, verify the skeleton doesn't collapse (run/import check)
+5. Tech stack selection must wait for user confirmation before proceeding
+6. Acceptance criteria defined by user in INIT stage, checked against in VERIFY
+```
+
+---
+
+### INIT Stage
+
+#### User sends INIT instruction to Window B (Execution AI)
+
+```text
+【Stage: INIT】Build project from scratch, design skeleton first, do not modify code.
+
+Requirement: Build a command-line todo list management tool
+- Can add tasks
+- Can view all tasks
+- Can mark tasks as completed
+- Can delete tasks
+- Data stored in local JSON file
+
+Please answer:
+1. 【Tech Stack】Recommend tech stack based on requirements
+2. 【Directory Structure】Design project directory tree
+3. 【Dependency Planning】Core dependencies?
+4. 【Entry Point Design】Main entry file? Startup method?
+5. 【Config Design】What config files are needed?
+6. 【Extension Planning】Future modules that may be extended
+7. 【Acceptance Criteria】How to prove the project is "done"?
+
+Output [INIT_DONE]
+```
+
+#### Execution AI Response
+
+```text
+## INIT Project Design Plan
+
+### 1. 【Tech Stack】
+
+| Component | Choice | Rationale |
+|-----------|--------|-----------|
+| Language | Python 3.10+ | Easy to learn, rich stdlib, good for CLI tools |
+| CLI Framework | argparse (stdlib) | No extra dependencies, sufficient functionality |
+| Data Storage | JSON file | As required, lightweight, no dependencies |
+| Package Manager | pip + requirements.txt | Standard Python approach |
+
+### 2. 【Directory Structure】
+
+```
+todo-app/
+├── main.py              # Main entry (CLI interface)
+├── config.py            # Config file (data file paths etc.)
+├── storage.py           # Data storage module (JSON read/write)
+├── task.py              # Task data model
+├── commands.py          # Command handling (add/view/complete/delete)
+├── requirements.txt     # Dependency list
+└── data/                # Data directory
+    └── tasks.json       # Task data file (auto-generated at runtime)
+```
+
+### 3. 【Dependency Planning】
+
+| Dependency | Version | Required | Purpose |
+|------------|---------|----------|---------|
+| Python | 3.10+ | Yes | Runtime |
+| (no third-party deps) | - | - | All using stdlib |
+
+### 4. 【Entry Point Design】
+
+- Main entry: `main.py`
+- Startup: `python main.py <command> [args]`
+- Examples:
+  - `python main.py add "Buy milk"` — Add task
+  - `python main.py list` — View all tasks
+  - `python main.py done 1` — Mark task 1 as completed
+  - `python main.py delete 1` — Delete task 1
+
+### 5. 【Config Design】
+
+Config file: `config.py`
+
+| Config Item | Default | Description |
+|-------------|---------|-------------|
+| DATA_DIR | ./data | Data directory path |
+| TASKS_FILE | ./data/tasks.json | Task data file path |
+
+### 6. 【Extension Planning】
+
+- Future extensions: priority field, due dates, category tags
+- Reserve: `task.py` Task class can add new fields
+
+### 7. 【Acceptance Criteria】
+
+- **Functionality**: Can add tasks, view list, mark complete, delete tasks
+- **Persistence**: Data survives restart (JSON file)
+- **Error handling**: Deleting non-existent ID shows error message
+- **Verification**: Run all commands and check output
+
+[INIT_DONE]
+```
+
+#### Strategy AI Response
+
+```text
+## INIT Review Results
+
+### Step 1: Completeness Review
+- [x] All 7 questions answered
+- [x] Tech stack has specific framework and version (Python 3.10+, argparse)
+- [x] Directory structure has complete tree
+- [x] Dependency list has package names and versions (no third-party)
+- [x] Entry file and startup method clear (python main.py <command>)
+- [x] Config file checklist complete
+- [x] Acceptance criteria specific and testable
+- [x] Has [INIT_DONE] marker
+
+Review passed.
+
+### Step 2: Tech Stack Confirmation
+- Python + argparse + JSON: fits requirements, no compatibility issues
+- No third-party dependencies: simple deployment, recommend keeping
+
+### Step 3: Next-Stage Instruction
+
+【DESIGN-Architecture Design】
+
+(full instruction in prompts/en/02-design_en.md Branch C)
+```
+
+---
+
+### DESIGN Stage (from-scratch mode)
+
+(Abbreviated, flow same as Case 1 DESIGN stage)
+
+---
+
+### CONTRACT Stage (from-scratch mode)
+
+(Abbreviated, flow same as Case 1 CONTRACT stage)
+
+---
+
+### CODE Stage (from-scratch mode, layer by layer)
+
+#### Layer 1: Config Layer
+
+##### User sends CODE instruction
+
+```text
+【Stage: CODE-Skeleton-Config Layer】Create config files only. Do not touch other files.
+
+Confirmed config checklist:
+- config.py: DATA_DIR = "./data", TASKS_FILE = "./data/tasks.json"
+
+Please create config file: config.py
+
+Verification: python -c "from config import DATA_DIR, TASKS_FILE; print(DATA_DIR, TASKS_FILE)"
+
+Add [FILE_DONE: config.py]
+```
+
+##### Execution AI Response
+
+```python
+# config.py
+# Config file - define data storage paths
+
+import os
+
+# Data directory path
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+
+# Task data file path
+TASKS_FILE = os.path.join(DATA_DIR, "tasks.json")
+```
+
+```bash
+$ python -c "from config import DATA_DIR, TASKS_FILE; print(DATA_DIR, TASKS_FILE)"
+D:\todo-app\data D:\todo-app\data\tasks.json
+```
+
+```bash
+$ git add config.py
+$ git commit -m "CODE-Skeleton-Config: Create config.py, define data paths"
+```
+
+[FILE_DONE: config.py]
+
+[LAYER_DONE: Config Layer]
+
+(Strategy AI review passes, outputs next layer instruction)
+
+#### Layer 2: Utility Layer (task.py + storage.py)
+
+(Same flow, one file at a time, verify import after each)
+
+#### Layer 3: Entry Layer (main.py)
+
+(Same flow, verify `python main.py --help` works)
+
+#### Layer 4: Business Layer (commands.py)
+
+(Same flow, one file at a time)
+
+---
+
+### VERIFY Stage (from-scratch mode)
+
+#### User sends VERIFY instruction
+
+```text
+【Stage: VERIFY-From Scratch】Execute acceptance testing with progress markers.
+
+Acceptance criteria checklist (defined in INIT stage):
+1. Can add tasks and save to JSON file
+2. Can view all tasks
+3. Can mark tasks as completed
+4. Can delete tasks
+5. Data persistence (data survives restart)
+
+Please execute:
+1. 【Environment Check】Confirm all dependencies installed, config correct
+2. 【Startup Check】Start project, confirm no errors
+3. 【Acceptance 1】Add task
+4. 【Acceptance 2】View task list
+5. 【Acceptance 3】Mark task complete
+6. 【Acceptance 4】Delete task
+7. 【Acceptance 5】Restart and verify persistence
+8. 【Exception Test】Delete non-existent task ID
+9. 【Summary】Output acceptance result summary
+```
+
+#### Execution AI Response
+
+```text
+[STEP 1/9: Environment Check] ✓ Config correct, data directory exists
+
+[STEP 2/9: Startup Check] ✓ python main.py --help shows help info
+
+[STEP 3/9: Acceptance 1-Add Task] ✓
+$ python main.py add "Buy milk"
+Task added: #1 Buy milk
+
+[STEP 4/9: Acceptance 2-View Tasks] ✓
+$ python main.py list
+1. [ ] Buy milk
+
+[STEP 5/9: Acceptance 3-Mark Complete] ✓
+$ python main.py done 1
+Task completed: #1 Buy milk
+
+[STEP 6/9: Acceptance 4-Delete Task] ✓
+$ python main.py delete 1
+Task deleted: #1 Buy milk
+
+[STEP 7/9: Acceptance 5-Persistence] ✓
+$ python main.py add "Write report"
+$ python main.py list
+1. [ ] Write report
+# Data persists after restart
+
+[STEP 8/9: Exception Test] ✓
+$ python main.py delete 999
+Error: Task ID 999 not found
+
+[STEP 9/9: Summary]
+| Step | Result |
+|------|--------|
+| Environment Check | ✓ Pass |
+| Startup Check | ✓ Pass |
+| Add Task | ✓ Pass |
+| View Tasks | ✓ Pass |
+| Mark Complete | ✓ Pass |
+| Delete Task | ✓ Pass |
+| Persistence | ✓ Pass |
+| Exception Handling | ✓ Pass |
+
+All acceptance tests passed.
+```
+
+#### Strategy AI Response
+
+```text
+## VERIFY-From Scratch Analysis
+
+### Step 1: Acceptance Result Analysis
+1. 【Environment check passed?】Yes
+2. 【Startup check passed?】Yes
+3. 【Acceptance pass rate】5/5
+4. 【Exception test passed?】Yes
+5. 【Which acceptance tests failed?】None
+
+### Step 2: Next Step Decision
+All passed. Output [DONE] instruction.
+```
+
+---
+
+### DEPLOY Stage (from-scratch mode)
+
+#### User sends DEPLOY instruction
+
+```text
+【Stage: DEPLOY】Deploy to production, with progress markers.
+
+Deployment target:
+- Project: Todo List Management Tool
+- Target platform: Local (CLI tool, no remote deployment needed)
+- Deployment method: Manual install
+
+Steps:
+1. Environment check: Confirm Python ready
+2. Dependency install: No third-party deps, stdlib only
+3. Build: No build needed, skip
+4. Deploy: Copy project to target directory, configure PATH
+5. Smoke test: Run commands from new directory
+6. Monitoring: Confirm no errors
+
+Add [DEPLOY_DONE] at the end.
+```
+
+#### Execution AI Response
+
+```text
+[STEP 1/6: Environment Check] ✓
+$ python --version
+Python 3.12.0
+Environment ready.
+
+[STEP 2/6: Dependency Install] ✓
+No third-party dependencies. Stdlib only. Skipping install.
+
+[STEP 3/6: Build] ✓ Skipped (CLI tool, no build needed)
+
+[STEP 4/6: Deploy] ✓
+$ mkdir -p C:\Tools\todo-app
+$ xcopy /E /I . C:\Tools\todo-app
+7 files copied
+
+[STEP 5/6: Smoke Test] ✓
+$ cd C:\Tools\todo-app
+$ python main.py add "Deploy test task"
+Task added: #1 Deploy test task
+$ python main.py list
+1. [ ] Deploy test task
+$ python main.py delete 1
+Task deleted: #1 Deploy test task
+Functions working.
+
+[STEP 6/6: Monitoring] ✓
+No error logs, running normally.
+
+[DEPLOY_DONE]
+```
+
+#### Strategy AI Response
+
+```text
+## DEPLOY Analysis
+
+### Step 1: Deployment Result Analysis
+1. 【Environment check passed?】Yes. Python 3.12.0 ready
+2. 【Dependencies installed?】Yes. No third-party deps
+3. 【Build succeeded?】Skipped
+4. 【Deployment succeeded?】Yes. Files copied to C:\Tools\todo-app
+5. 【Smoke test passed?】Yes. Add/view/delete all working
+6. 【Monitoring normal?】Yes. No error logs
+
+### Step 2: Next Step Decision
+All steps passed. Output [DONE-From Scratch] instruction.
+```
+
+---
+
+### DONE Stage (from-scratch mode)
+
+#### User sends DONE instruction
+
+```text
+【Stage: DONE-From Scratch】Project wrap-up, complete new build.
+
+Verification passed:
+- All acceptance tests passed
+- Deployment verification passed
+
+Please execute:
+1. Complete README.md (project description, install, startup)
+2. Complete environment config docs
+3. Generate handover checklist
+4. Final archive: git add + git commit + git tag v0.1
+5. Smoke test: clone and install from scratch
+
+Add [ALL_DONE]
+```
+
+#### Execution AI Response
+
+```text
+Documentation completed:
+
+1. README.md:
+   - Project: CLI todo list management tool
+   - Install: Clone repo → no dependencies
+   - Startup: python main.py <command> [args]
+   - Usage: add/list/done/delete commands
+
+2. Environment config: No extra config needed, works out of the box
+
+3. Handover checklist:
+   - Structure: 5 Python files + data directory
+   - Key files: commands.py (core logic), storage.py (persistence)
+   - Extensions: priority, due dates, category tags
+
+4. Archive:
+   $ git add .
+   $ git commit -m "v0.1: Initial todo list management tool"
+   $ git tag v0.1
+
+5. Smoke test: Fresh clone and install verified
+
+[ALL_DONE]
+```
+
+---
+
+### Build Complete
+
+```text
+✅ Project build complete
+
+Project: Todo List Management Tool (CLI)
+Tech stack: Python 3.10+ + argparse + JSON
+Files: config.py, task.py, storage.py, commands.py, main.py
+Acceptance: All passed (add/view/complete/delete/persistence/exception handling)
+Deployment: Verified working at C:\Tools\todo-app
+
+Next: For new requirements, the project is now "existing" — restart from PROBE stage.
 ```

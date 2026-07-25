@@ -50,6 +50,41 @@ Symptoms include:
 
 ---
 
+## Two Modes
+
+### Mode A: Modify Existing Project
+
+For projects with an existing codebase that need modifications or feature enhancements.
+
+```text
+PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE
+```
+
+- PROBE: Understand current code state
+- DESIGN: Freeze modification plan
+- CONTRACT: Confirm interface contract
+- CODE: Modify files one at a time
+- VERIFY: Verify modification worked
+- DONE: Cleanup
+
+### Mode B: Build from Scratch
+
+For projects with no codebase that need to be built from the ground up.
+
+```text
+INIT → DESIGN → CONTRACT → CODE → VERIFY → DEPLOY → DONE
+```
+
+- INIT: Tech stack selection, directory structure, dependency planning
+- DESIGN: Freeze architecture design
+- CONTRACT: Design data models and API interfaces
+- CODE: Build skeleton layer by layer
+- VERIFY: Acceptance testing (based on criteria defined in INIT)
+- DEPLOY: Deploy to production, smoke test
+- DONE: Cleanup and handover
+
+---
+
 ## Directory Structure
 
 ```text
@@ -61,8 +96,8 @@ shutong-dev-workflow/
 ├── CHANGELOG.md                     # Chinese changelog
 ├── CHANGELOG_EN.md                  # English changelog
 ├── prompts/                         # Stage prompts (use in order)
-│   ├── 00-setup.md                  # Initialization
-│   ├── 01-probe.md                  # PROBE: understand current state
+│   ├── 00-setup.md                  # Initialization (with mode selection)
+│   ├── 01-probe.md                  # PROBE: understand state / INIT: from-scratch init
 │   ├── 02-design.md                 # DESIGN: freeze architecture
 │   ├── 03-contract.md               # CONTRACT: interface contract
 │   ├── 04-code.md                   # CODE: single-file changes
@@ -70,6 +105,7 @@ shutong-dev-workflow/
 │   ├── 06-done.md                   # DONE: cleanup
 │   ├── 07-exception-handling.md     # Exception handling cheat sheet
 │   ├── 08-git-safety.md            # Git safety
+│   ├── 09-deploy.md                 # DEPLOY: deploy to production (from-scratch mode)
 │   └── en/                          # English prompts
 │       ├── 00-setup_en.md
 │       ├── 01-probe_en.md
@@ -79,7 +115,8 @@ shutong-dev-workflow/
 │       ├── 05-verify_en.md
 │       ├── 06-done_en.md
 │       ├── 07-exception-handling_en.md
-│       └── 08-git-safety_en.md
+│       ├── 08-git-safety_en.md
+│       └── 09-deploy_en.md
 ├── docs/                            # Design documents
 │   ├── comparison.md                # Comparison with alternatives
 │   ├── why-two-ai.md               # Why two AIs?
@@ -87,14 +124,16 @@ shutong-dev-workflow/
 │       ├── comparison_en.md
 │       └── why-two-ai_en.md
 └── examples/
-    ├── example-session.md           # Full example session (Chinese)
+    ├── example-session.md           # Full example sessions (Chinese)
     └── en/
-        └── example-session_en.md    # Full example session (English)
+        └── example-session_en.md    # Full example sessions (English)
 ```
 
 ---
 
 ## Stage Flow
+
+### Mode A: Modify Existing Project
 
 ```text
 ┌─────────┐     ┌─────────┐     ┌──────────┐     ┌──────┐     ┌────────┐     ┌──────┐
@@ -111,8 +150,25 @@ shutong-dev-workflow/
                           VERIFY failure falls back to CODE
 ```
 
+### Mode B: Build from Scratch
+
+```text
+┌──────────┐     ┌─────────┐     ┌──────────┐     ┌──────┐     ┌────────┐     ┌────────┐     ┌──────┐
+│   INIT   │────▶│ DESIGN  │────▶│ CONTRACT │────▶│ CODE │────▶│ VERIFY │────▶│ DEPLOY │────▶│ DONE │
+│   Plan   │     │  Arch   │     │ Contract │     │Build │     │Accept  │     │Deploy  │     │Clean │
+└──────────┘     └─────────┘     └──────────┘     └──────┘     └────────┘     └────────┘     └──────┘
+                                            │           │               │
+                                            │     ┌─────┴─────┐         │
+                                            │     ▼           ▼         │
+                                            │  Config → Utility → Business │
+                                            │  Build layer by layer      │
+                                            │                           │
+                                            └───────────────────────────┘
+                                                     VERIFY failure falls back to CODE
+```
+
 At each stage:
-- Execution AI produces output + status marker (e.g. `[PROBE_DONE]`)
+- Execution AI produces output + status marker (e.g. `[INIT_DONE]`)
 - User copies it to Strategy AI for review
 - Strategy AI generates next-stage instructions
 - User copies instructions to Execution AI
@@ -130,6 +186,7 @@ At each stage:
 | Error Recovery | Restart conversation | Resume from specific step |
 | Version Control | None | Git safety (rollback) |
 | Interface Contract | None | CONTRACT stage freezes it |
+| Supported Scenarios | Modify only | **Modify + Build from scratch** |
 
 See [docs/en/comparison_en.md](docs/en/comparison_en.md)
 
@@ -141,6 +198,7 @@ See [docs/en/comparison_en.md](docs/en/comparison_en.md)
 - Users who have ideas but don't know how to communicate with AI
 - Users who have been burned by AI making things worse, and want safety guarantees
 - Teams that need repeatable, rollback-able development workflows
+- **Non-programmers who want to build a project from scratch** (v1.2)
 
 ---
 
@@ -152,6 +210,7 @@ See [docs/en/comparison_en.md](docs/en/comparison_en.md)
 4. **User is just a switch** — Confirm, rollback, next step, resume from step X — no code knowledge needed
 5. **Direction drift is more dangerous than errors** — System runs fine but logic is wrong, only PROBE+VERIFY layers can expose it
 6. **When unsure, stop** — Any anomaly at any stage: stop immediately, wait for Strategy AI judgment
+7. **From-scratch mode builds layer by layer** — Config → Utility → Business, verify each layer before proceeding (v1.2)
 
 ---
 
@@ -159,6 +218,7 @@ See [docs/en/comparison_en.md](docs/en/comparison_en.md)
 
 - **v1.0** — 7-stage complete workflow (PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE)
 - **v1.1** — Git safety, exception handling hardening, PROBE scope limiting, execution discipline
+- **v1.2** — From-scratch project mode (INIT stage, DEPLOY stage, layer-by-layer building, acceptance testing)
 
 See [CHANGELOG_EN.md](CHANGELOG_EN.md) | [CHANGELOG.md](CHANGELOG.md)
 
