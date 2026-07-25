@@ -237,7 +237,15 @@ modeA:{
 1. 【技术选型】根据需求，推荐技术栈（前端/后端/数据库/部署），说明理由
 2. 【目录结构】设计项目目录树，说明每个目录放什么
 3. 【依赖规划】核心依赖有哪些？版本建议？
-4. 【入口设计】主入口文件是什么？启动方式？
+4. 【入口层方案】项目有哪些用户交互入口？
+   - CLI 入口：是否需要？启动命令是什么？
+   - Web 入口：是否需要前端界面？
+     * 如需要，技术选型（Gradio/Streamlit/其他）及理由
+     * 前端页面包含哪些组件？（聊天框、设置面板、状态显示等）
+     * 启动方式（命令行启动后自动打开浏览器？）
+   - 如果双入口并存，它们如何复用同一套业务逻辑层？
+   - 如果只需要 CLI，明确声明"本项目无 Web 入口，确认"
+   - 启动参数（如有）
 5. 【配置设计】需要哪些配置文件？环境变量？
 6. 【扩展预留】未来可能扩展的模块，预留什么接口/目录？
 7. 【验收标准】你希望怎么证明这个项目"做完了"？功能清单、验收测试、性能要求
@@ -286,8 +294,14 @@ Please answer the following questions. Each must provide specific suggestions an
    - Suggest version numbers
    - Mark required vs optional
 
-4. [Entry Point] What is the main entry file?
-   - Startup method (CLI/script/double-click)
+4. [Entry Layer Plan] What user interaction entry points does the project have?
+   - CLI entry: Is it needed? What is the startup command?
+   - Web entry: Is a frontend UI needed?
+     * If yes, tech choice (Gradio/Streamlit/other) and rationale
+     * What components on the frontend? (chat box, settings panel, status display, etc.)
+     * Startup method (auto-open browser after CLI start?)
+   - If dual entries coexist, how do they share the same business logic layer?
+   - If CLI only, explicitly state "This project has no Web entry, confirmed"
    - Startup parameters (if any)
 
 5. [Config Design] What config files are needed?
@@ -421,6 +435,14 @@ If review passes, output [CONTRACT-Interface] instruction.
 3. 【模块接口】内部模块间的调用约定
 4. 【异常处理策略】错误码定义、降级方案
 5. 【技术选型确认】用户确认后的技术栈冻结
+5.5 【入口层契约】
+   - CLI 入口：文件路径、函数签名、启动方式
+   - Web 入口（如有）：
+     * 文件路径（如 webui.py）
+     * 前端框架及版本
+     * 页面路由/组件清单
+     * 如何调用主循环层（输入参数映射）
+   - 如果无 Web 入口，明确声明"入口层仅含 CLI，确认"
 6. 【编码纪律】禁止破坏性操作、必须遵循的规范
 
 要求：输出 [CONTRACT_DONE]`,
@@ -455,6 +477,14 @@ Please answer:
 3. [Module Interface] What are the function/method interfaces between modules?
 4. [Error Handling] How does each module handle exceptions? Error codes?
 5. [Tech Stack Confirmation] Please restate the confirmed tech stack.
+5.5 [Entry Layer Contract]
+   - CLI entry: file path, function signature, startup method
+   - Web entry (if applicable):
+     * File path (e.g. webui.py)
+     * Frontend framework and version
+     * Page routes/component list
+     * How to call the main logic layer (input parameter mapping)
+   - If no Web entry, explicitly state "Entry layer contains CLI only, confirmed"
 6. [Coding Discipline] Will coding create only one file at a time? Confirm.
 
 After confirmation, I will reply "confirm" to start building.
@@ -531,24 +561,26 @@ Requirements: Based on Layer 1 config, verify each file after creation.
 [Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
 Output [CODE_L2_DONE]`},
 
-        {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层
+        {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层（按契约确认的内容执行）
 
 请创建：
-1. 主入口文件（如 app.py, main.js 等）
-2. 路由/控制器骨架
-3. 启动脚本
+1. 如契约含 CLI 入口：创建 main.py（启动命令、参数解析）
+2. 如契约含 Web 入口：创建 webui.py（及前端相关文件）
+3. 如契约含双入口：先 CLI 后 Web，逐个创建，逐个确认
+4. 每个入口文件必须能独立运行（启动后不报错）
 
-要求：基于第1-2层，运行验证能启动不报错。
+要求：基于第1-2层，严格按契约的入口层方案执行。
 【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
 输出 [CODE_L3_DONE]`,
-         execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer
+         execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer (per contract)
 
 Please create:
-1. Main entry file (e.g. app.py, main.js)
-2. Router/controller skeleton
-3. Startup script
+1. If contract has CLI entry: create main.py (startup command, argument parsing)
+2. If contract has Web entry: create webui.py (and frontend files)
+3. If contract has dual entry: CLI first, then Web, create one by one, confirm each
+4. Each entry file must run independently (no errors on startup)
 
-Requirements: Based on Layers 1-2, verify it starts without errors.
+Requirements: Based on Layers 1-2, strictly follow the entry layer plan from CONTRACT.
 [Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
 Output [CODE_L3_DONE]`},
 
@@ -825,7 +857,7 @@ Please analyze the following deploy result from Execution AI.
 
 状态判断：通过 → 项目完成！`,
      stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查',next:'项目完成！'},
-     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成'],checksEn:['README complete','Env config docs clear','Handover checklist generated','git archive complete'],
+     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成','入口层方案已在 INIT 阶段确认（CLI/Web/双端），无遗漏'],checksEn:['README complete','Env config docs clear','Handover checklist generated','git archive complete','Entry layer plan confirmed in INIT (CLI/Web/dual), no omissions'],
     execEn:`[Stage: DONE-FromScratch] Project wrap-up, complete new build.
 
 Verification passed:
@@ -858,25 +890,15 @@ modeB:{
 5. 【技术约束】现有技术栈对新功能有什么限制？
 6. 【数据对接】新功能需要读写哪些现有数据？
 
+【特殊场景：追加入口】
+如果本次新增的是一个独立的入口文件（如 Web 前端、新的 CLI 入口）：
+- 列出当前所有已有入口文件
+- 说明新增入口与现有入口的关系（替代/并存）
+- 确认新增入口文件应放在哪个目录、命名规范是什么
+
 要求：只探测，不改代码。输出 [PROBE_DONE]`,
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'新增功能开始时',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-     strat:`【策略AI审查】探测阶段
 
-请审查以下探测结果：
-{{粘贴执行AI的返回}}
-
-审查要点：
-1. 插入点是否合理？
-2. 影响范围是否评估完整？
-3. 技术约束是否识别？
-
-状态判断：
-A. 无相关代码，需新增 → 进入「设计」
-B. 有残留/新旧混杂 → 进入「设计」（诊断分支）
-C. 功能已存在且正常 → 结束`,
-     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到探测结果后',expect:'状态判断 + 下一步指令',next:'按指令进入设计'},
-     checks:['插入点已定位','影响范围已评估','技术约束已识别'],checksEn:['Insertion point located','Impact scope assessed','Technical constraints identified'],
-    execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
+     execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
 
 Requirement: {{your requirement}}
 
@@ -896,6 +918,12 @@ Please perform a comprehensive probe of the codebase. Each answer must reference
 5. [Judgment Logic] Are related conditionals/loops batch or item-by-item? Where?
 
 6. [Extension Points] If adding a module, where should it go? What naming convention?
+
+[Special Scenario: Add Entry Point]
+If the new feature is an independent entry file (e.g. Web frontend, new CLI entry):
+- List all existing entry files
+- Explain relationship with existing entries (replace/coexist)
+- Confirm directory and naming convention for the new entry file
 
 Requirements:
 - Paste complete code of key methods (do not omit)
