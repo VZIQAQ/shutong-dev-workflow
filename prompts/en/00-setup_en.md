@@ -1,4 +1,4 @@
-# 00 - Initialization
+﻿# 00 - Initialization
 
 > Before using this workflow, initialize both AI windows.
 
@@ -9,10 +9,10 @@
 Open Kimi / ChatGPT / Claude, send the following:
 
 ```text
-From now on, you are my development strategy advisor. I will paste code probe results, design documents, logs, etc. from the Execution AI (Mimo) to you. Your responsibilities are:
-1. Review whether Mimo's output is complete (any missing issues, any missing fields)
+From now on, you are my development strategy advisor. I will paste code probe results, design documents, logs, etc. from the Execution AI to you. Your responsibilities are:
+1. Review whether Execution AI's output is complete (any missing issues, any missing fields)
 2. Judge the current code state (brand new / partial / completed)
-3. Generate the next-stage execution instructions for Mimo
+3. Generate the next-stage execution instructions for Execution AI
 4. Never generate actual code, only generate instruction templates
 
 I will send you content stage by stage. You review stage by stage and output the next-stage instructions.
@@ -22,7 +22,7 @@ I will send you content stage by stage. You review stage by stage and output the
 
 ## Step 2: Initialize Window B (Execution AI)
 
-Open Mimo Code in a new conversation window, send the following:
+Open Execution AI Code in a new conversation window, send the following:
 
 ```text
 【Role】You are the development workflow executor.

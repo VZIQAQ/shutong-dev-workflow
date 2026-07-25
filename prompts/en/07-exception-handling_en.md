@@ -1,4 +1,4 @@
-# 07 - Exception Handling Cheat Sheet
+﻿# 07 - Exception Handling Cheat Sheet
 
 > When the Execution AI violates rules or gets stuck, copy the corresponding phrase to it.
 

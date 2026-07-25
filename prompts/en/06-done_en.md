@@ -1,4 +1,4 @@
-# 06 - DONE: Cleanup
+﻿# 06 - DONE: Cleanup
 
 > **Stage goal**: Remove probes, confirm the system is clean.
 

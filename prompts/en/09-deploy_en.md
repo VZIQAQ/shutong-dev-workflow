@@ -1,4 +1,4 @@
-# 09 - DEPLOY: Deploy to Production
+﻿# 09 - DEPLOY: Deploy to Production
 
 > **Stage goal**: Deploy the verified project to production and ensure it runs correctly.
 >
@@ -79,15 +79,15 @@ You will receive deployment results with `[STEP X/6]` markers.
 
 ## Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's DEPLOY response}}` with what you copied:
+Replace `{{Execution AI's DEPLOY response}}` with what you copied:
 
 ```text
 【DEPLOY Analysis Task】
 
-Please analyze the following deployment results returned by Mimo.
+Please analyze the following deployment results returned by the Execution AI.
 
-## Mimo's DEPLOY Response:
-{{Mimo's DEPLOY response}}
+## Execution AI's DEPLOY Response:
+{{Execution AI's DEPLOY response}}
 
 ## Your Task:
 

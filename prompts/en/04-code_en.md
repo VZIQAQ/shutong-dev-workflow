@@ -1,4 +1,4 @@
-# 04 - CODE: Single-File Changes
+﻿# 04 - CODE: Single-File Changes
 
 > **Stage goal**: Modify one file at a time. After finishing one, wait for confirmation before proceeding to the next.
 >
@@ -80,15 +80,15 @@ Copy the complete response.
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's code changes}}` with what you copied:
+Replace `{{Execution AI's code changes}}` with what you copied:
 
 ```text
 【CODE Review Task】
 
-Please review the following code changes returned by Mimo.
+Please review the following code changes returned by the Execution AI.
 
-## Mimo's Code Changes:
-{{Mimo's code changes}}
+## Execution AI's Code Changes:
+{{Execution AI's code changes}}
 
 ## Your Task:
 
@@ -296,10 +296,10 @@ If verification fails, output [LAYER_FAILED: Business Layer] + failure reason
 ```text
 【CODE-Skeleton Review Task】
 
-Please review the following skeleton building results returned by Mimo.
+Please review the following skeleton building results returned by the Execution AI.
 
-## Mimo's Building Results:
-{{Mimo's building results}}
+## Execution AI's Building Results:
+{{Execution AI's building results}}
 
 ## Your Task:
 

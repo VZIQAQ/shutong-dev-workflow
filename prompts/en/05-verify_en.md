@@ -1,4 +1,4 @@
-# 05 - VERIFY: Run Verification
+﻿# 05 - VERIFY: Run Verification
 
 > **Stage goal**: Prove the modification worked — not just "no errors = correct".
 >
@@ -46,15 +46,15 @@ Copy the complete response (especially the log section).
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's VERIFY response}}` with what you copied:
+Replace `{{Execution AI's VERIFY response}}` with what you copied:
 
 ```text
 【VERIFY Analysis Task】
 
-Please analyze the following verification logs returned by Mimo.
+Please analyze the following verification logs returned by the Execution AI.
 
-## Mimo's VERIFY Response:
-{{Mimo's VERIFY response}}
+## Execution AI's VERIFY Response:
+{{Execution AI's VERIFY response}}
 
 ## Your Task:
 
@@ -130,15 +130,15 @@ You will receive acceptance results with `[STEP X/N]` markers.
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's VERIFY response}}` with what you copied:
+Replace `{{Execution AI's VERIFY response}}` with what you copied:
 
 ```text
 【VERIFY-From Scratch Analysis Task】
 
-Please analyze the following acceptance results returned by Mimo.
+Please analyze the following acceptance results returned by the Execution AI.
 
-## Mimo's VERIFY Response:
-{{Mimo's VERIFY response}}
+## Execution AI's VERIFY Response:
+{{Execution AI's VERIFY response}}
 
 ## Your Task:
 

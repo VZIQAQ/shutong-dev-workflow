@@ -1,4 +1,4 @@
-# Full Example Session
+﻿# Full Example Session
 
 > A fictional complete transformation dialogue showing dual-AI collaboration in action.
 >
@@ -99,9 +99,9 @@ User input → `chat/routes.py:send_message()` → `chat/keyword_extractor.py:ex
 ```text
 【PROBE Review Task】
 
-Please review the following PROBE results returned by Mimo and judge the code state.
+Please review the following PROBE results returned by the Execution AI and judge the code state.
 
-## Mimo's PROBE Response:
+## Execution AI's PROBE Response:
 (full content above)
 
 ## Your Task:

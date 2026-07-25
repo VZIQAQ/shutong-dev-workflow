@@ -1,4 +1,4 @@
-# 03 - CONTRACT: Interface Contract
+﻿# 03 - CONTRACT: Interface Contract
 
 > **Stage goal**: Confirm "what the new method takes as input, what it outputs, and what happens on failure" to prevent Execution AI from hallucinating field names.
 >
@@ -40,22 +40,22 @@ Copy the complete response.
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's contract confirmation}}` with what you copied:
+Replace `{{Execution AI's contract confirmation}}` with what you copied:
 
 ```text
 【CONTRACT Review Task】
 
-Please review the following contract confirmation returned by Mimo.
+Please review the following contract confirmation returned by the Execution AI.
 
-## Mimo's Contract Confirmation:
-{{Mimo's contract confirmation}}
+## Execution AI's Contract Confirmation:
+{{Execution AI's contract confirmation}}
 
 ## Your Task:
 
 ### Step 1: Consistency Review
 - [ ] Field names match the data structure found in PROBE (e.g., RelevanceDecision's field names)
 - [ ] Degradation path is clear (says "on failure call XX method")
-- [ ] Coding discipline confirmed (Mimo explicitly says "modify only one file at a time")
+- [ ] Coding discipline confirmed (Execution AI explicitly says "modify only one file at a time")
 - [ ] Has [CONTRACT_DONE] marker at the end
 
 ### Step 2: Output Next-Stage Instructions
@@ -102,15 +102,15 @@ Copy the complete response.
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's contract confirmation}}` with what you copied:
+Replace `{{Execution AI's contract confirmation}}` with what you copied:
 
 ```text
 【CONTRACT-From Scratch Review Task】
 
-Please review the following interface and data model design returned by Mimo.
+Please review the following interface and data model design returned by the Execution AI.
 
-## Mimo's Contract Confirmation:
-{{Mimo's contract confirmation}}
+## Execution AI's Contract Confirmation:
+{{Execution AI's contract confirmation}}
 
 ## Your Task:
 

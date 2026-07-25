@@ -596,10 +596,10 @@
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
-                        <pre>从现在开始，你是我的开发策略顾问。我会把执行AI（Mimo）返回的代码探测结果、设计文档、日志等贴给你。你的职责是：
-1. 审查Mimo的返回是否完整（有没有漏问题、有没有缺字段）
+                        <pre>从现在开始，你是我的开发策略顾问。我会把执行AI（执行AI）返回的代码探测结果、设计文档、日志等贴给你。你的职责是：
+1. 审查执行AI的返回是否完整（有没有漏问题、有没有缺字段）
 2. 判断当前代码状态（全新/部分/已完成）
-3. 生成下一阶段给Mimo的执行指令
+3. 生成下一阶段给执行AI的执行指令
 4. 绝不生成具体代码，只生成指令模板
 
 我会按阶段给你发内容，你按阶段审查并输出下一阶段指令。</pre>
@@ -676,7 +676,7 @@
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词" data-en="Execution AI Prompt">执行AI提示词</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span><span data-zh="PROBE - 执行AI提示词" data-en="PROBE - Execution AI Prompt">PROBE - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -726,16 +726,16 @@
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词" data-en="Strategy AI Prompt">策略AI提示词</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="PROBE - 策略AI审查" data-en="PROBE - Strategy AI Review">PROBE - 策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【PROBE审查任务】
 
-请审查以下Mimo返回的PROBE结果，并判断代码状态。
+请审查以下执行AI返回的PROBE结果，并判断代码状态。
 
-## Mimo的PROBE返回：
-{{Mimo的PROBE返回}}
+## 执行AI的PROBE返回：
+{{执行AI的PROBE返回}}
 
 ## 你的任务：
 
@@ -748,7 +748,7 @@
 - [ ] 末尾有 [PROBE_DONE] 标记
 - [ ] 如果涉及前端，PROBE有前端部分
 
-如果以上有任何一项未通过，输出【追问指令】，要求Mimo补充缺失项。
+如果以上有任何一项未通过，输出【追问指令】，要求执行AI补充缺失项。
 
 ### 第二步：状态判断（最关键）
 根据PROBE结果，判断代码处于以下哪种状态：
@@ -775,11 +775,13 @@
 
 根据状态判断，输出对应的下一阶段指令：
 
-- 如果状态A（全新）：输出【DESIGN-从零改造】指令
+- 如果状态A（全新）：输出【DESIGN-新建功能】指令
 - 如果状态B（部分）：输出【DESIGN-诊断】指令
 - 如果状态C（已完成）：输出【VERIFY-验证】指令
 
-指令必须是可直接复制给Mimo的完整提示词。</pre>
+指令必须是可直接复制给执行AI的完整提示词。
+
+> ⚡ 操作：复制上方【DESIGN-新建功能】或【DESIGN-诊断修复】指令，粘贴到执行AI窗口（窗口B）。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -814,7 +816,7 @@
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词" data-en="Execution AI Prompt">执行AI提示词</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="INIT - 执行AI提示词" data-en="INIT - Execution AI Prompt">INIT - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -873,16 +875,16 @@
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词" data-en="Strategy AI Prompt">策略AI提示词</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="INIT - 策略AI审查" data-en="INIT - Strategy AI Review">INIT - 策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【INIT审查任务】
 
-请审查以下Mimo返回的项目初始化方案。
+请审查以下执行AI返回的项目初始化方案。
 
-## Mimo的INIT返回：
-{{Mimo的INIT返回}}
+## 执行AI的INIT返回：
+{{执行AI的INIT返回}}
 
 ## 你的任务：
 
@@ -909,7 +911,9 @@
 
 ### 第三步：输出下一阶段指令
 
-如果审查通过，输出【DESIGN-架构设计】指令。</pre>
+如果审查通过，输出【DESIGN-架构设计】指令。
+
+> ⚡ 操作：复制【DESIGN-架构设计】指令，粘贴到执行AI窗口（窗口B）。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -945,7 +949,7 @@
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 从零改造（状态A）" data-en="Execution AI Prompt - Fresh Rework">执行AI提示词 - 从零改造（状态A）</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="DESIGN - 新建功能（状态A）" data-en="DESIGN - Fresh Build (State A)">DESIGN - 新建功能（状态A）</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -978,7 +982,7 @@
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 诊断（状态B）" data-en="Execution AI Prompt - Diagnosis">执行AI提示词 - 诊断（状态B）</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="DESIGN - 诊断修复（状态B）" data-en="DESIGN - Diagnosis (State B)">DESIGN - 诊断修复（状态B）</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1007,7 +1011,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 从零新建" data-en="Execution AI Prompt - New Project">执行AI提示词 - 从零新建</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="DESIGN - 架构设计" data-en="DESIGN - Architecture">DESIGN - 架构设计</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1040,16 +1044,16 @@ PROBE发现：
 
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词 - 改造模式" data-en="Strategy AI Prompt - Rework">策略AI提示词 - 改造模式</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="DESIGN - 策略AI审查" data-en="DESIGN - Strategy AI Review">DESIGN - 策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【DESIGN审查任务】
 
-请审查以下Mimo返回的DESIGN结果。
+请审查以下执行AI返回的DESIGN结果。
 
-## Mimo的DESIGN返回：
-{{Mimo的DESIGN返回}}
+## 执行AI的DESIGN返回：
+{{执行AI的DESIGN返回}}
 
 ## 你的任务：
 
@@ -1067,7 +1071,9 @@ PROBE发现：
 
 ### 第二步：输出下一阶段指令
 
-如果审查通过，输出【CONTRACT-契约确认】指令。</pre>
+如果审查通过，输出【CONTRACT-契约确认】指令。
+
+> ⚡ 操作：复制【CONTRACT-契约确认】指令，粘贴到执行AI窗口（窗口B）。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1077,16 +1083,16 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词 - 从零模式" data-en="Strategy AI Prompt - New Project">策略AI提示词 - 从零模式</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="DESIGN - 架构策略AI审查" data-en="DESIGN - Architecture Review">DESIGN - 架构策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【DESIGN-架构设计审查任务】
 
-请审查以下Mimo返回的架构设计方案。
+请审查以下执行AI返回的架构设计方案。
 
-## Mimo的架构设计返回：
-{{Mimo的架构设计返回}}
+## 执行AI的架构设计返回：
+{{执行AI的架构设计返回}}
 
 ## 你的任务：
 
@@ -1104,7 +1110,9 @@ PROBE发现：
 
 ### 第二步：输出下一阶段指令
 
-如果审查通过，输出【CONTRACT-接口契约】指令（从零模式）。</pre>
+如果审查通过，输出【CONTRACT-接口契约】指令（从零模式）。
+
+> ⚡ 操作：复制【CONTRACT-接口契约】指令，粘贴到执行AI窗口（窗口B）。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1125,7 +1133,7 @@ PROBE发现：
 
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 改造模式" data-en="Execution AI Prompt - Rework">执行AI提示词 - 改造模式</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CONTRACT - 执行AI提示词" data-en="CONTRACT - Execution AI Prompt">CONTRACT - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1157,7 +1165,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 从零新建" data-en="Execution AI Prompt - New Project">执行AI提示词 - 从零新建</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CONTRACT - 执行AI提示词" data-en="CONTRACT - Execution AI Prompt">CONTRACT - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1189,7 +1197,7 @@ PROBE发现：
                 <!-- CODE 执行提示词 -->
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 改造模式" data-en="Execution AI Prompt - Rework">执行AI提示词 - 改造模式（CODE）</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CODE - 执行AI提示词" data-en="CODE - Execution AI Prompt">CODE - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1224,7 +1232,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 配置层" data-en="Execution AI Prompt - Config Layer">执行AI提示词 - 配置层</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CODE - 配置层" data-en="CODE - Config Layer">CODE - 配置层</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1253,7 +1261,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 工具层" data-en="Execution AI Prompt - Utility Layer">执行AI提示词 - 工具层</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CODE - 工具层" data-en="CODE - Utility Layer">CODE - 工具层</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1282,7 +1290,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 入口层" data-en="Execution AI Prompt - Entry Layer">执行AI提示词 - 入口层</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CODE - 入口层" data-en="CODE - Entry Layer">CODE - 入口层</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1309,7 +1317,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 业务层" data-en="Execution AI Prompt - Business Layer">执行AI提示词 - 业务层</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="CODE - 业务层" data-en="CODE - Business Layer">CODE - 业务层</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1339,16 +1347,16 @@ PROBE发现：
 
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词 - 改造模式" data-en="Strategy AI Prompt - Rework">策略AI提示词 - 改造模式（CODE）</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="CODE - 策略AI审查" data-en="CODE - Strategy AI Review">CODE - 策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【CODE审查任务】
 
-请审查以下Mimo返回的代码修改。
+请审查以下执行AI返回的代码修改。
 
-## Mimo的代码修改：
-{{Mimo的代码修改}}
+## 执行AI的代码修改：
+{{执行AI的代码修改}}
 
 ## 你的任务：
 
@@ -1362,7 +1370,9 @@ PROBE发现：
 ### 第二步：判断下一步
 
 如果还有下一个文件要改，输出【CODE-文件N】指令。
-如果是最后一个文件，输出【VERIFY】指令。</pre>
+如果是最后一个文件，输出【VERIFY】指令。
+
+> ⚡ 操作：还有文件要改→复制【CODE-文件N】给执行AI。最后一个文件→复制【VERIFY】给执行AI。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1372,16 +1382,16 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词 - 从零模式" data-en="Strategy AI Prompt - New Project">策略AI提示词 - 从零模式</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="CODE - 骨架策略AI审查" data-en="CODE - Skeleton Review">CODE - 骨架策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【CODE-骨架审查任务】
 
-请审查以下Mimo返回的骨架搭建结果。
+请审查以下执行AI返回的骨架搭建结果。
 
-## Mimo的搭建结果：
-{{Mimo的搭建结果}}
+## 执行AI的搭建结果：
+{{执行AI的搭建结果}}
 
 ## 你的任务：
 
@@ -1395,7 +1405,9 @@ PROBE发现：
 ### 第二步：判断下一步
 - 如果本层验证通过且还有下一层：输出下一层的CODE指令
 - 如果本层验证通过且是最后一层：输出【VERIFY】指令
-- 如果本层验证失败：输出修复指令</pre>
+- 如果本层验证失败：输出修复指令
+
+> ⚡ 操作：还有下一层→复制下一层CODE指令给执行AI。最后一层→复制【VERIFY】给执行AI。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1430,7 +1442,7 @@ PROBE发现：
 
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 改造模式" data-en="Execution AI Prompt - Rework">执行AI提示词 - 改造模式</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="VERIFY - 执行AI提示词" data-en="VERIFY - Execution AI Prompt">VERIFY - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1459,7 +1471,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 从零新建" data-en="Execution AI Prompt - New Project">执行AI提示词 - 从零新建</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="VERIFY - 执行AI提示词" data-en="VERIFY - Execution AI Prompt">VERIFY - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1496,16 +1508,16 @@ PROBE发现：
 
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词 - 改造模式" data-en="Strategy AI Prompt - Rework">策略AI提示词 - 改造模式</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="VERIFY - 策略AI审查" data-en="VERIFY - Strategy AI Review">VERIFY - 策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【VERIFY分析任务】
 
-请分析以下Mimo返回的验证日志。
+请分析以下执行AI返回的验证日志。
 
-## Mimo的VERIFY返回：
-{{Mimo的VERIFY返回}}
+## 执行AI的VERIFY返回：
+{{执行AI的VERIFY返回}}
 
 ## 你的任务：
 
@@ -1524,7 +1536,9 @@ PROBE发现：
 - 如果分析节点返回空/降级触发：输出【CODE-修复】指令
 - 如果分析节点没被调用：输出【CODE-调用链修复】指令
 - 如果模型调用失败：提示用户检查模型服务
-- 如果日志完全不存在：输出【CODE-日志修复】指令</pre>
+- 如果日志完全不存在：输出【CODE-日志修复】指令
+
+> ⚡ 操作：改造生效→复制【DONE】给执行AI。需要修复→复制对应的【CODE-修复】给执行AI。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1534,16 +1548,16 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词 - 从零模式" data-en="Strategy AI Prompt - New Project">策略AI提示词 - 从零模式</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="VERIFY - 验收策略AI审查" data-en="VERIFY - Acceptance Review">VERIFY - 验收策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【VERIFY-从零分析任务】
 
-请分析以下Mimo返回的验收结果。
+请分析以下执行AI返回的验收结果。
 
-## Mimo的VERIFY返回：
-{{Mimo的VERIFY返回}}
+## 执行AI的VERIFY返回：
+{{执行AI的VERIFY返回}}
 
 ## 你的任务：
 
@@ -1565,7 +1579,9 @@ PROBE发现：
 - 如果所有验收通过：输出【DONE】指令
 - 如果有功能验收失败：输出【CODE-修复】指令
 - 如果验收标准不合理：输出调整建议，让用户确认后重新验收
-- 如果环境/配置问题：输出排查指令</pre>
+- 如果环境/配置问题：输出排查指令
+
+> ⚡ 操作：全部通过→复制【DONE】给执行AI。有失败→复制【CODE-修复】给执行AI。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1599,7 +1615,7 @@ PROBE发现：
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词" data-en="Execution AI Prompt">执行AI提示词</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="DEPLOY - 执行AI提示词" data-en="DEPLOY - Execution AI Prompt">DEPLOY - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1640,16 +1656,16 @@ PROBE发现：
 
                 <div class="content-block">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="策略AI提示词" data-en="Strategy AI Prompt">策略AI提示词</span></div>
+                        <div class="block-title"><span class="icon icon-strat">S</span> <span data-zh="DEPLOY - 策略AI审查" data-en="DEPLOY - Strategy AI Review">DEPLOY - 策略AI审查</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
                         <pre>【DEPLOY分析任务】
 
-请分析以下Mimo返回的部署结果。
+请分析以下执行AI返回的部署结果。
 
-## Mimo的DEPLOY返回：
-{{Mimo的DEPLOY返回}}
+## 执行AI的DEPLOY返回：
+{{执行AI的DEPLOY返回}}
 
 ## 你的任务：
 
@@ -1664,7 +1680,9 @@ PROBE发现：
 ### 第二步：下一步决策
 - 如果所有步骤通过：输出【ALL_DONE】指令
 - 如果部署失败：输出回滚指令
-- 如果冒烟测试失败：输出【CODE-修复】指令</pre>
+- 如果冒烟测试失败：输出【CODE-修复】指令
+
+> ⚡ 操作：全部通过→复制【DONE】给执行AI。部署失败→确认是否回滚。</pre>
                     </div>
                     <div class="prompt-desc">
                         <strong>用途</strong>
@@ -1703,7 +1721,7 @@ PROBE发现：
 
                 <div class="content-block mode-rework-only">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 改造模式" data-en="Execution AI Prompt - Rework">执行AI提示词 - 改造模式</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="DONE - 执行AI提示词" data-en="DONE - Execution AI Prompt">DONE - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">
@@ -1728,7 +1746,7 @@ PROBE发现：
 
                 <div class="content-block mode-new-only hidden">
                     <div class="block-header">
-                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="执行AI提示词 - 从零新建" data-en="Execution AI Prompt - New Project">执行AI提示词 - 从零新建</span></div>
+                        <div class="block-title"><span class="icon icon-exec">E</span> <span data-zh="DONE - 执行AI提示词" data-en="DONE - Execution AI Prompt">DONE - 执行AI提示词</span></div>
                         <button class="copy-btn" onclick="copyContent(this)">一键复制</button>
                     </div>
                     <div class="block-body">

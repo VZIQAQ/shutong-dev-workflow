@@ -1,4 +1,4 @@
-# 08 - Git Safety
+﻿# 08 - Git Safety
 
 > **Core idea**: Git rollback is the only reliable safety net. Without Git, if you break it, it's broken.
 

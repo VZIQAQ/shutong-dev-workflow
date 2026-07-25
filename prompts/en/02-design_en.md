@@ -1,4 +1,4 @@
-# 02 - DESIGN: Freeze Architecture
+﻿# 02 - DESIGN: Freeze Architecture
 
 > **Stage goal**: Confirm "what it will look like after modification", "how to verify", and "how to rollback if it fails".
 >
@@ -6,7 +6,7 @@
 
 ---
 
-## Branch A: State A (Brand New) → DESIGN-Build from Scratch
+## Branch A: State A (Brand New) → DESIGN-Fresh Build
 
 > For: PROBE judged as State A (no related new code at all)
 
@@ -46,10 +46,10 @@ Copy the complete response.
 ```text
 【DESIGN Review Task】
 
-Please review the following DESIGN results returned by Mimo.
+Please review the following DESIGN results returned by the Execution AI.
 
-## Mimo's DESIGN Response:
-{{Mimo's DESIGN response}}
+## Execution AI's DESIGN Response:
+{{Execution AI's DESIGN response}}
 
 ## Your Task:
 
@@ -108,10 +108,10 @@ Copy the complete response.
 ```text
 【DESIGN-Diagnosis Review Task】
 
-Please review the following diagnosis plan returned by Mimo.
+Please review the following diagnosis plan returned by the Execution AI.
 
-## Mimo's Diagnosis Plan:
-{{Mimo's diagnosis plan}}
+## Execution AI's Diagnosis Plan:
+{{Execution AI's diagnosis plan}}
 
 ## Your Task:
 
@@ -169,10 +169,10 @@ Copy the complete response.
 ```text
 【DESIGN-Architecture Design Review Task】
 
-Please review the following architecture design plan returned by Mimo.
+Please review the following architecture design plan returned by the Execution AI.
 
-## Mimo's Architecture Design Response:
-{{Mimo's architecture design response}}
+## Execution AI's Architecture Design Response:
+{{Execution AI's architecture design response}}
 
 ## Your Task:
 

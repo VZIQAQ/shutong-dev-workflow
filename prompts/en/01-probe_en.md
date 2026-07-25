@@ -1,4 +1,4 @@
-# 01 - PROBE / INIT: Understand Current State / Initialize from Scratch
+﻿# 01 - PROBE / INIT: Understand Current State / Initialize from Scratch
 
 > **PROBE stage goal**: Have the Execution AI investigate "how is this currently implemented" in the codebase, to prevent building on wrong assumptions.
 > **INIT stage goal**: Design the project skeleton from scratch, confirm tech stack, directory structure, and dependency planning.
@@ -66,15 +66,15 @@ Copy the complete response.
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's PROBE response}}` with what you copied:
+Replace `{{Execution AI's PROBE response}}` with what you copied:
 
 ```text
 【PROBE Review Task】
 
-Please review the following PROBE results returned by Mimo and judge the code state.
+Please review the following PROBE results returned by the Execution AI and judge the code state.
 
-## Mimo's PROBE Response:
-{{Mimo's PROBE response}}
+## Execution AI's PROBE Response:
+{{Execution AI's PROBE response}}
 
 ## Your Task:
 
@@ -87,7 +87,7 @@ Check the following items, mark pass or fail:
 - [ ] Has [PROBE_DONE] marker at the end
 - [ ] If frontend is involved, PROBE includes frontend section
 
-If any item fails, output a 【Follow-up Instruction】 asking Mimo to supplement the missing items.
+If any item fails, output a 【Follow-up Instruction】 asking the Execution AI to supplement the missing items.
 
 ### Step 2: State Judgment (Most Critical)
 Based on PROBE results, determine which state the code is in:
@@ -114,11 +114,11 @@ And provide judgment basis (cite specific evidence from PROBE).
 
 Based on state judgment, output the corresponding next-stage instruction:
 
-- If State A (brand new): Output [DESIGN-Build from scratch] instruction (see 02-design_en.md Branch A)
+- If State A (brand new): Output [DESIGN-Fresh Build] instruction (see 02-design_en.md Branch A)
 - If State B (partial): Output [DESIGN-Diagnosis] instruction (see 02-design_en.md Branch B)
 - If State C (completed): Output [VERIFY-Verify] instruction (see 05-verify_en.md)
 
-The instruction must be a complete prompt that can be directly copied to Mimo.
+The instruction must be a complete prompt that can be directly copied to the Execution AI.
 ```
 
 ### After Strategy AI Review Passes
@@ -195,15 +195,15 @@ Copy the complete response.
 
 ### Strategy AI Prompt (send to Window A)
 
-Replace `{{Mimo's INIT response}}` with what you copied:
+Replace `{{Execution AI's INIT response}}` with what you copied:
 
 ```text
 【INIT Review Task】
 
-Please review the following project initialization plan returned by Mimo.
+Please review the following project initialization plan returned by the Execution AI.
 
-## Mimo's INIT Response:
-{{Mimo's INIT response}}
+## Execution AI's INIT Response:
+{{Execution AI's INIT response}}
 
 ## Your Task:
 
@@ -232,7 +232,7 @@ If there are issues, point them out and suggest corrections.
 
 If review passes, output [DESIGN-Architecture Design] instruction (see 02-design_en.md Branch C).
 
-The instruction must be a complete prompt that can be directly copied to Mimo.
+The instruction must be a complete prompt that can be directly copied to the Execution AI.
 ```
 
 ### After Strategy AI Review Passes
