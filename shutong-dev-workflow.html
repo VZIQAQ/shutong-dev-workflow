@@ -47,10 +47,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
 .step-num{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px}
 .step-title{font-size:22px;font-weight:700;margin-bottom:4px}
 .step-desc{font-size:14px;color:var(--text2)}
-.step-tip{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--text2);font-size:11px;cursor:help;margin-left:8px;position:relative;vertical-align:middle}
-.step-tip:hover{background:var(--accent);color:#fff}
-.step-tip .tip-text{display:none;position:absolute;top:calc(100% + 8px);left:0;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);white-space:normal;width:260px;line-height:1.6;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.4);font-weight:400}
-.step-tip:hover .tip-text{display:block}
+.step-tip{display:none}
 /* 使用说明 */
 .usage{margin:16px 20px;padding:14px 16px;border:1px dashed var(--border);border-radius:8px;font-size:13px;line-height:1.9}
 .usage .ul{font-weight:700;margin-right:4px}
@@ -210,7 +207,7 @@ const P={
 modeA:{
   name:'从零新建项目',theme:'green',themeCls:'th-a',
   steps:[
-    {id:'init',name:'初始化',desc:'确定技术选型、目录结构和验收标准',
+    {id:'init',name:'初始化',desc:'跟AI聊清楚用什么技术、怎么组织文件、做完怎么验收',
      exec:`【阶段：初始化】从零新建项目，先搭建骨架，不改代码。
 
 需求：{{你的项目需求}}
@@ -246,7 +243,7 @@ modeA:{
      stratU:{to:'窗口A（策略AI）',when:'收到初始化方案后',expect:'审查结论 + 下一步指令',next:'进入「设计」阶段'},
      checks:['技术选型匹配项目需求','目录结构符合最佳实践','依赖版本稳定且兼容','验收标准具体可验证']},
 
-    {id:'design',name:'设计',desc:'设计数据流、骨架顺序和模块依赖',
+    {id:'design',name:'设计',desc:'画清楚数据怎么流转、先搭什么后搭什么',
      exec:`【阶段：设计】从零新建项目的架构设计
 
 基于初始化方案，请设计：
@@ -276,7 +273,7 @@ modeA:{
      stratU:{to:'窗口A（策略AI）',when:'收到设计方案后',expect:'审查结论',next:'进入「契约」阶段'},
      checks:['数据流设计完整','骨架搭建顺序合理','模块依赖无循环','风险点已识别']},
 
-    {id:'contract',name:'契约',desc:'确认接口定义、数据结构和编码纪律',
+    {id:'contract',name:'契约',desc:'把接口、字段、规则定死，防止AI乱写',
      exec:`【阶段：契约】从零新建项目的接口与数据模型设计
 
 请设计：
@@ -306,7 +303,7 @@ modeA:{
      stratU:{to:'窗口A（策略AI）',when:'收到契约设计后',expect:'审查结论',next:'进入「编码」阶段'},
      checks:['接口定义清晰','数据结构完整','异常处理已定义','编码纪律已确认']},
 
-    {id:'code',name:'编码',desc:'逐层搭建代码骨架',isLayered:true,
+    {id:'code',name:'编码',desc:'一层一层搭，配置→工具→入口→业务',isLayered:true,
      layers:[
        {name:'配置层',exec:`【阶段：编码 - 第1层：配置层】搭建配置层
 
@@ -358,7 +355,7 @@ modeA:{
      stratU:{to:'窗口A（策略AI）',when:'每层编码结果后',expect:'每层审查结论',next:'通过进入下一层，全部完成后进入验证'},
      checks:['代码符合契约','无破坏性操作','运行验证通过']},
 
-    {id:'verify',name:'验证',desc:'按验收标准逐项检查功能',
+    {id:'verify',name:'验证',desc:'照着验收清单一个个测',
      exec:`【阶段：验证】从零新建项目的功能验收
 
 按INIT阶段定义的验收条件逐项检查：
@@ -383,7 +380,7 @@ modeA:{
      stratU:{to:'窗口A（策略AI）',when:'收到验收结果后',expect:'审查结论',next:'通过进入部署，不通过回退编码'},
      checks:['功能清单全部验证','异常场景已测试','验收结果有结论']},
 
-    {id:'deploy',name:'部署',desc:'环境检查、依赖安装、上线部署',
+    {id:'deploy',name:'部署',desc:'部署到服务器，跑通冒烟测试',
      exec:`【阶段：部署】部署上线
 
 步骤清单：
@@ -416,7 +413,7 @@ modeA:{
      stratU:{to:'窗口A（策略AI）',when:'收到部署结果后',expect:'审查结论',next:'通过进入完成'},
      checks:['环境检查通过','依赖安装成功','冒烟测试通过','回退策略已确认']},
 
-    {id:'done',name:'完成',desc:'补全文档、归档、收尾',
+    {id:'done',name:'完成',desc:'写README、打tag、收尾',
      exec:`【阶段：完成】项目收尾，完成新建
 
 1. 补全项目文档：README.md（项目说明、安装步骤、启动方式）
@@ -445,7 +442,7 @@ modeA:{
 modeB:{
   name:'新增功能/模块',theme:'blue',themeCls:'th-b',
   steps:[
-    {id:'probe',name:'探测',desc:'定位插入点，评估影响范围',
+    {id:'probe',name:'探测',desc:'找到代码里该插在哪、改了会影响什么',
      exec:`【阶段：探测】新增功能，定位插入点
 
 目标功能：{{你要新增的功能}}
@@ -477,7 +474,7 @@ C. 功能已存在且正常 → 结束`,
      stratU:{to:'窗口A（策略AI）',when:'收到探测结果后',expect:'状态判断 + 下一步指令',next:'按指令进入设计'},
      checks:['插入点已定位','影响范围已评估','技术约束已识别']},
 
-    {id:'design',name:'设计',desc:'设计新增架构和对接方案',
+    {id:'design',name:'设计',desc:'想清楚新功能怎么加、怎么跟现有代码对接',
      exec:`【阶段：设计】新增功能的架构设计
 
 请设计：
@@ -506,7 +503,7 @@ C. 功能已存在且正常 → 结束`,
      stratU:{to:'窗口A（策略AI）',when:'收到设计方案后',expect:'审查结论',next:'进入契约'},
      checks:['新增架构清晰','对接方案可行','回退策略已定义']},
 
-    {id:'contract',name:'契约',desc:'确认新增接口和编码纪律',
+    {id:'contract',name:'契约',desc:'定好新接口的字段和规则',
      exec:`【阶段：契约】新增功能的接口确认
 
 请确认：
@@ -535,7 +532,7 @@ C. 功能已存在且正常 → 结束`,
      stratU:{to:'窗口A（策略AI）',when:'收到契约后',expect:'审查结论',next:'进入编码'},
      checks:['新增接口清晰','数据变更有评估','降级路径已定义','编码纪律已确认']},
 
-    {id:'code',name:'编码',desc:'按契约实现新增功能',
+    {id:'code',name:'编码',desc:'按约定写代码，一个文件一个文件来',
      exec:`【阶段：编码】新增功能实现
 
 请按契约实现：
@@ -562,7 +559,7 @@ C. 功能已存在且正常 → 结束`,
      stratU:{to:'窗口A（策略AI）',when:'收到编码结果后',expect:'审查结论',next:'进入验证'},
      checks:['按契约实现','无破坏性操作','运行验证通过']},
 
-    {id:'verify',name:'验证',desc:'验证新增功能和回归测试',
+    {id:'verify',name:'验证',desc:'测新功能能不能用、老功能有没有坏',
      exec:`【阶段：验证】新增功能验证
 
 1. 【功能验证】新增功能是否按契约工作
@@ -587,7 +584,7 @@ C. 功能已存在且正常 → 结束`,
      stratU:{to:'窗口A（策略AI）',when:'收到验证结果后',expect:'审查结论',next:'通过进入完成'},
      checks:['新增功能验证通过','回归验证通过','异常场景已测试']},
 
-    {id:'done',name:'完成',desc:'清理、文档更新、git提交',
+    {id:'done',name:'完成',desc:'清理临时代码、更新文档、提交',
      exec:`【阶段：完成】新增功能收尾
 
 1. 代码清理：删除临时文件、注释
@@ -615,7 +612,7 @@ C. 功能已存在且正常 → 结束`,
 modeC:{
   name:'修复现有问题',theme:'orange',themeCls:'th-c',
   steps:[
-    {id:'probe',name:'探测',desc:'诊断问题症状和影响范围',
+    {id:'probe',name:'探测',desc:'搞清楚问题表现、影响多大',
      exec:`【阶段：探测】诊断现有问题
 
 问题描述：{{你发现的问题}}
@@ -647,7 +644,7 @@ C. 非代码问题 → 直接给出修复建议`,
      stratU:{to:'窗口A（策略AI）',when:'收到诊断结果后',expect:'状态判断 + 下一步指令',next:'按指令执行'},
      checks:['症状描述清晰','影响范围已评估','根因已初步定位']},
 
-    {id:'design',name:'设计',desc:'分析根因，设计最小化修复方案',
+    {id:'design',name:'设计',desc:'找到根本原因，想个最小改动的修复办法',
      exec:`【阶段：设计】诊断修复方案
 
 请设计：
@@ -676,7 +673,7 @@ C. 非代码问题 → 直接给出修复建议`,
      stratU:{to:'窗口A（策略AI）',when:'收到修复方案后',expect:'审查结论',next:'进入契约'},
      checks:['根因分析准确','修复方案最小化','回退方案已定义']},
 
-    {id:'contract',name:'契约',desc:'确认修复范围和数据安全',
+    {id:'contract',name:'契约',desc:'定好改哪些文件、不影响数据',
      exec:`【阶段：契约】修复问题的接口确认
 
 请确认：
@@ -704,7 +701,7 @@ C. 非代码问题 → 直接给出修复建议`,
      stratU:{to:'窗口A（策略AI）',when:'收到契约后',expect:'审查结论',next:'进入编码'},
      checks:['修复范围最小化','接口变更已评估','数据安全性已确认']},
 
-    {id:'code',name:'编码',desc:'按契约最小化修复',
+    {id:'code',name:'编码',desc:'按约定改代码，尽量少动',
      exec:`【阶段：编码】修复问题
 
 请按契约修复：
@@ -730,7 +727,7 @@ C. 非代码问题 → 直接给出修复建议`,
      stratU:{to:'窗口A（策略AI）',when:'收到修复结果后',expect:'审查结论',next:'进入验证'},
      checks:['按契约修复','无超出范围修改','运行验证通过']},
 
-    {id:'verify',name:'验证',desc:'验证原问题修复和回归',
+    {id:'verify',name:'验证',desc:'确认问题解决了、没引入新问题',
      exec:`【阶段：验证】修复验证
 
 1. 【问题修复验证】原问题是否已解决
@@ -755,7 +752,7 @@ C. 非代码问题 → 直接给出修复建议`,
      stratU:{to:'窗口A（策略AI）',when:'收到验证结果后',expect:'审查结论',next:'通过进入完成'},
      checks:['原问题已解决','回归验证通过','边界条件已测试']},
 
-    {id:'done',name:'完成',desc:'清理、提交、修复摘要',
+    {id:'done',name:'完成',desc:'清理、提交、写修复说明',
      exec:`【阶段：完成】修复收尾
 
 1. 代码清理
