@@ -496,7 +496,9 @@ If review passes, output [CODE-Skeleton1] instruction.
 2. 依赖清单（requirements.txt, package.json 等）
 3. 基础配置加载代码
 
-要求：每个文件创建后必须能独立运行。输出 [CODE_L1_DONE]`,
+要求：每个文件创建后必须能独立运行。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_L1_DONE]`,
          execEn:`[Stage: CODE - Layer 1: Config] Build config layer
 
 Please create:
@@ -504,7 +506,10 @@ Please create:
 2. Dependency list (requirements.txt, package.json)
 3. Basic config loading code
 
-Requirements: Each file must run independently after creation. Output [CODE_L1_DONE]`},
+Requirements: Each file must run independently after creation.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_L1_DONE]`},
+
         {name:'工具层',nameEn:'Utility Layer',exec:`【阶段：编码 - 第2层：工具层】搭建工具层
 
 请创建：
@@ -512,7 +517,9 @@ Requirements: Each file must run independently after creation. Output [CODE_L1_D
 2. 日志工具
 3. 通用工具函数
 
-要求：基于第1层配置，每个文件创建后运行验证。输出 [CODE_L2_DONE]`,
+要求：基于第1层配置，每个文件创建后运行验证。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_L2_DONE]`,
          execEn:`[Stage: CODE - Layer 2: Utility] Build utility layer
 
 Please create:
@@ -520,7 +527,10 @@ Please create:
 2. Logging utility
 3. Common utility functions
 
-Requirements: Based on Layer 1 config, verify each file after creation. Output [CODE_L2_DONE]`},
+Requirements: Based on Layer 1 config, verify each file after creation.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_L2_DONE]`},
+
         {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层
 
 请创建：
@@ -528,7 +538,9 @@ Requirements: Based on Layer 1 config, verify each file after creation. Output [
 2. 路由/控制器骨架
 3. 启动脚本
 
-要求：基于第1-2层，运行验证能启动不报错。输出 [CODE_L3_DONE]`,
+要求：基于第1-2层，运行验证能启动不报错。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_L3_DONE]`,
          execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer
 
 Please create:
@@ -536,7 +548,10 @@ Please create:
 2. Router/controller skeleton
 3. Startup script
 
-Requirements: Based on Layers 1-2, verify it starts without errors. Output [CODE_L3_DONE]`},
+Requirements: Based on Layers 1-2, verify it starts without errors.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_L3_DONE]`},
+
         {name:'业务层',nameEn:'Business Layer',exec:`【阶段：编码 - 第4层：业务层】实现业务逻辑
 
 请创建：
@@ -544,7 +559,9 @@ Requirements: Based on Layers 1-2, verify it starts without errors. Output [CODE
 2. 接口实现
 3. 前端页面（如需要）
 
-要求：基于第1-3层，逐文件实现。每完成一个文件运行验证。输出 [CODE_DONE]`,
+要求：基于第1-3层，逐文件实现。每完成一个文件运行验证。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_DONE]`,
          execEn:`[Stage: CODE - Layer 4: Business] Implement business logic
 
 Please create:
@@ -552,7 +569,9 @@ Please create:
 2. Interface implementations
 3. Frontend pages (if needed)
 
-Requirements: Based on Layers 1-3, implement file by file. Verify each file after creation. Output [CODE_DONE]`}
+Requirements: Based on Layers 1-3, implement file by file. Verify each file after creation.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_DONE]`}
       ],
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'每层代码 + 验证 + 层完成标记',expectEn:'Layer code + verification + layer done marker',next:'每层完成后复制给策略AI审查'},
      strat:`【策略AI审查】编码阶段
@@ -578,6 +597,7 @@ Requirements: Based on Layers 1-3, implement file by file. Verify each file afte
 3. After creating each file, must git add + git commit
 4. Never git push --force, git reset --hard
 5. Never git add .
+6. [Contract Conflict] If user instruction conflicts with CONTRACT (files, fields, interfaces, tech stack), STOP immediately, point out the difference, wait for confirmation. Never choose the "more reasonable" option on your own.
 
 Confirmed config list:
 {{paste config file list from Contract}}
@@ -1053,7 +1073,9 @@ If review passes, output [CODE-File1] instruction.
 3. 每完成一个文件运行验证
 4. 新增功能代码标注
 
-要求：禁止超出契约范围的修改。输出 [CODE_DONE]`,
+要求：禁止超出契约范围的修改。
+【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
+输出 [CODE_DONE]`,
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】编码阶段
 
@@ -1079,6 +1101,7 @@ If review passes, output [CODE-File1] instruction.
 4. If modification fails, must git checkout to rollback
 5. Never git push --force, git reset --hard
 6. Never git add .
+7. [Contract Conflict] If user instruction conflicts with CONTRACT (files, fields, interfaces, tech stack), STOP immediately, point out the difference, wait for confirmation. Never choose the "more reasonable" option on your own.
 
 {{Create/Modify}} file: {{file path}}
 Goal: {{specific feature description}}
@@ -1437,7 +1460,9 @@ If review passes, output [CODE-Fix] instruction.
 2. 实施修复（严格按契约范围）
 3. 运行验证
 
-要求：禁止超出契约范围的修改。输出 [CODE_DONE]`,
+要求：禁止超出契约范围的修改。
+【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
+输出 [CODE_DONE]`,
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'修复代码 + [CODE_DONE]',expectEn:'Fix code + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】编码阶段
 
@@ -1463,6 +1488,7 @@ If review passes, output [CODE-Fix] instruction.
 4. If modification fails, must git checkout to rollback
 5. Never git push --force, git reset --hard
 6. Never git add .
+7. [Contract Conflict] If user instruction conflicts with CONTRACT (files, fields, interfaces, tech stack), STOP immediately, point out the difference, wait for confirmation. Never choose the "more reasonable" option on your own.
 
 Modify file: {{file path}}
 Fix goal: {{specific fix description}}
