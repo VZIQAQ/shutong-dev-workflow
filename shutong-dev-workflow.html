@@ -203,23 +203,23 @@ body.th-c{--accent:#f97316;--accent-hi:#fb923c}
 <div class="np-toggle" onclick="toggleNP()" id="npToggle">◀</div>
 <div class="np-panel" id="npPanel">
   <div class="np-head">
-    <h3>${lang==='zh'?'📋 记事本':'📋 Notepad'} <span style="cursor:pointer;margin-left:8px;font-size:16px" onclick="toggleNP()">✕</span></h3>
+    <h3><span id="npTitle">📋 记事本</span> <span style="cursor:pointer;margin-left:8px;font-size:16px" onclick="toggleNP()">✕</span></h3>
     <div class="np-tabs">
-      <button class="np-tab ${npType==='req'?'on':''}" onclick="setNPType('req')">${t('npReq')}</button>
-      <button class="np-tab ${npType==='note'?'on':''}" onclick="setNPType('note')">${t('npNote')}</button>
+      <button class="np-tab on" id="npTabReq" onclick="setNPType('req')">需求</button>
+      <button class="np-tab" id="npTabNote" onclick="setNPType('note')">笔记</button>
     </div>
   </div>
   <div class="np-actions">
-    <button onclick="addNP()">${t('npNew')}</button>
-    <button onclick="exportNP()">${t('npExport')}</button>
+    <button onclick="addNP()" id="npNewBtn">＋ 新建</button>
+    <button onclick="exportNP()" id="npExpBtn">📥 导出</button>
   </div>
   <div class="np-list" id="npList"></div>
 </div>
 
 <div class="actionbar" id="actionBar" style="display:none">
-  <button class="abtn" id="btnPrev" onclick="goPrev()">${t('prev')}</button>
-  <button class="abtn branch" id="btnBranch" onclick="doBranch()">${t('insert')}</button>
-  <button class="abtn primary" id="btnNext" onclick="goNext()">${t('next')}</button>
+  <button class="abtn" id="btnPrev" onclick="goPrev()">⬅️ 上一步</button>
+  <button class="abtn branch" id="btnBranch" onclick="doBranch()">➕ 插入新需求</button>
+  <button class="abtn primary" id="btnNext" onclick="goNext()">下一步 ➡️</button>
 </div>
 
 <script>
@@ -1621,6 +1621,12 @@ function render(){
   document.getElementById('expBtn').textContent=t('exp');
   document.getElementById('impBtn').textContent=t('imp');
   document.getElementById('rstBtn').textContent=t('reset');
+  document.getElementById('npTitle').textContent=lang==='zh'?'📋 记事本':'📋 Notepad';
+  document.getElementById('npTabReq').textContent=t('npReq');
+  document.getElementById('npTabNote').textContent=t('npNote');
+  document.getElementById('npNewBtn').textContent=t('npNew');
+  document.getElementById('npExpBtn').textContent=t('npExport');
+  renderNP();
   if(!S){renderWelcome();return}
   if(S.isPreReview){
     document.body.className=P[S.mode].themeCls;
@@ -2018,6 +2024,8 @@ function updateActionBtns(){
   const btnNext=document.getElementById('btnNext');
   const btnBranch=document.getElementById('btnBranch');
   btnPrev.disabled=S.step===0&&S.layer===0;
+  btnPrev.textContent=t('prev');
+  btnBranch.textContent=t('insert');
   const isLastStep=S.step===m.steps.length-1;
   const isLastLayer=!s.isLayered||S.layer===s.layers.length-1;
   btnNext.textContent=isLastStep&&isLastLayer?t('done'):t('next');
