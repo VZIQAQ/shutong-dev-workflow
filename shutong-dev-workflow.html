@@ -616,7 +616,56 @@ Please review the following skeleton build result from Execution AI.
 - 全部通过 → 进入「部署」
 - 部分不通过 → 回退到「编码」修复`,
      stratU:{to:'窗口A（策略AI）',when:'收到验收结果后',expect:'审查结论',next:'通过进入部署，不通过回退编码'},
-     checks:['功能清单全部验证','异常场景已测试','验收结果有结论']},
+     checks:['功能清单全部验证','异常场景已测试','验收结果有结论'],
+    execEn:`[Stage: VERIFY-FromScratch] Execute acceptance testing with progress markers.
+
+[Execution Rules]
+- After each step, output [STEP X/N: step_name]
+- If failed, output [STEP X/N FAILED: reason] and stop
+- VERIFY stage only runs, does not modify code
+
+Acceptance criteria checklist (defined in Init):
+{{list acceptance criteria from Init}}
+
+Please execute the following acceptance steps:
+1. [Environment Check] Confirm all dependencies installed, config files correct
+2. [Startup Check] Start project, confirm no errors, service ready
+3. [Acceptance Test 1] {{criterion 1}} - Execute, record result
+4. [Acceptance Test 2] {{criterion 2}} - Execute, record result
+5. [Acceptance Test N] {{criterion N}} - Execute, record result
+6. [Exception Test] Deliberately trigger exceptions, verify error handling per Contract
+7. [Summary] Output acceptance result summary table
+
+Output format per step:
+[STEP X/N: step_name] ✓ Pass / ✗ Fail (reason)
+
+Begin execution.`,
+    stratEn:`[VERIFY-FromScratch Analysis Task]
+
+Please analyze the following acceptance results from Execution AI.
+
+## Execution AI VERIFY Response:
+{{Execution AI VERIFY Response}}
+
+## Your Task:
+
+### Step 1: Acceptance Result Analysis
+1. [Environment check passed?] Yes/No. Evidence:
+2. [Startup check passed?] Yes/No. Evidence:
+3. [Acceptance pass rate] Passed X/N
+4. [Exception test passed?] Yes/No. Evidence:
+5. [Which acceptance tests failed?] List failures and reasons
+
+### Step 2: Root Cause Judgment
+For each failure, analyze root cause
+
+### Step 3: Next Step Decision
+- If all acceptance passed: output [DEPLOY] instruction
+- If acceptance failures: output [CODE-Fix] instruction (back to Code)
+
+[Review Passed! Next Step]
+-> All pass: go to Deploy stage
+-> Failures: back to Code stage to fix`},
 
     {id:'deploy',name:'部署',desc:'部署到服务器，跑通冒烟测试',
      exec:`【阶段：部署】部署上线
@@ -649,7 +698,57 @@ Please review the following skeleton build result from Execution AI.
 
 如通过，进入「完成」阶段`,
      stratU:{to:'窗口A（策略AI）',when:'收到部署结果后',expect:'审查结论',next:'通过进入完成'},
-     checks:['环境检查通过','依赖安装成功','冒烟测试通过','回退策略已确认']},
+     checks:['环境检查通过','依赖安装成功','冒烟测试通过','回退策略已确认'],
+    execEn:`[Stage: DEPLOY] Deploy to production with progress markers.
+
+[Execution Rules]
+- After each step, output [STEP X/6: step_name]
+- If failed, output [STEP X/6 FAILED: reason] and stop
+- DEPLOY stage only deploys, does not modify business code
+
+Deploy target:
+- Project: {{project name}}
+- Target platform: {{server/cloud/local}}
+- Method: {{manual/automatic}}
+
+Step checklist:
+1. [Environment Check] Confirm target environment ready, env vars configured
+2. [Dependency Install] install project dependencies in target environment
+3. [Build and Package] (if build step exists) execute build
+4. [Deploy Execution] execute deployment per method
+5. [Smoke Test] access production URL, verify core functionality
+6. [Monitoring Check] confirm log output normal (no ERROR)
+
+[Rollback Strategy]
+- On deploy failure: {{rollback method}}
+- On critical bug: {{emergency rollback}}
+
+Output [DEPLOY_DONE]
+Begin execution.`,
+    stratEn:`[DEPLOY Analysis Task]
+
+Please analyze the following deploy result from Execution AI.
+
+## Execution AI DEPLOY Response:
+{{Execution AI DEPLOY Response}}
+
+## Your Task:
+
+### Step 1: Deploy Result Analysis
+1. [Environment check passed?] Yes/No
+2. [Dependencies installed?] Yes/No
+3. [Build succeeded?] Yes/No/Skipped
+4. [Deploy executed?] Yes/No
+5. [Smoke test passed?] Yes/No
+6. [Monitoring normal?] Yes/No
+
+### Step 2: Next Step Decision
+- If all passed: output [DONE-FromScratch] instruction
+- If deploy failed: output rollback instruction
+- If smoke test failed: output [CODE-Fix] instruction
+
+[Review Passed! Next Step]
+-> All pass: go to Done stage`},
 
     {id:'done',name:'完成',desc:'写README、打tag、收尾',
      exec:`【阶段：完成】项目收尾，完成新建
