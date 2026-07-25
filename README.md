@@ -163,8 +163,7 @@
 
 ```text
 shutong-dev-workflow/
-├── shutong-dev-workflow.html      # 中文版交互页面（主文件，双击打开即用）
-├── shutong-dev-workflow_en.html   # English version
+├── shutong-dev-workflow.html      # 交互页面（主文件，双击打开即用，内置中英双语）
 ├── README.md                      # 本文件
 ├── README_EN.md                   # English README
 ├── prompts/                       # 提示词参考文档（Markdown 备份）
@@ -195,6 +194,7 @@ shutong-dev-workflow/
 - ✨ 键盘快捷键：方向键和Enter快速导航
 - ✨ 响应式设计：适配桌面、平板、手机
 - ✨ 文档预审：已有MVP文档时先审查质量，10维度评分后决定进入阶段
+- ✨ 中英双语切换：顶栏一键切换中文/英文，提示词、UI、记事本全部切换
 
 ### v1.2
 

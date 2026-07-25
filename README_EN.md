@@ -163,8 +163,7 @@ While in "Code" step, click "Insert New Requirement"
 
 ```text
 shutong-dev-workflow/
-├── shutong-dev-workflow.html      # Chinese interactive page (main file, double-click to use)
-├── shutong-dev-workflow_en.html   # English version
+├── shutong-dev-workflow.html      # Interactive page (main file, built-in bilingual)
 ├── README.md                      # Chinese README
 ├── README_EN.md                   # This file
 ├── prompts/                       # Prompt reference docs (Markdown backup)
@@ -195,6 +194,7 @@ shutong-dev-workflow/
 - ✨ Keyboard shortcuts: arrow keys and Enter for quick navigation
 - ✨ Responsive design: adapts to desktop, tablet, mobile
 - ✨ Document pre-review: review MVP document quality with 10-dimension scoring before entering workflow
+- ✨ Bilingual switch: toggle Chinese/English with one click, prompts, UI, notepad all switch
 
 ### v1.2
 
