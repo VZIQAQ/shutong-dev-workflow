@@ -42,14 +42,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans
 /* 主内容 */
 .main{max-width:860px;margin:0 auto;padding:20px 20px 120px}
 /* 步骤卡片 */
-.step-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
-.step-head{padding:20px 24px;border-bottom:1px solid var(--border)}
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:20px}
+.step-head{padding:20px 24px;border-bottom:1px solid var(--border);overflow:visible}
 .step-num{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px}
 .step-title{font-size:22px;font-weight:700;margin-bottom:4px}
 .step-desc{font-size:14px;color:var(--text2)}
 .step-tip{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--text2);font-size:11px;cursor:help;margin-left:8px;position:relative;vertical-align:middle}
 .step-tip:hover{background:var(--accent);color:#fff}
-.step-tip .tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);white-space:normal;width:260px;line-height:1.6;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.4);font-weight:400}
+.step-tip .tip-text{display:none;position:absolute;top:calc(100% + 8px);left:0;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);white-space:normal;width:260px;line-height:1.6;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.4);font-weight:400}
 .step-tip:hover .tip-text{display:block}
 /* 使用说明 */
 .usage{margin:16px 20px;padding:14px 16px;border:1px dashed var(--border);border-radius:8px;font-size:13px;line-height:1.9}
