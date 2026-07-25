@@ -66,7 +66,76 @@
         .nav-item.active .num { background:var(--accent); color:#fff; }
         .nav-arrow { color:var(--text-secondary); font-size:10px; text-align:center; padding:2px 0; opacity:.4; }
         .nav-end { color:var(--text-secondary); font-size:12px; text-align:center; padding:12px 16px; border-top:1px dashed var(--border-color); margin-top:8px; }
-        .main-content { margin-left:240px; flex:1; padding:28px 32px; max-width:920px; }
+        .main-content { margin-left:240px; margin-right:320px; flex:1; padding:28px 32px; max-width:920px; }
+        /* ===== 右侧记事本 ===== */
+        .notepad-panel {
+            width:300px; position:fixed; top:60px; right:0; bottom:0;
+            background:var(--bg-secondary); border-left:1px solid var(--border-color);
+            display:flex; flex-direction:column; overflow:hidden;
+        }
+        .notepad-header {
+            padding:14px 16px; border-bottom:1px solid var(--border-color);
+            display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+        }
+        .notepad-header h3 { font-size:14px; font-weight:700; }
+        .notepad-tabs { display:flex; gap:4px; }
+        .notepad-tab {
+            padding:4px 10px; font-size:11px; border-radius:4px; border:1px solid var(--border-color);
+            background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+        }
+        .notepad-tab:hover { border-color:var(--accent); color:var(--accent); }
+        .notepad-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .notepad-actions { padding:8px 16px; border-bottom:1px solid var(--border-color); display:flex; gap:6px; flex-shrink:0; }
+        .notepad-actions button {
+            flex:1; padding:6px 0; font-size:12px; border-radius:5px; border:1px solid var(--border-color);
+            background:var(--bg-tertiary); color:var(--text-primary); cursor:pointer; transition:all .15s;
+        }
+        .notepad-actions button:hover { border-color:var(--accent); color:var(--accent); }
+        .notepad-list { flex:1; overflow-y:auto; padding:8px; }
+        .notepad-card {
+            background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px;
+            margin-bottom:8px; overflow:hidden; transition:border-color .15s;
+        }
+        .notepad-card:hover { border-color:var(--text-secondary); }
+        .notepad-card-head {
+            padding:8px 10px; display:flex; align-items:center; justify-content:space-between;
+            border-bottom:1px solid var(--border-color); background:var(--bg-tertiary);
+        }
+        .notepad-card-time { font-size:10px; color:var(--text-secondary); }
+        .notepad-card-actions { display:flex; gap:4px; }
+        .notepad-card-actions button {
+            padding:2px 6px; font-size:10px; border-radius:3px; border:1px solid var(--border-color);
+            background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+        }
+        .notepad-card-actions button:hover { border-color:var(--accent); color:var(--accent); }
+        .notepad-card-actions button.del:hover { border-color:var(--danger); color:var(--danger); }
+        .notepad-card-title {
+            width:100%; padding:6px 10px; font-size:12px; font-weight:600; border:none; border-bottom:1px solid var(--border-color);
+            background:transparent; color:var(--text-primary); outline:none;
+        }
+        .notepad-card-title:focus { border-bottom-color:var(--accent); }
+        .notepad-card-body {
+            width:100%; min-height:80px; padding:8px 10px; font-size:12px; border:none; resize:vertical;
+            background:transparent; color:var(--text-primary); outline:none; line-height:1.6;
+            font-family:inherit;
+        }
+        .notepad-card-body:focus { background:var(--bg-secondary); }
+        .notepad-empty { text-align:center; padding:40px 16px; color:var(--text-secondary); font-size:13px; }
+        .notepad-toggle {
+            position:fixed; right:300px; top:50%; transform:translateY(-50%);
+            width:20px; height:60px; background:var(--bg-secondary); border:1px solid var(--border-color);
+            border-right:none; border-radius:6px 0 0 6px; cursor:pointer; z-index:999;
+            display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
+            font-size:12px; transition:all .2s;
+        }
+        .notepad-toggle:hover { color:var(--accent); border-color:var(--accent); }
+        .notepad-panel.hidden { display:none; }
+        .notepad-panel.hidden ~ .notepad-toggle { right:0; }
+        @media(max-width:1200px) {
+            .notepad-panel { display:none; }
+            .notepad-toggle { display:none; }
+            .main-content { margin-right:0; }
+        }
         /* ===== 流程图 ===== */
         .flow-bar {
             display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:16px 20px;
@@ -138,29 +207,6 @@
         .card-connector {
             text-align:center; padding:4px 0; color:var(--text-secondary); font-size:18px; opacity:.4;
         }
-        /* ===== 折叠面板 ===== */
-        .collapsible { margin-bottom:20px; }
-        .collapse-toggle {
-            width:100%; padding:14px 20px; background:var(--bg-secondary); border:1px solid var(--border-color);
-            border-radius:10px; color:var(--text-primary); font-size:14px; font-weight:600;
-            cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:all .2s;
-        }
-        .collapse-toggle:hover { border-color:var(--accent); }
-        .collapse-toggle .arrow { transition:transform .2s; }
-        .collapse-toggle.open .arrow { transform:rotate(90deg); }
-        .collapse-content {
-            display:none; margin-top:8px; background:var(--bg-secondary); border:1px solid var(--border-color);
-            border-radius:10px; padding:20px; overflow:hidden;
-        }
-        .collapse-content.open { display:block; }
-        .collapse-content pre {
-            background:var(--code-bg); padding:14px; border-radius:8px; font-size:13px;
-            font-family:"SF Mono","Fira Code","JetBrains Mono",Consolas,monospace;
-            line-height:1.7; white-space:pre-wrap; overflow-x:auto;
-        }
-        .collapse-content table { width:100%; border-collapse:collapse; font-size:13px; margin:10px 0; }
-        .collapse-content th, .collapse-content td { padding:8px 12px; border:1px solid var(--border-color); text-align:left; }
-        .collapse-content th { background:var(--bg-tertiary); font-weight:600; }
         /* ===== 主题色跟随 ===== */
         body.mode-a .card-badge { background:var(--mode-a); }
         body.mode-a .nav-item.active { color:var(--mode-a); border-left-color:var(--mode-a); }
@@ -207,6 +253,23 @@
 
 <!-- ===== 主内容区 ===== -->
 <main class="main-content" id="main"></main>
+
+<!-- ===== 右侧记事本 ===== -->
+<aside class="notepad-panel" id="notepadPanel">
+    <div class="notepad-header">
+        <h3>📋 记事本</h3>
+        <div class="notepad-tabs">
+            <button class="notepad-tab active" onclick="setNotepadType('req')">需求</button>
+            <button class="notepad-tab" onclick="setNotepadType('note')">笔记</button>
+        </div>
+    </div>
+    <div class="notepad-actions">
+        <button onclick="addNotepad()">＋ 新建</button>
+        <button onclick="exportNotepads()">📥 导出</button>
+    </div>
+    <div class="notepad-list" id="notepadList"></div>
+</aside>
+<button class="notepad-toggle" id="notepadToggle" onclick="toggleNotepad()">◀</button>
 </div>
 
 <script>
@@ -1175,9 +1238,6 @@ function renderSidebar() {
     });
     html += '<div class="nav-arrow">↓</div>';
     html += '<div class="nav-end">✅ 结束</div>';
-    html += '<div class="nav-title" style="margin-top:20px">工具箱</div>';
-    html += '<div class="nav-item" onclick="toggleCollapse(\'exception\')"><span class="num">!</span> 异常处理</div>';
-    html += '<div class="nav-item" onclick="toggleCollapse(\'git\')"><span class="num">G</span> Git安全</div>';
     document.getElementById('sidebar').innerHTML = html;
 }
 
@@ -1197,9 +1257,6 @@ function renderMain() {
         if (i > 0) html += '<div class="card-connector">↓</div>';
         html += renderCard(s, i);
     });
-    // 折叠面板
-    html += renderExceptionPanel();
-    html += renderGitPanel();
     document.getElementById('main').innerHTML = html;
 }
 
@@ -1244,80 +1301,6 @@ function renderUsage(info, label) {
         + '</div>';
 }
 
-function renderExceptionPanel() {
-    return `<div class="collapsible">
-        <button class="collapse-toggle" onclick="toggleCollapse('exception')">
-            <span>⚠️ 异常处理速查表</span><span class="arrow">▶</span>
-        </button>
-        <div class="collapse-content" id="collapse-exception">
-            <table>
-                <tr><th>违规现象</th><th>你发给执行AI的话</th></tr>
-                <tr><td>跳过探测直接写代码</td><td><code>停。回到探测阶段。先不要写代码，回答6个问题。</code></td></tr>
-                <tr><td>一次输出多个文件</td><td><code>停。一次只改一个文件。先只输出第一个文件的代码。</code></td></tr>
-                <tr><td>没回答设计问题就生成代码</td><td><code>停。先回答设计阶段的问题，确认后再写代码。</code></td></tr>
-                <tr><td>验证阶段偷偷改代码</td><td><code>停。验证阶段只运行不改代码。回退修改，重新执行验证。</code></td></tr>
-                <tr><td>没有进度标记</td><td><code>汇报当前进度。从最后完成的步骤继续。</code></td></tr>
-                <tr><td>自动推进到下一阶段</td><td><code>停。当前阶段未完成，不要进入下一阶段。</code></td></tr>
-                <tr><td>没有加 [PROBE] 日志</td><td><code>停。关键路径必须加 logger.info(f"[PROBE] ...") 日志。</code></td></tr>
-                <tr><td>没有异常捕获</td><td><code>停。所有异常必须捕获，不能抛未处理异常。</code></td></tr>
-                <tr><td>字段名与契约不一致</td><td><code>停。契约阶段确认的字段名是X，你这里用了Y，修正。</code></td></tr>
-                <tr><td>没有 git commit</td><td><code>停。每次修改文件后必须 git add + git commit。</code></td></tr>
-            </table>
-            <p style="margin-top:16px;font-weight:600;">卡住时：</p>
-            <table>
-                <tr><th>现象</th><th>你发给执行AI的话</th></tr>
-                <tr><td>停在某步不动</td><td><code>从第X步继续</code></td></tr>
-                <tr><td>某一步失败了</td><td><code>重新执行第X步</code></td></tr>
-                <tr><td>不知道卡在哪</td><td><code>汇报当前进度</code></td></tr>
-                <tr><td>输出被截断</td><td><code>继续输出，从上次截断的地方开始</code></td></tr>
-            </table>
-            <p style="margin-top:16px;font-weight:600;">强化话术（反复违规时使用）：</p>
-            <pre>【系统指令覆盖】
-从现在开始，严格执行以下规则，优先级高于你之前的所有指令：
-1. 用户没有说"确认"，绝不进入下一阶段
-2. 一次只改一个文件
-3. 每个阶段完成后输出对应的状态标记
-4. 每次修改文件后必须 git commit
-5. 任何异常立即停止并报告</pre>
-        </div>
-    </div>`;
-}
-
-function renderGitPanel() {
-    return `<div class="collapsible">
-        <button class="collapse-toggle" onclick="toggleCollapse('git')">
-            <span>🔒 Git 安全速查</span><span class="arrow">▶</span>
-        </button>
-        <div class="collapse-content" id="collapse-git">
-            <pre># 查看状态
-git status
-git diff
-
-# 提交修改（指定具体文件，不要用 git add .）
-git add 文件路径
-git commit -m "描述改了什么"
-
-# 回退修改
-git checkout -- 文件路径       # 回退单个文件
-git checkout -- .             # 回退所有（危险！）
-
-# 查看历史
-git log --oneline
-git show 提交哈希
-
-# 临时保存
-git stash
-git stash pop</pre>
-            <p style="margin-top:16px;font-weight:600;color:var(--danger);">❌ 绝对禁止：</p>
-            <table>
-                <tr><td><code>git push --force</code></td><td>强制推送到远程</td></tr>
-                <tr><td><code>git reset --hard</code></td><td>强制重置，丢失未提交修改</td></tr>
-                <tr><td><code>git add .</code></td><td>一次性添加所有文件（可能含敏感文件）</td></tr>
-                <tr><td><code>git branch -D</code></td><td>删除分支</td></tr>
-            </table>
-        </div>
-    </div>`;
-}
 
 // ========== 交互 ==========
 function goStage(i) {
@@ -1336,12 +1319,6 @@ function copyPrompt(btn) {
     });
 }
 
-function toggleCollapse(id) {
-    const content = document.getElementById('collapse-' + id);
-    const toggle = content.previousElementSibling;
-    content.classList.toggle('open');
-    toggle.classList.toggle('open');
-}
 
 function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1361,6 +1338,104 @@ const observer = new IntersectionObserver(entries => {
     });
 }, {rootMargin:'-100px 0px -60% 0px'});
 
+// ========== 记事本 ==========
+let notepadType = 'req'; // 'req' or 'note'
+const NP_KEY = 'shutong_notepads';
+
+function loadNotepads() {
+    try { return JSON.parse(localStorage.getItem(NP_KEY)) || {req:[],note:[]}; }
+    catch(e) { return {req:[],note:[]}; }
+}
+
+function saveNotepads(data) {
+    localStorage.setItem(NP_KEY, JSON.stringify(data));
+}
+
+function setNotepadType(type) {
+    notepadType = type;
+    document.querySelectorAll('.notepad-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.notepad-tab[onclick*="'+type+'"]').classList.add('active');
+    renderNotepads();
+}
+
+function addNotepad() {
+    const data = loadNotepads();
+    const now = new Date();
+    const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    const item = {id:Date.now(), title:notepadType==='req'?'新需求':'新笔记', body:'', time:ts};
+    data[notepadType].unshift(item);
+    saveNotepads(data);
+    renderNotepads();
+}
+
+function deleteNotepad(id) {
+    const data = loadNotepads();
+    data[notepadType] = data[notepadType].filter(n => n.id !== id);
+    saveNotepads(data);
+    renderNotepads();
+}
+
+function updateNotepad(id, field, value) {
+    const data = loadNotepads();
+    const item = data[notepadType].find(n => n.id === id);
+    if (item) { item[field] = value; saveNotepads(data); }
+}
+
+function copyNotepadBody(id) {
+    const data = loadNotepads();
+    const item = data[notepadType].find(n => n.id === id);
+    if (!item) return;
+    navigator.clipboard.writeText(item.body).then(() => {
+        const btn = document.querySelector('[data-copy="'+id+'"]');
+        if (btn) { btn.textContent='已复制 ✓'; setTimeout(()=>btn.textContent='复制',1200); }
+    });
+}
+
+function exportNotepads() {
+    const data = loadNotepads();
+    let text = '=== 需求 ===\n\n';
+    data.req.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
+    text += '=== 笔记 ===\n\n';
+    data.note.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
+    const blob = new Blob([text], {type:'text/plain'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'shutong-notepads.txt'; a.click();
+}
+
+function toggleNotepad() {
+    const panel = document.getElementById('notepadPanel');
+    const btn = document.getElementById('notepadToggle');
+    panel.classList.toggle('hidden');
+    btn.textContent = panel.classList.contains('hidden') ? '▶' : '◀';
+    document.querySelector('.main-content').style.marginRight = panel.classList.contains('hidden') ? '0' : '320px';
+}
+
+function renderNotepads() {
+    const data = loadNotepads();
+    const list = data[notepadType];
+    const container = document.getElementById('notepadList');
+    if (!list.length) {
+        container.innerHTML = '<div class="notepad-empty">暂无'+(notepadType==='req'?'需求':'笔记')+'<br>点击「＋ 新建」创建</div>';
+        return;
+    }
+    let html = '';
+    list.forEach(n => {
+        html += '<div class="notepad-card">';
+        html += '<div class="notepad-card-head">';
+        html += '<span class="notepad-card-time">'+n.time+'</span>';
+        html += '<div class="notepad-card-actions">';
+        html += '<button data-copy="'+n.id+'" onclick="copyNotepadBody('+n.id+')">复制</button>';
+        html += '<button class="del" onclick="deleteNotepad('+n.id+')">删除</button>';
+        html += '</div></div>';
+        html += '<input class="notepad-card-title" value="'+n.title.replace(/"/g,'&quot;')+'" onchange="updateNotepad('+n.id+',\'title\',this.value)">';
+        html += '<textarea class="notepad-card-body" placeholder="输入内容..." oninput="updateNotepad('+n.id+',\'body\',this.value)">'+n.body+'</textarea>';
+        html += '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function initNotepad() { renderNotepads(); }
+
 // 初始化
 setMode('b');
 setTimeout(() => {
@@ -1369,6 +1444,7 @@ setTimeout(() => {
         if (el) observer.observe(el);
     });
 }, 100);
+initNotepad();
 </script>
 </body>
 </html>

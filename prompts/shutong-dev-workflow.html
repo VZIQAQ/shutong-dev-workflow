@@ -66,7 +66,76 @@
         .nav-item.active .num { background:var(--accent); color:#fff; }
         .nav-arrow { color:var(--text-secondary); font-size:10px; text-align:center; padding:2px 0; opacity:.4; }
         .nav-end { color:var(--text-secondary); font-size:12px; text-align:center; padding:12px 16px; border-top:1px dashed var(--border-color); margin-top:8px; }
-        .main-content { margin-left:240px; flex:1; padding:28px 32px; max-width:920px; }
+        .main-content { margin-left:240px; margin-right:320px; flex:1; padding:28px 32px; max-width:920px; }
+        /* ===== 右侧记事本 ===== */
+        .notepad-panel {
+            width:300px; position:fixed; top:60px; right:0; bottom:0;
+            background:var(--bg-secondary); border-left:1px solid var(--border-color);
+            display:flex; flex-direction:column; overflow:hidden;
+        }
+        .notepad-header {
+            padding:14px 16px; border-bottom:1px solid var(--border-color);
+            display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+        }
+        .notepad-header h3 { font-size:14px; font-weight:700; }
+        .notepad-tabs { display:flex; gap:4px; }
+        .notepad-tab {
+            padding:4px 10px; font-size:11px; border-radius:4px; border:1px solid var(--border-color);
+            background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+        }
+        .notepad-tab:hover { border-color:var(--accent); color:var(--accent); }
+        .notepad-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .notepad-actions { padding:8px 16px; border-bottom:1px solid var(--border-color); display:flex; gap:6px; flex-shrink:0; }
+        .notepad-actions button {
+            flex:1; padding:6px 0; font-size:12px; border-radius:5px; border:1px solid var(--border-color);
+            background:var(--bg-tertiary); color:var(--text-primary); cursor:pointer; transition:all .15s;
+        }
+        .notepad-actions button:hover { border-color:var(--accent); color:var(--accent); }
+        .notepad-list { flex:1; overflow-y:auto; padding:8px; }
+        .notepad-card {
+            background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px;
+            margin-bottom:8px; overflow:hidden; transition:border-color .15s;
+        }
+        .notepad-card:hover { border-color:var(--text-secondary); }
+        .notepad-card-head {
+            padding:8px 10px; display:flex; align-items:center; justify-content:space-between;
+            border-bottom:1px solid var(--border-color); background:var(--bg-tertiary);
+        }
+        .notepad-card-time { font-size:10px; color:var(--text-secondary); }
+        .notepad-card-actions { display:flex; gap:4px; }
+        .notepad-card-actions button {
+            padding:2px 6px; font-size:10px; border-radius:3px; border:1px solid var(--border-color);
+            background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+        }
+        .notepad-card-actions button:hover { border-color:var(--accent); color:var(--accent); }
+        .notepad-card-actions button.del:hover { border-color:var(--danger); color:var(--danger); }
+        .notepad-card-title {
+            width:100%; padding:6px 10px; font-size:12px; font-weight:600; border:none; border-bottom:1px solid var(--border-color);
+            background:transparent; color:var(--text-primary); outline:none;
+        }
+        .notepad-card-title:focus { border-bottom-color:var(--accent); }
+        .notepad-card-body {
+            width:100%; min-height:80px; padding:8px 10px; font-size:12px; border:none; resize:vertical;
+            background:transparent; color:var(--text-primary); outline:none; line-height:1.6;
+            font-family:inherit;
+        }
+        .notepad-card-body:focus { background:var(--bg-secondary); }
+        .notepad-empty { text-align:center; padding:40px 16px; color:var(--text-secondary); font-size:13px; }
+        .notepad-toggle {
+            position:fixed; right:300px; top:50%; transform:translateY(-50%);
+            width:20px; height:60px; background:var(--bg-secondary); border:1px solid var(--border-color);
+            border-right:none; border-radius:6px 0 0 6px; cursor:pointer; z-index:999;
+            display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
+            font-size:12px; transition:all .2s;
+        }
+        .notepad-toggle:hover { color:var(--accent); border-color:var(--accent); }
+        .notepad-panel.hidden { display:none; }
+        .notepad-panel.hidden ~ .notepad-toggle { right:0; }
+        @media(max-width:1200px) {
+            .notepad-panel { display:none; }
+            .notepad-toggle { display:none; }
+            .main-content { margin-right:0; }
+        }
         /* ===== 流程图 ===== */
         .flow-bar {
             display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:16px 20px;
@@ -184,6 +253,23 @@
 
 <!-- ===== 主内容区 ===== -->
 <main class="main-content" id="main"></main>
+
+<!-- ===== 右侧记事本 ===== -->
+<aside class="notepad-panel" id="notepadPanel">
+    <div class="notepad-header">
+        <h3>📋 记事本</h3>
+        <div class="notepad-tabs">
+            <button class="notepad-tab active" onclick="setNotepadType('req')">需求</button>
+            <button class="notepad-tab" onclick="setNotepadType('note')">笔记</button>
+        </div>
+    </div>
+    <div class="notepad-actions">
+        <button onclick="addNotepad()">＋ 新建</button>
+        <button onclick="exportNotepads()">📥 导出</button>
+    </div>
+    <div class="notepad-list" id="notepadList"></div>
+</aside>
+<button class="notepad-toggle" id="notepadToggle" onclick="toggleNotepad()">◀</button>
 </div>
 
 <script>
@@ -1252,6 +1338,104 @@ const observer = new IntersectionObserver(entries => {
     });
 }, {rootMargin:'-100px 0px -60% 0px'});
 
+// ========== 记事本 ==========
+let notepadType = 'req'; // 'req' or 'note'
+const NP_KEY = 'shutong_notepads';
+
+function loadNotepads() {
+    try { return JSON.parse(localStorage.getItem(NP_KEY)) || {req:[],note:[]}; }
+    catch(e) { return {req:[],note:[]}; }
+}
+
+function saveNotepads(data) {
+    localStorage.setItem(NP_KEY, JSON.stringify(data));
+}
+
+function setNotepadType(type) {
+    notepadType = type;
+    document.querySelectorAll('.notepad-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.notepad-tab[onclick*="'+type+'"]').classList.add('active');
+    renderNotepads();
+}
+
+function addNotepad() {
+    const data = loadNotepads();
+    const now = new Date();
+    const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    const item = {id:Date.now(), title:notepadType==='req'?'新需求':'新笔记', body:'', time:ts};
+    data[notepadType].unshift(item);
+    saveNotepads(data);
+    renderNotepads();
+}
+
+function deleteNotepad(id) {
+    const data = loadNotepads();
+    data[notepadType] = data[notepadType].filter(n => n.id !== id);
+    saveNotepads(data);
+    renderNotepads();
+}
+
+function updateNotepad(id, field, value) {
+    const data = loadNotepads();
+    const item = data[notepadType].find(n => n.id === id);
+    if (item) { item[field] = value; saveNotepads(data); }
+}
+
+function copyNotepadBody(id) {
+    const data = loadNotepads();
+    const item = data[notepadType].find(n => n.id === id);
+    if (!item) return;
+    navigator.clipboard.writeText(item.body).then(() => {
+        const btn = document.querySelector('[data-copy="'+id+'"]');
+        if (btn) { btn.textContent='已复制 ✓'; setTimeout(()=>btn.textContent='复制',1200); }
+    });
+}
+
+function exportNotepads() {
+    const data = loadNotepads();
+    let text = '=== 需求 ===\n\n';
+    data.req.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
+    text += '=== 笔记 ===\n\n';
+    data.note.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
+    const blob = new Blob([text], {type:'text/plain'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'shutong-notepads.txt'; a.click();
+}
+
+function toggleNotepad() {
+    const panel = document.getElementById('notepadPanel');
+    const btn = document.getElementById('notepadToggle');
+    panel.classList.toggle('hidden');
+    btn.textContent = panel.classList.contains('hidden') ? '▶' : '◀';
+    document.querySelector('.main-content').style.marginRight = panel.classList.contains('hidden') ? '0' : '320px';
+}
+
+function renderNotepads() {
+    const data = loadNotepads();
+    const list = data[notepadType];
+    const container = document.getElementById('notepadList');
+    if (!list.length) {
+        container.innerHTML = '<div class="notepad-empty">暂无'+(notepadType==='req'?'需求':'笔记')+'<br>点击「＋ 新建」创建</div>';
+        return;
+    }
+    let html = '';
+    list.forEach(n => {
+        html += '<div class="notepad-card">';
+        html += '<div class="notepad-card-head">';
+        html += '<span class="notepad-card-time">'+n.time+'</span>';
+        html += '<div class="notepad-card-actions">';
+        html += '<button data-copy="'+n.id+'" onclick="copyNotepadBody('+n.id+')">复制</button>';
+        html += '<button class="del" onclick="deleteNotepad('+n.id+')">删除</button>';
+        html += '</div></div>';
+        html += '<input class="notepad-card-title" value="'+n.title.replace(/"/g,'&quot;')+'" onchange="updateNotepad('+n.id+',\'title\',this.value)">';
+        html += '<textarea class="notepad-card-body" placeholder="输入内容..." oninput="updateNotepad('+n.id+',\'body\',this.value)">'+n.body+'</textarea>';
+        html += '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function initNotepad() { renderNotepads(); }
+
 // 初始化
 setMode('b');
 setTimeout(() => {
@@ -1260,6 +1444,7 @@ setTimeout(() => {
         if (el) observer.observe(el);
     });
 }, 100);
+initNotepad();
 </script>
 </body>
 </html>
