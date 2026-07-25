@@ -1,0 +1,1450 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Shutong Dev Workflow v2.0</title>
+ <style>
+ :root {
+ --bg-primary: #0d1117;
+ --bg-secondary: #161b22;
+ --bg-tertiary: #21262d;
+ --border-color: #30363d;
+ --text-primary: #c9d1d9;
+ --text-secondary: #8b949e;
+ --accent: #58a6ff;
+ --accent-hover: #79c0ff;
+ --success: #3fb950;
+ --warning: #d29922;
+ --danger: #f85149;
+ --code-bg: #1e2530;
+ --mode-a: #3fb950; /* - build from scratch */
+ --mode-b: #58a6ff; /* - add feature */
+ --mode-c: #d29922; /* - fixissue */
+ }
+ * { margin:0; padding:0; box-sizing:border-box; }
+ body {
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+ background: var(--bg-primary); color: var(--text-primary); line-height:1.6; overflow-x:hidden;
+ }
+ /* ===== ===== */
+ .top-bar {
+ position:fixed; top:0; left:0; right:0; height:60px;
+ background:var(--bg-secondary); border-bottom:1px solid var(--border-color);
+ display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000;
+ }
+ .logo { font-size:17px; font-weight:700; display:flex; align-items:center; gap:8px; }
+ .logo .ver { font-size:11px; color:var(--text-secondary); font-weight:400; background:var(--bg-tertiary); padding:2px 6px; border-radius:4px; }
+ .mode-tabs { display:flex; gap:8px; }
+ .mode-btn {
+ padding:8px 16px; border-radius:8px; border:2px solid var(--border-color);
+ background:var(--bg-tertiary); color:var(--text-primary); cursor:pointer;
+ font-size:13px; font-weight:600; transition:all .2s; white-space:nowrap;
+ }
+ .mode-btn:hover { border-color:var(--text-secondary); }
+ .mode-btn.active-a { border-color:var(--mode-a); background:rgba(63,185,80,.12); color:var(--mode-a); }
+ .mode-btn.active-b { border-color:var(--mode-b); background:rgba(88,166,255,.12); color:var(--mode-b); }
+ .mode-btn.active-c { border-color:var(--mode-c); background:rgba(210,153,34,.12); color:var(--mode-c); }
+ /* ===== ===== */
+ .layout { display:flex; margin-top:60px; min-height:calc(100vh - 60px); }
+ .sidebar {
+ width:240px; background:var(--bg-secondary); border-right:1px solid var(--border-color);
+ position:fixed; top:60px; bottom:0; overflow-y:auto; padding:16px 0;
+ }
+ .nav-title { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); padding:8px 16px; margin-bottom:4px; }
+ .nav-item {
+ display:flex; align-items:center; gap:10px; padding:10px 16px; cursor:pointer;
+ color:var(--text-secondary); font-size:13px; transition:all .15s; border-left:3px solid transparent;
+ }
+ .nav-item:hover { background:var(--bg-tertiary); color:var(--text-primary); }
+ .nav-item.active { background:rgba(88,166,255,.08); color:var(--accent); border-left-color:var(--accent); }
+ .nav-item .num {
+ display:inline-flex; align-items:center; justify-content:center;
+ width:22px; height:22px; border-radius:5px; background:var(--bg-tertiary);
+ font-size:11px; font-weight:700; flex-shrink:0;
+ }
+ .nav-item.active .num { background:var(--accent); color:#fff; }
+ .nav-arrow { color:var(--text-secondary); font-size:10px; text-align:center; padding:2px 0; opacity:.4; }
+ .nav-end { color:var(--text-secondary); font-size:12px; text-align:center; padding:12px 16px; border-top:1px dashed var(--border-color); margin-top:8px; }
+ .main-content { margin-left:240px; margin-right:320px; flex:1; padding:28px 32px; max-width:920px; }
+ /* ===== ===== */
+ .notepad-panel {
+ width:300px; position:fixed; top:60px; right:0; bottom:0;
+ background:var(--bg-secondary); border-left:1px solid var(--border-color);
+ display:flex; flex-direction:column; overflow:hidden;
+ }
+ .notepad-header {
+ padding:14px 16px; border-bottom:1px solid var(--border-color);
+ display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+ }
+ .notepad-header h3 { font-size:14px; font-weight:700; }
+ .notepad-tabs { display:flex; gap:4px; }
+ .notepad-tab {
+ padding:4px 10px; font-size:11px; border-radius:4px; border:1px solid var(--border-color);
+ background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+ }
+ .notepad-tab:hover { border-color:var(--accent); color:var(--accent); }
+ .notepad-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+ .notepad-actions { padding:8px 16px; border-bottom:1px solid var(--border-color); display:flex; gap:6px; flex-shrink:0; }
+ .notepad-actions button {
+ flex:1; padding:6px 0; font-size:12px; border-radius:5px; border:1px solid var(--border-color);
+ background:var(--bg-tertiary); color:var(--text-primary); cursor:pointer; transition:all .15s;
+ }
+ .notepad-actions button:hover { border-color:var(--accent); color:var(--accent); }
+ .notepad-list { flex:1; overflow-y:auto; padding:8px; }
+ .notepad-card {
+ background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px;
+ margin-bottom:8px; overflow:hidden; transition:border-color .15s;
+ }
+ .notepad-card:hover { border-color:var(--text-secondary); }
+ .notepad-card-head {
+ padding:8px 10px; display:flex; align-items:center; justify-content:space-between;
+ border-bottom:1px solid var(--border-color); background:var(--bg-tertiary);
+ }
+ .notepad-card-time { font-size:10px; color:var(--text-secondary); }
+ .notepad-card-actions { display:flex; gap:4px; }
+ .notepad-card-actions button {
+ padding:2px 6px; font-size:10px; border-radius:3px; border:1px solid var(--border-color);
+ background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
+ }
+ .notepad-card-actions button:hover { border-color:var(--accent); color:var(--accent); }
+ .notepad-card-actions button.del:hover { border-color:var(--danger); color:var(--danger); }
+ .notepad-card-title {
+ width:100%; padding:6px 10px; font-size:12px; font-weight:600; border:none; border-bottom:1px solid var(--border-color);
+ background:transparent; color:var(--text-primary); outline:none;
+ }
+ .notepad-card-title:focus { border-bottom-color:var(--accent); }
+ .notepad-card-body {
+ width:100%; min-height:80px; padding:8px 10px; font-size:12px; border:none; resize:vertical;
+ background:transparent; color:var(--text-primary); outline:none; line-height:1.6;
+ font-family:inherit;
+ }
+ .notepad-card-body:focus { background:var(--bg-secondary); }
+ .notepad-empty { text-align:center; padding:40px 16px; color:var(--text-secondary); font-size:13px; }
+ .notepad-toggle {
+ position:fixed; right:300px; top:50%; transform:translateY(-50%);
+ width:20px; height:60px; background:var(--bg-secondary); border:1px solid var(--border-color);
+ border-right:none; border-radius:6px 0 0 6px; cursor:pointer; z-index:999;
+ display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
+ font-size:12px; transition:all .2s;
+ }
+ .notepad-toggle:hover { color:var(--accent); border-color:var(--accent); }
+ .notepad-panel.hidden { display:none; }
+ .notepad-panel.hidden ~ .notepad-toggle { right:0; }
+ @media(max-width:1200px) {
+ .notepad-panel { display:none; }
+ .notepad-toggle { display:none; }
+ .main-content { margin-right:0; }
+ }
+ /* ===== ===== */
+ .flow-bar {
+ display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:16px 20px;
+ background:var(--bg-tertiary); border-radius:10px; margin-bottom:28px; border:1px solid var(--border-color);
+ }
+ .flow-step {
+ padding:6px 14px; background:var(--bg-secondary); border:1px solid var(--border-color);
+ border-radius:6px; font-size:12px; font-weight:600;
+ }
+ .flow-arrow { color:var(--text-secondary); font-size:14px; }
+ .flow-loop { font-size:11px; color:var(--text-secondary); margin-left:8px; }
+ /* ===== stage ===== */
+ .stage-card {
+ margin-bottom:40px; background:var(--bg-secondary); border:1px solid var(--border-color);
+ border-radius:12px; overflow:hidden; scroll-margin-top:80px;
+ }
+ .card-head {
+ padding:20px 24px 16px; border-bottom:1px solid var(--border-color);
+ display:flex; align-items:center; gap:12px;
+ }
+ .card-badge {
+ width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+ font-size:18px; font-weight:700; color:#fff; flex-shrink:0;
+ }
+ .card-head h2 { font-size:20px; font-weight:700; }
+ .card-head p { color:var(--text-secondary); font-size:13px; margin-top:2px; }
+ /* ===== usesay ===== */
+ .usage-box {
+ margin:16px 20px; padding:14px 16px; border-radius:8px;
+ border:1px dashed var(--border-color); font-size:13px; line-height:1.8;
+ }
+ .usage-box .label { font-weight:700; margin-right:6px; }
+ .usage-box .val { color:var(--text-secondary); }
+ /* ===== prompt ===== */
+ .prompt-block {
+ margin:12px 20px; border:1px solid var(--border-color); border-radius:10px; overflow:hidden;
+ }
+ .prompt-head {
+ display:flex; align-items:center; justify-content:space-between;
+ padding:12px 16px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color);
+ }
+ .prompt-head .tag { font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; }
+ .tag-e { color:var(--success); }
+ .tag-s { color:var(--accent); }
+ .copy-btn {
+ padding:4px 12px; font-size:12px; border-radius:5px; background:transparent;
+ border:1px solid var(--border-color); color:var(--text-secondary); cursor:pointer; transition:all .2s;
+ }
+ .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+ .copy-btn.copied { border-color:var(--success); color:var(--success); }
+ .prompt-body {
+ padding:16px; background:var(--code-bg); font-family:"SF Mono","Fira Code","JetBrains Mono",Consolas,monospace;
+ font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word; max-height:500px; overflow-y:auto;
+ }
+ /* ===== check ===== */
+ .checklist { margin:12px 20px 16px; }
+ .checklist-title { font-size:13px; font-weight:600; color:var(--warning); margin-bottom:8px; }
+ .checklist ul { list-style:none; }
+ .checklist li { padding:6px 0; border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:8px; font-size:13px; }
+ .checklist li:last-child { border-bottom:none; }
+ .checklist input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; }
+ /* ===== next step ===== */
+ .next-guide {
+ margin:0 20px 16px; padding:12px 16px; border-radius:8px; font-size:13px;
+ border:1px dashed var(--border-color); color:var(--text-secondary);
+ }
+ .next-guide strong { color:var(--text-primary); }
+ /* ===== ===== */
+ .card-connector {
+ text-align:center; padding:4px 0; color:var(--text-secondary); font-size:18px; opacity:.4;
+ }
+ /* ===== ===== */
+ body.mode-a .card-badge { background:var(--mode-a); }
+ body.mode-a .nav-item.active { color:var(--mode-a); border-left-color:var(--mode-a); }
+ body.mode-a .nav-item.active .num { background:var(--mode-a); }
+ body.mode-a .flow-step.current { border-color:var(--mode-a); color:var(--mode-a); background:rgba(63,185,80,.08); }
+ body.mode-b .card-badge { background:var(--mode-b); }
+ body.mode-b .nav-item.active { color:var(--mode-b); border-left-color:var(--mode-b); }
+ body.mode-b .nav-item.active .num { background:var(--mode-b); }
+ body.mode-b .flow-step.current { border-color:var(--mode-b); color:var(--mode-b); background:rgba(88,166,255,.08); }
+ body.mode-c .card-badge { background:var(--mode-c); }
+ body.mode-c .nav-item.active { color:var(--mode-c); border-left-color:var(--mode-c); }
+ body.mode-c .nav-item.active .num { background:var(--mode-c); }
+ body.mode-c .flow-step.current { border-color:var(--mode-c); color:var(--mode-c); background:rgba(210,153,34,.08); }
+ /* ===== ===== */
+ @media(max-width:900px) {
+ .sidebar { display:none; }
+ .main-content { margin-left:0; padding:16px; }
+ .mode-tabs { gap:4px; }
+ .mode-btn { padding:6px 10px; font-size:12px; }
+ }
+ ::-webkit-scrollbar { width:6px; }
+ ::-webkit-scrollbar-track { background:var(--bg-primary); }
+ ::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:3px; }
+ </style>
+</head>
+<body class="mode-b">
+<!-- ===== ===== -->
+<div class="top-bar">
+ <div class="logo">
+ <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+ <span>Shutong Dev Workflow</span>
+ <span class="ver">v2.0</span>
+ </div>
+ <div class="mode-tabs">
+ <button class="mode-btn active-b" onclick="setMode('a')" id="btn-a">🆕 New Project</button>
+ <button class="mode-btn active-b" onclick="setMode('b')" id="btn-b">➕ Add Feature</button>
+ <button class="mode-btn active-b" onclick="setMode('c')" id="btn-c">🔧 Fix Issue</button>
+ </div>
+</div>
+
+<div class="layout">
+<!-- ===== ===== -->
+<nav class="sidebar" id="sidebar"></nav>
+
+<!-- ===== content ===== -->
+<main class="main-content" id="main"></main>
+
+<!-- ===== ===== -->
+<aside class="notepad-panel" id="notepadPanel">
+ <div class="notepad-header">
+ <h3>📋 Notepad</h3>
+ <div class="notepad-tabs">
+ <button class="notepad-tab active" onclick="setNotepadType('req')">requirement</button>
+ <button class="notepad-tab" onclick="setNotepadType('note')"></button>
+ </div>
+ </div>
+ <div class="notepad-actions">
+ <button onclick="addNotepad()">＋ New</button>
+ <button onclick="exportNotepads()">📥 Export</button>
+ </div>
+ <div class="notepad-list" id="notepadList"></div>
+</aside>
+<button class="notepad-toggle" id="notepadToggle" onclick="toggleNotepad()">◀</button>
+</div>
+
+<script>
+// ========== data ==========
+const MODES = {
+ a: {
+ name:'New Project', color:'mode-a', btnClass:'active-a',
+ flow:['Init','Design','Contract','Code','Verify','Deploy','Done'],
+ stages:[
+ {id:'a-init', num:1, title:'Init', desc:'Tech stack, directory structure, dependencies, acceptance criteria',
+ exec:{tag:'Execution AI',to:'Window B',when:'First step when building from scratch',
+ expect:'7 answers + [INIT_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：INIT】build from scratchproject，skeleton，notcode。
+
+requirement：{{ofprojectrequirement}}
+
+please answer the following questions。each must provide specific suggestions and rationale。ifintech stack selection，list options with pros and consto。
+
+1. 【tech stack selection】based on requirements, recommend tech stack
+ - frontend：framework、UI、build tools（if applicable）
+ - backend：language、framework、ORM（if applicable）
+ - database：type、version（if applicable）
+ - deploy：target platform、containerization（if applicable）
+ - explain rationale for each choice
+
+2. 【directory structure】designprojectdirectory
+ - usedirectory structure
+ - each directory//file explain what it contains
+ - mark which are core modules、which are auxiliary
+
+3. 【dependency planning】what are the core dependencies？
+ - list all dependency packages to install
+ - version
+ - mark which are required、which are optional
+
+4. 【entrydesign】entry fileyes？
+ - startup method（CLI/script/double-click）
+ - startup parameters（if any）
+
+5. 【configdesign】needconfig file？
+ - environment variables（name、purpose、default）
+ - config fileformat（YAML/JSON/TOML/.env）
+
+6. 【】modules that may be extended in future
+ - what interfaces to reserve/directory
+
+7. 【acceptance criteria】thisproject"is done"？
+ - feature list：which features must work？
+ - acceptance tests：how to verify these features？
+
+need：
+- output design only，do not generate code
+- ifhasnotoftech stack selection，list options with pros and cons，wait for user confirmation
+- output [INIT_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'toExecution AIofInit responseafter',
+ expect:'Completeness review + tech stack confirmation + next instruction',next:'Follow Strategy AI instructions to Design stage'},
+ stratText:`【INITtask】
+
+please reviewunderExecution AIreturned byprojectinitplan。
+
+## Execution AIofInit response：
+{{Execution AIofInit response}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] 7issue
+- [ ] tech stack selectionhasframeworkandversion
+- [ ] directory structurehasof
+- [ ] dependencyhasandversion
+- [ ] entry fileandstartup method
+- [ ] config file
+- [ ] acceptance criteriacantest（hasfeature listand）
+- [ ] has [INIT_DONE] marker
+
+If any item fails, output [Follow-up Instruction]。
+
+### Step 2：Tech Stack Confirmation
+Check if tech selection is reasonable：
+- Does it match user requirements？
+- Are there obvious compatibility issues？
+- Is the dependency count reasonable？
+
+### Step 3：Output Next Stage Instruction
+If review passes, output [DESIGN-Architecture] instruction.
+
+[Review Passed! Next Step]
+→ Go to 02-Design stage, copy Execution AI Prompt`,
+ checks:['All 7 questions answered','Tech stack has specific framework and version','Directory structure has complete tree','Acceptance criteria specific and testable','Has [INIT_DONE] marker at end']
+ },
+ {id:'a-design', num:2, title:'Design', desc:'Data flow, build order, module dependencies, cleanup strategy',
+ exec:{tag:'Execution AI',to:'Window B',when:'After Init review passes',
+ expect:'6 answers + [DESIGN_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：DESIGN-design】onlydesignissue，no code, no commands。
+
+ INIT stageconfirmofplan，：{{ofprojectrequirement}}
+
+confirmof：
+- {{frontendframework/backendframework/database/}}
+
+confirmofdirectory structure：
+{{Paste directory tree from Init}}
+
+：
+1. 【data flow】projectofdata flowyes？use → 。
+2. 【skeleton build order】dependencyneedoffile，bydependencyof（must）。
+3. 【module dependency diagram】moduleofuseyes？
+4. 【cleanup strategy】ifskeletontofailure，？
+5. 【verification plan】（config layer/utility layer/business layer），verifyskeletonnot？
+6. 【risk points】incancantoissue？
+
+after answering clearly，"confirm"then start building。
+output [DESIGN_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving design response',
+ expect:'Completeness review + next instruction',next:'Follow Strategy AI instructions to Contract stage'},
+ stratText:`【DESIGN-designtask】
+
+please reviewunderExecution AIreturned byarchitecture design plan。
+
+## Execution AI architecture design response：
+{{Execution AI architecture design response}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] Has complete data flow diagram (with -> arrows)
+- [ ] Build order follows dependencies (depended-on first)
+- [ ] hasmodule dependency diagram
+- [ ] Cleanup strategy clear (which files to delete on failure)
+- [ ] Verification plan specific (what exact commands to run)
+- [ ] Lists at least 1 risk point
+- [ ] has [DESIGN_DONE] marker
+
+If any item fails, output [Follow-up Instruction]。
+
+### Step 2：Output Next Stage Instruction
+If review passes, output [CONTRACT-Interface] instruction.
+
+[Review Passed! Next Step]
+→ Go to 03-Contract stage, copy Execution AI Prompt`,
+ checks:['Has complete data flow diagram','Build order follows dependencies','Has module dependency diagram','Cleanup strategy is clear','Verification plan is specific','Has [DESIGN_DONE] marker at end']
+ },
+ {id:'a-contract', num:3, title:'Contract', desc:'Data models, API interfaces, module interfaces, error handling',
+ exec:{tag:'Execution AI',to:'Window B',when:'After design review passes',
+ expect:'6 answers + [CONTRACT_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：CONTRACT-from】designinterfaceanddatamodel，no code, no commands。
+
+ DESIGN stageconfirmofdesign：
+{{Paste module dependency graph and data flow from Design}}
+
+【tech stack selection（confirm）】
+- {{frontendframework/backendframework/database/}}
+
+：
+1. 【data model design】datahas？offields、type、。
+2. 【API interface design】needinterface？interfaceof、method、parameter、structure。
+3. 【module interface design】moduleoffunction/methoduseinterfaceyes？parameterandreturn valuetype。
+4. 【error handling strategy】moduleofexception？yesstillyes？error？
+5. 【Tech Stack Confirmation】confirmof。
+6. 【coding discipline confirmation】codestageyesnoonlyfile？confirm。
+
+after confirmation I will reply"confirm"，to start building。
+output [CONTRACT_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving contract confirmation',
+ expect:'Completeness + consistency review + next instruction',next:'Follow Strategy AI instructions to Code stage'},
+ stratText:`【CONTRACT-fromtask】
+
+please reviewunderExecution AIreturned byinterfaceanddata model design。
+
+## Execution AIofcontract confirmation：
+{{Execution AIofcontract confirmation}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] Data model has specific field names and types
+- [ ] API has path, method, params, return values
+- [ ] Module interface has function signatures and type annotations
+- [ ] Error handling strategy is clear
+- [ ] Tech stack matches what was confirmed in Init
+- [ ] Coding discipline confirmed (create one file at a time)
+- [ ] Has [CONTRACT_DONE] marker at end
+
+### Step 2：Consistency Review
+- [ ] API return structure matches data model fields
+- [ ] Module interface param types match data model
+
+### Step 3：Output Next Stage Instruction
+If review passes, output [CODE-Skeleton1] instruction.
+
+[Review Passed! Next Step]
+→ Go to 04-Code stage, copy Execution AI Prompt - Config Layer`,
+ checks:['Data model has specific field names and types','API has path/method/params/return','Error handling strategy is clear','Coding discipline confirmed','Has [CONTRACT_DONE] marker at end']
+ },
+ {id:'a-code', num:4, title:'Code', desc:'Build layer by layer: Config -> Utility -> Entry -> Business',
+ exec:{tag:'Execution AI',to:'Window B',when:'After contract review passes',
+ expect:'Layer code + [FILE_DONE] + [LAYER_DONE]',next:'After each layer, copy result to Strategy AI'},
+ execText:`【stage：CODE-skeleton-config layer】onlyconfig file，notneedfile。
+
+【to】
+1. usenohassay"confirm"，notunder
+2. notoffile
+3. file，must git add + git commit
+4. git push --force、git reset --hard
+5. git add .
+
+confirmofconfig：
+{{Paste config file list from Contract}}
+
+underconfig file：
+- {{config file1}}：{{purposesay}}
+
+need：
+- fileoutputcode
+- config filemusthasofdefault
+- musthassayconfigofpurpose
+- after，verifyfilecanbyread/import
+
+verify：{{what command to verify config file}}
+
+outputafter [FILE_DONE: {{file}}]
+filewait for me to say"next step"before continuing。
+
+---
+order：
+1：config file → 2：utility → 3：entry file → 4：business module
+verify after each layer，proceed to next layer after passing。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After each layer verification',
+ expect:'Compliance check + next layer or verify',next:'More layers -> next CODE instruction. Last layer -> go to Verify'},
+ stratText:`【CODE-skeletontask】
+
+please reviewunderExecution AIreturned byskeleton build result。
+
+## Execution AI build result：
+{{Execution AI build result}}
+
+## your task：
+
+### Step 1：Compliance Review
+- [ ] All layer files created (has [FILE_DONE] marker)
+- [ ] Layer verification passed (has [LAYER_DONE] marker)
+- [ ] File content matches interfaces defined in Contract
+- [ ] hasexception
+- [ ] hastype
+
+### Step 2：Determine Next Step
+- If layer passed and more layers: output next layer CODE
+- If layer passed and last layer: output [VERIFY] instruction
+- If layer failed: output fix instruction
+
+[Review Passed! Next Step]
+→ More layers: copy next CODE instruction to Execution AI
+→ Last layer done: go to 05-Verify`,
+ checks:['All layer files created','Layer verification passed','File content matches contract','Has error handling','Has type annotations']
+ },
+ {id:'a-verify', num:5, title:'Verify', desc:'Check against acceptance criteria from Init',
+ exec:{tag:'Execution AI',to:'Window B',when:'After all coding is complete',
+ expect:'Acceptance summary + pass/fail per step',next:'Copy result to Strategy AI for analysis'},
+ execText:`【stage：VERIFY-from】feature，with progress markers。
+
+【execution rules】
+- after each step，output [STEP X/N: step_name]
+- if failed，output [STEP X/N FAILED: reason] and stop
+- user may stop midway and specify"continue from step X"
+- VERIFYstage only runs, does not modify code
+
+acceptance criteria checklist（INITdefined in）：
+{{List acceptance criteria from Init}}
+
+please executeunder：
+1. 【environment check】confirm all dependencies installed，config file
+2. 【check】project，confirmerror，service ready
+3. 【feature1】{{1}} — execute operation, record result
+4. 【feature2】{{2}} — execute operation, record result
+5. 【featureN】{{N}} — execute operation, record result
+6. 【exception】deliberately trigger exception scenarios，verify error handling works per Contract design
+7. 【】outputacceptance result summary
+
+output format per step：
+[STEP X/N: step_name] ✓ pass / ✗ failure（reason）
+
+begin execution。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving acceptance results',
+ expect:'Result analysis + root cause + next decision',next:'All pass -> Deploy. Failures -> back to Code'},
+ stratText:`【VERIFY-fromanalyzetask】
+
+please analyzeunderExecution AIreturned byacceptance results。
+
+## Execution AIofVERIFY response：
+{{Execution AIofVERIFY response}}
+
+## your task：
+
+### Step 1：Acceptance Result Analysis
+1. 【Environment check passed?】Yes/No. Evidence:
+2. 【Startup check passed?】Yes/No. Evidence:
+3. 【Acceptance pass rate】passX/N
+4. 【Exception test passed?】Yes/No. Evidence:
+5. 【Which acceptance tests failed?】List failures and reasons
+
+### Step 2：Root Cause Judgment
+tofailure，Analyze root cause：
+- Code logic error? Interface mismatch? Config issue? Unreasonable criteria?
+
+### Step 3：Next Step Decision
+- If all pass: output [DEPLOY] instruction
+- If failures: output [CODE-Fix] (back to Code)
+- If criteria unreasonable: output adjustment suggestions
+
+[Review Passed! Next Step]
+→ all pass：go「06-deploy」stage
+→ failures：「04-code」stagefix`,
+ checks:['Environment check passed','Startup check passed','All acceptance tests passed','Exception test passed']
+ },
+ {id:'a-deploy', num:6, title:'Deploy', desc:'Environment check, dependencies, deploy, smoke test',
+ exec:{tag:'Execution AI',to:'Window B',when:'After all verifications pass',
+ expect:'6-step deploy result + [DEPLOY_DONE]',next:'Copy result to Strategy AI for analysis'},
+ execText:`【stage：DEPLOY】deployon，with progress markers。
+
+【execution rules】
+- after each step，output [STEP X/6: step_name]
+- if failed，output [STEP X/6 FAILED: reason] and stop
+- DEPLOYstageonlydeploy，notbusinesscode
+
+deploy target：
+- project：{{projectname}}
+- target platform：{{server/cloud/local}}
+- deploy method：{{manual/automatic}}
+
+step checklist：
+1. 【environment check】confirm target environment ready，env vars configured
+2. 【dependency install】inenvironmentprojectdependency
+3. 【build and package】（if build step exists）execute build
+4. 【deploy execution】deploy methodon
+5. 【smoke test】access production URL/interface，verify core functionality
+6. 【monitoring check】confirmlogsoutput（ERROR）
+
+【rollback strategy】
+- on deploy failure：{{rollback method}}
+- on critical production bug：{{emergency rollback procedure}}
+
+output [DEPLOY_DONE]
+begin execution。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving deploy results',
+ expect:'Deploy result analysis + next decision',next:'All pass -> Done. Failure -> confirm rollback'},
+ stratText:`【DEPLOYanalyzetask】
+
+please analyzeunderExecution AIreturned bydeployresult。
+
+## Execution AIofDEPLOY response：
+{{Execution AIofDEPLOY response}}
+
+## your task：
+
+### Step 1：Deploy Result Analysis
+1. 【Environment check passed?】Yes/No
+2. 【Dependencies installed?】Yes/No
+3. 【Build succeeded?】Yes/No/
+4. 【Deploy executed?】Yes/No
+5. 【Smoke test passed?】Yes/No
+6. 【Monitoring normal?】Yes/No
+
+### Step 2：Next Step Decision
+- If all passed: output [DONE-FromScratch] instruction
+- If deploy failed: output rollback instruction
+- If smoke test failed: output [CODE-Fix] instruction
+
+[Review Passed! Next Step]
+→ All pass: go to 07-Done`,
+ checks:['Target environment ready','Dependencies installed','Deploy executed','Smoke test passed','No ERROR in logs','Rollback plan confirmed']
+ },
+ {id:'a-done', num:7, title:'Done', desc:'Complete docs, handover checklist, git tag archive',
+ exec:{tag:'Execution AI',to:'Window B',when:'After deploy passes',
+ expect:'Docs complete + archive result + [ALL_DONE]',next:'New project build complete'},
+ execText:`【stage：DONE-from】project，done。
+
+verification passed：
+- {{brief verification result}}
+
+please execute：
+1. Complete README.md (description, install, startup)
+2. complete env config docs：.env.example or config docs
+3. generate handover checklist：projectstructuresay、key file locations、future extension suggestions
+4. final archive：git add + git commit + git tag v0.1
+5. smoke test：follow README to clone and install from scratch，confirm it works
+
+output modified file list and archive result。
+output [ALL_DONE]`,
+ strat:null,
+ checks:['README.md completed','Env config docs completed','Handover checklist generated','git commit + git tag v0.1 done','Smoke test passed']
+ }
+ ]
+ },
+ b: {
+ name:'Add Feature', color:'mode-b', btnClass:'active-b',
+ flow:['Probe','Design','Contract','Code','Verify','Done'],
+ stages:[
+ {id:'b-probe', num:1, title:'Probe', desc:'Find where to insert new feature, understand codebase',
+ exec:{tag:'Execution AI',to:'Window B',when:'After deciding to add a feature',
+ expect:'6 answers + [PROBE_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：PROBE】only，notcode，do not generate code，not。
+
+requirement：{{your requirement}}
+
+tobeforecodeprobe，underissue。issuemusttofile、method/function、、。
+
+1. 【】beforerequirementofcodein？
+ - backend：hasfile、method/、code
+ - frontend：has/、method、code
+
+2. 【use】featureofuseyes？
+ - fromuse/entrytomost，use → 
+
+3. 【can】projecthasofmodeluse/AIanalyze/APIin？
+
+4. 【datastructure】datastructurein？
+ - /datamodel/interfaceoffile
+ - fieldsandtype
+
+5. 【】of、yesstillyes？in？
+
+6. 【】ifneedmodule/，projectstructureindirectory？yes？
+
+need：
+- methodofcode（notneed）
+- fileusecodemarker
+- mostafteroutput [PROBE_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving probe result',
+ expect:'Completeness review + next instruction',next:'Follow Strategy AI instructions to Design stage'},
+ stratText:`【PROBEtask】
+
+please reviewunderExecution AIreturned byPROBE result，code。
+
+## Execution AI PROBE response：
+{{Execution AI PROBE response}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] All 6 questions answered (check 1-6 are all present)
+- [ ] Has specific file paths (can see xxx.py format)
+- [ ] Has method/function names and line ranges
+- [ ] Key code fully pasted (not just signatures)
+- [ ] Has [PROBE_DONE] marker at end
+
+If any item fails, output [Follow-up Instruction]。
+
+### Step 2：Output Next Stage Instruction
+If review passes, output [DESIGN-Add Feature] instruction.
+
+[Review Passed! Next Step]
+→ Go to 02-Design stage, copy Execution AI Prompt`,
+ checks:['All 6 questions answered','Has specific file paths and line numbers','Key code fully pasted','Has [PROBE_DONE] marker at end']
+ },
+ {id:'b-design', num:2, title:'Design', desc:'Data flow, modification points, call relationships, rollback',
+ exec:{tag:'Execution AI',to:'Window B',when:'After probe review passes',
+ expect:'6 answers + [DESIGN_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：DESIGN】onlydesignissue，no code, no commands。
+
+only thentoofcode，add feature：{{your requirement}}
+
+beforecode（PROBE）：
+- codein {{file}} of {{method}}
+- modelusecanin {{file}} of {{method}}
+- datastructurein {{file}}
+
+：
+1. 【data flow】add featureafterofdata flowyes？use → 。。
+2. 【rework】file？dependencyorder。
+3. 【use】/ofmoduleuse？outputto？
+4. 【rollback strategy】iffailure，rollback？
+5. 【verification plan】feature？inwhenlogs？
+6. 【risk points】cancanhasfeature？？
+
+after answering clearly，"confirm"then write code。
+output [DESIGN_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving design response',
+ expect:'Completeness review + next instruction',next:'Follow Strategy AI instructions to Contract stage'},
+ stratText:`【DESIGNtask】
+
+please reviewunderExecution AIreturned byDESIGN result。
+
+## Execution AIofDESIGN response：
+{{Execution AIofDESIGN response}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] Has complete data flow diagram
+- [ ] file（hasfile）
+- [ ] Has clear modification order
+- [ ] Rollback strategy is clear
+- [ ] Verification plan is specific
+- [ ] Lists at least 1 risk point
+- [ ] has [DESIGN_DONE] marker
+
+### Step 2：Output Next Stage Instruction
+If review passes, output [CONTRACT-Confirmation] instruction.
+
+[Review Passed! Next Step]
+→ Go to 03-Contract stage, copy Execution AI Prompt`,
+ checks:['Has complete data flow diagram','Lists specific files','Has clear modification order','Rollback strategy is clear','Verification plan is specific','Has [DESIGN_DONE] marker at end']
+ },
+ {id:'b-contract', num:3, title:'Contract', desc:'Interface fields, degradation path, coding discipline',
+ exec:{tag:'Execution AI',to:'Window B',when:'After design review passes',
+ expect:'5 answers + [CONTRACT_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：CONTRACT】confirminterface，no code, no commands。
+
+【module】
+- ：{{ofparameter}}
+- output：{{ofstructure}}
+- failurewhen：{{offailure}}
+
+【hasdatastructure】
+- {{datato}} fields：{{List actual fields from PROBE}}
+
+：
+1. project {{resultto}} offieldshas？come。
+2. usemodelwhen，outputformatneedyes？（JSONformat、fields）
+3. iffailure，yes？useold method？
+4. codestagewill modify only one file at a time？confirm。
+5. beforebackendofAPIyesnohas？
+
+after confirmation I will reply"confirm"，to start coding。
+output [CONTRACT_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving contract confirmation',
+ expect:'Consistency review + next instruction',next:'Follow Strategy AI instructions to Code stage'},
+ stratText:`【CONTRACTtask】
+
+please reviewunderExecution AIreturned bycontract confirmation。
+
+## Execution AIofcontract confirmation：
+{{Execution AIofcontract confirmation}}
+
+## your task：
+
+### Step 1：Consistency Review
+- [ ] Field names match data structure from PROBE
+- [ ] 
+- [ ] Coding discipline confirmed (one file at a time)
+- [ ] Has [CONTRACT_DONE] marker at end
+
+### Step 2：Output Next Stage Instruction
+If review passes, output [CODE-File1] instruction.
+
+[Review Passed! Next Step]
+→ Go to 04-Code stage, copy Execution AI Prompt`,
+ checks:['Field names match PROBE','Degradation path is clear','Coding discipline confirmed','Has [CONTRACT_DONE] marker at end']
+ },
+ {id:'b-code', num:4, title:'Code', desc:'One file at a time, wait for confirmation before next',
+ exec:{tag:'Execution AI',to:'Window B',when:'After contract review passes',
+ expect:'filecode + [FILE_DONE]',next:'theresultcopytoStrategy AI，confirmafterthenunderfile'},
+ execText:`【stage：CODE-file1】onlythisfile，notneedfile。
+
+【to】
+1. usenohassay"confirm"，notunderfile
+2. notfile
+3. file，must git add + git commit
+4. iffailure，must git checkout rollback
+5. git push --force、git reset --hard
+6. git add .
+
+{{/}} file：{{file}}
+modification goal：{{feature}}
+
+current project context（PROBE）：
+- model call wrapperin {{file}} of {{method}}
+- related data structure：{{datato}} fields {{fields}}
+
+need：
+- output only changed code，mark insertion position with comments
+- if creating new file, output complete code
+- key paths must have [PROBE] logs
+- all exceptions must be caught
+- code style must match existing project
+- Output only this file code
+
+outputafter [FILE_DONE: {{file}}]
+wait for me to say"next step"before continuing。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'fileafter',
+ expect:'Compliance review + next step decision',next:'More files -> continue Code. Last file -> go to Verify'},
+ stratText:`【CODEtask】
+
+please reviewunderExecution AIreturned bycode changes。
+
+## Execution AIofcode changes：
+{{Execution AIofcode changes}}
+
+## your task：
+
+### Step 1：Compliance Review
+- [ ] Only modified 1 file (only 1 [FILE_DONE] in output)
+- [ ] has [PROBE] logs
+- [ ] hasexception
+- [ ] References methods from PROBE
+- [ ] fieldsCONTRACT
+
+### Step 2：Determine Next Step
+- If more files: output [CODE-FileN] instruction
+- If last file: output [VERIFY] instruction
+
+[Review Passed! Next Step]
+→ More files: continue 04-Code
+→ Last file: go to 05-Verify`,
+ checks:['Only modified 1 file','Has [PROBE] logs','Has exception catching','Field names match CONTRACT']
+ },
+ {id:'b-verify', num:5, title:'Verify', desc:'feature，notyes"noerrorthenyesto"',
+ exec:{tag:'Execution AI',to:'Window B',when:'After coding is complete',
+ expect:'5-step verify result + pass/fail per step',next:'theresult（yeslogs）copytoStrategy AIanalyze'},
+ execText:`【stage：VERIFY】execute verification flow，with progress markers。
+
+【execution rules】
+- after each step，output [STEP X/5: step_name]
+- if failed，output [STEP X/5 FAILED: reason] and stop
+- VERIFYstage only runs, does not modify code
+
+step checklist：
+1. save all modified code files
+2. Restart service (background, non-blocking)
+3. wait 3 seconds，confirm service ready
+4. send test requestto {{PROBEintoofAPI}}
+5. readlogs，filter lines with [PROBE] , output analysis
+
+begin execution。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving verify logs',
+ expect:'Log analysis + root cause + next decision',next:'Feature works -> Done. Need fix -> back to Code'},
+ stratText:`【VERIFYanalyzetask】
+
+please analyzeunderExecution AIreturned byverifylogs。
+
+## Execution AIofVERIFY response：
+{{Execution AIofVERIFY response}}
+
+## your task：
+
+### Step 1：Log Analysis
+1. 【PROBE logs exist?】Yes/No. Evidence:
+2. 【New logic was called?】Yes/No. Evidence:
+3. 【What did the model return?】Raw response:
+4. 【Was degradation triggered?】Yes/No. Evidence:
+5. 【Is output from new logic or old logic?】Judgment:
+
+### Step 2：Root Cause Judgment
+
+### Step 3：Next Step Decision
+- If feature works: output [DONE] instruction
+- If degradation triggered: output [CODE-Fix] instruction
+- If new logic not called: output [CODE-CallChain Fix]
+- If logs missing: output [CODE-Log Fix] instruction
+
+[Review Passed! Next Step]
+→ Feature works: go to 06-Done
+→ Need fix: back to 04-Code`,
+ checks:['PROBE logs exist','New logic was called','No degradation triggered','Output is from new logic']
+ },
+ {id:'b-done', num:6, title:'Done', desc:'Clean up temp logs, smoke test',
+ exec:{tag:'Execution AI',to:'Window B',when:'After verification passes',
+ expect:'Cleanup result + [ALL_DONE]',next:'Feature addition complete'},
+ execText:`【stage：DONE】，donerework。
+
+verification passed：
+- {{brief verification result}}
+
+please execute：
+1. remove all [PROBE] markerofwhenlogscode
+2. ofbusinesslogs
+3. afterdosmoke test：send a message，confirm normal reply，no ERROR in console
+
+output modified file list and test results。
+output [ALL_DONE]`,
+ strat:null,
+ checks:['All [PROBE] temp logs removed','Normal business logs retained','Smoke test passed','Code has been git committed']
+ }
+ ]
+ },
+ c: {
+ name:'Fix Issue', color:'mode-c', btnClass:'active-c',
+ flow:['Probe','Diagnose','Contract','Code','Verify','Done'],
+ stages:[
+ {id:'c-probe', num:1, title:'Probe', desc:'Diagnose current state, find what is broken',
+ exec:{tag:'Execution AI',to:'Window B',when:'After discovering a bug',
+ expect:'6 answers + [PROBE_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：PROBE】only，notcode，do not generate code，not。
+
+Problem description: {{describe your issue, as specific as possible}}
+
+tobeforecodeprobe，underissue。issuemusttofile、method/function、、。
+
+1. 【】issueofcodein？
+ - backend：hasfile、method/、code
+ - frontend：has/、method、code
+
+2. 【use】featureofuseyes？
+ - fromuse/entrytomost，use → 
+
+3. 【can】projecthasofmodeluse/AIanalyze/APIin？
+
+4. 【datastructure】datastructurein？
+
+5. 【】of、yesstillyes？in？
+
+6. 【exception】What runtime anomalies existlogs/error/not？
+
+need：
+- methodofcode（notneed）
+- fileusecodemarker
+- mostafteroutput [PROBE_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving probe result',
+ expect:'Completeness review + next instruction',next:'Follow Strategy AI instructions to Diagnose stage'},
+ stratText:`【PROBEtask】
+
+please reviewunderExecution AIreturned byPROBE result。
+
+## Execution AI PROBE response：
+{{Execution AI PROBE response}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] 6issue
+- [ ] hasoffile
+- [ ] Has method/function names and line ranges
+- [ ] code
+- [ ] Has [PROBE_DONE] marker at end
+
+### Step 2：Output Next Stage Instruction
+If review passes, output [DESIGN-Diagnosis] instruction.
+
+[Review Passed! Next Step]
+→ Go to 02-Diagnose stage, copy Execution AI Prompt`,
+ checks:['All 6 questions answered','Has specific file paths and line numbers','Key code fully pasted','Has [PROBE_DONE] marker at end']
+ },
+ {id:'c-design', num:2, title:'Diagnose', desc:'Hypotheses, verification points, troubleshooting order, fix prediction',
+ exec:{tag:'Execution AI',to:'Window B',when:'After probe review passes',
+ expect:'Hypotheses + verification points + troubleshooting order + [DESIGN_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：DESIGN-diagnose】do not modify code，only design troubleshooting plan。
+
+PROBE：
+- {{existing file/method}} in
+- {{use}} already calls related method
+- but at runtime {{，"returns empty result""error""abnormal behavior"}}
+
+designplan，：
+1. 【hypothesis list】list all possible causes，ranked by probability。
+2. 【verification points】to verify each hypothesis，needinlogs？specific to file, method, line number。
+3. 【troubleshooting order】list troubleshooting steps from highest to lowest probability。
+4. 【fix prediction】what is the most likely problem？which files does the fix involve？
+5. 【verification plan】how to verify after fix？what action to trigger？seetologs？
+
+do not write code。
+output [DESIGN_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'toExecution AIofdiagnosis planafter',
+ expect:'Completeness review + next instruction',next:'Follow Strategy AI instructions to Contract stage'},
+ stratText:`【DESIGN-diagnosetask】
+
+please reviewunderExecution AIreturned bydiagnosis plan。
+
+## Execution AIofdiagnosis plan：
+{{Execution AIofdiagnosis plan}}
+
+## your task：
+
+### Step 1：Completeness Review
+- [ ] Hypothesis list ranked by probability
+- [ ] Verification points specific to file, method, line number
+- [ ] Troubleshooting order reasonable (highest probability first)
+- [ ] Fix prediction has basis
+- [ ] has [DESIGN_DONE] marker
+
+### Step 2：Output Next Stage Instruction
+If review passes, output [CONTRACT-Fix Interface] instruction.
+
+[Review Passed! Next Step]
+→ Go to 03-Contract stage, copy Execution AI Prompt`,
+ checks:['Hypothesis list ranked by probability','Verification points specific to file/method/line','Troubleshooting order reasonable','Fix prediction has basis','Has [DESIGN_DONE] marker at end']
+ },
+ {id:'c-contract', num:3, title:'Contract', desc:'Fix interface, degradation path',
+ exec:{tag:'Execution AI',to:'Window B',when:'After diagnosis review passes',
+ expect:'Interface confirmation + [CONTRACT_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：CONTRACT】confirminterface，no code, no commands。
+
+【fixmodule】
+- ：{{ofparameter}}
+- output：{{ofstructure}}
+- failurewhen：{{offailure}}
+
+【hasdatastructure】
+- {{datato}} fields：{{List actual fields from PROBE}}
+
+：
+1. project {{resultto}} offieldshas？come。
+2. usemodelwhen，outputformatneedyes？
+3. iffailure，yes？useold method？
+4. codestagewill modify only one file at a time？confirm。
+
+after confirmation I will reply"confirm"，to start coding。
+output [CONTRACT_DONE]`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving contract confirmation',
+ expect:'Consistency review + next instruction',next:'Follow Strategy AI instructions to Code stage'},
+ stratText:`【CONTRACTtask】
+
+please reviewunderExecution AIreturned bycontract confirmation。
+
+## Execution AIofcontract confirmation：
+{{Execution AIofcontract confirmation}}
+
+## your task：
+
+### Step 1：Consistency Review
+- [ ] Field names match data structure from PROBE
+- [ ] 
+- [ ] coding discipline confirmation
+- [ ] Has [CONTRACT_DONE] marker at end
+
+### Step 2：Output Next Stage Instruction
+If review passes，output【CODE-fix】instruction。
+
+[Review Passed! Next Step]
+→ Go to 04-Code stage, copy Execution AI Prompt`,
+ checks:['Field names match PROBE','Degradation path is clear','Coding discipline confirmed','Has [CONTRACT_DONE] marker at end']
+ },
+ {id:'c-code', num:4, title:'Code', desc:'One file at a time, fix code',
+ exec:{tag:'Execution AI',to:'Window B',when:'After contract review passes',
+ expect:'Fix code + [FILE_DONE]',next:'Copy result to Strategy AI for review'},
+ execText:`【stage：CODE-fix】onlythisfile，notneedfile。
+
+【to】
+1. usenohassay"confirm"，notunderfile
+2. notfile
+3. file，must git add + git commit
+4. iffailure，must git checkout rollback
+5. git push --force、git reset --hard
+6. git add .
+
+ file：{{file}}
+fix goal：{{fix}}
+
+current project context（PROBE）：
+- issuein {{file}} of {{method}}
+- related data structure：{{datato}} fields {{fields}}
+
+need：
+- output only changed code，mark insertion position with comments
+- key paths must have [PROBE] logs
+- all exceptions must be caught
+- Output only this file code
+
+outputafter [FILE_DONE: {{file}}]
+wait for me to say"next step"before continuing。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'fileafter',
+ expect:'Compliance review + next step decision',next:'More files -> continue Code. Last file -> go to Verify'},
+ stratText:`【CODEtask】
+
+please reviewunderExecution AIreturned bycode changes。
+
+## Execution AIofcode changes：
+{{Execution AIofcode changes}}
+
+## your task：
+
+### Step 1：Compliance Review
+- [ ] only1file
+- [ ] has [PROBE] logs
+- [ ] hasexception
+- [ ] fieldsCONTRACT
+
+### Step 2：Determine Next Step
+- ifmore files：output【CODE-fixN】instruction
+- If last file: output [VERIFY] instruction
+
+[Review Passed! Next Step]
+→ More files: continue 04-Code
+→ Last file: go to 05-Verify`,
+ checks:['Only modified 1 file','Has [PROBE] logs','Has exception catching','Field names match CONTRACT']
+ },
+ {id:'c-verify', num:5, title:'Verify', desc:'Prove the issue is fixed',
+ exec:{tag:'Execution AI',to:'Window B',when:'After coding is complete',
+ expect:'Verify result + pass/fail per step',next:'Copy result to Strategy AI for analysis'},
+ execText:`【stage：VERIFY】execute verification flow，with progress markers。
+
+【execution rules】
+- after each step，output [STEP X/5: step_name]
+- if failed，output [STEP X/5 FAILED: reason] and stop
+- VERIFYstage only runs, does not modify code
+
+step checklist：
+1. save all modified code files
+2. Restart service (background, non-blocking)
+3. wait 3 seconds，confirm service ready
+4. send test request，beforeofissue
+5. readlogs，filter lines with [PROBE] , output analysis
+
+begin execution。`,
+ strat:{tag:'Strategy AI',to:'Window A',when:'After receiving verify logs',
+ expect:'Log analysis + root cause + next decision',next:'Fixed -> Done. Not fixed -> back to Code'},
+ stratText:`【VERIFYanalyzetask】
+
+please analyzeunderExecution AIreturned byverifylogs。
+
+## Execution AIofVERIFY response：
+{{Execution AIofVERIFY response}}
+
+## your task：
+
+### Step 1：Log Analysis
+1. 【PROBE logs exist?】Yes/No. Evidence:
+2. 【Fix logic was called?】Yes/No. Evidence:
+3. 【Does issue reproduce?】Yes/No. Evidence:
+4. 【Was degradation triggered?】Yes/No. Evidence:
+
+### Step 2：Next Step Decision
+- if fixed：output【DONE】instruction
+- if still exists：output【CODE-fix】instruction
+- if new issues introduced：output【CODE-fix】instruction
+
+[Review Passed! Next Step]
+→ Fixed: go to 06-Done
+→ Not fixed: back to 04-Code`,
+ checks:['PROBE logs exist','Fix logic was called','Issue no longer reproduces','No new issues introduced']
+ },
+ {id:'c-done', num:6, title:'Done', desc:'Clean up temp logs, smoke test',
+ exec:{tag:'Execution AI',to:'Window B',when:'After verification passes',
+ expect:'Cleanup result + [ALL_DONE]',next:'Fix complete'},
+ execText:`【stage：DONE】，donefix。
+
+verification passed：
+- {{brief verification result}}
+
+please execute：
+1. remove all [PROBE] markerofwhenlogscode
+2. ofbusinesslogs
+3. afterdosmoke test：confirmfixafterfeature，no ERROR in console
+
+output modified file list and test results。
+output [ALL_DONE]`,
+ strat:null,
+ checks:['All [PROBE] temp logs removed','Normal business logs retained','Smoke test passed','Code has been git committed']
+ }
+ ]
+ }
+};
+
+let currentMode = 'b';
+let currentStage = 0;
+
+// ========== ==========
+function setMode(m) {
+ currentMode = m;
+ currentStage = 0;
+ document.body.className = 'mode-' + m;
+ ['a','b','c'].forEach(k => {
+ document.getElementById('btn-' + k).className = 'mode-btn ' + (k===m ? MODES[k].btnClass : '');
+ });
+ renderSidebar();
+ renderMain();
+}
+
+function renderSidebar() {
+ const mode = MODES[currentMode];
+ let html = '<div class="nav-title">' + mode.name + '</div>';
+ mode.stages.forEach((s, i) => {
+ if (i > 0) html += '<div class="nav-arrow">↓</div>';
+ html += '<div class="nav-item' + (i===currentStage?' active':'') + '" onclick="goStage('+i+')">';
+ html += '<span class="num">'+s.num+'</span> '+s.title;
+ html += '</div>';
+ });
+ html += '<div class="nav-arrow">↓</div>';
+ html += '<div class="nav-end">✅ End</div>';
+ document.getElementById('sidebar').innerHTML = html;
+}
+
+function renderMain() {
+ const mode = MODES[currentMode];
+ let html = '';
+ // 
+ html += '<div class="flow-bar">';
+ mode.flow.forEach((f, i) => {
+ if (i > 0) html += '<span class="flow-arrow">→</span>';
+ html += '<span class="flow-step'+(i===currentStage?' current':'')+'">'+f+'</span>';
+ });
+ html += '<span class="flow-loop">← Verify failure falls back to Code</span>';
+ html += '</div>';
+ // stage
+ mode.stages.forEach((s, i) => {
+ if (i > 0) html += '<div class="card-connector">↓</div>';
+ html += renderCard(s, i);
+ });
+ document.getElementById('main').innerHTML = html;
+}
+
+function renderCard(s, idx) {
+ let h = '<div class="stage-card" id="'+s.id+'">';
+ h += '<div class="card-head"><div class="card-badge">'+s.num+'</div><div><h2>'+s.title+'</h2><p>'+s.desc+'</p></div></div>';
+ // Execution AI
+ if (s.exec) {
+ h += renderUsage(s.exec, 'Execution AIprompt');
+ h += '<div class="prompt-block"><div class="prompt-head"><span class="tag tag-e">E Execution AIprompt</span>';
+ h += '<button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>';
+ h += '<div class="prompt-body">'+escHtml(s.execText)+'</div></div>';
+ }
+ // Strategy AI
+ if (s.strat) {
+ h += renderUsage(s.strat, 'Strategy AIprompt');
+ h += '<div class="prompt-block"><div class="prompt-head"><span class="tag tag-s">S Strategy AIprompt</span>';
+ h += '<button class="copy-btn" onclick="copyPrompt(this)">Copy</button></div>';
+ h += '<div class="prompt-body">'+escHtml(s.stratText)+'</div></div>';
+ }
+ // check
+ if (s.checks && s.checks.length) {
+ h += '<div class="checklist"><div class="checklist-title">✓ Manual Review Checklist</div><ul>';
+ s.checks.forEach(c => { h += '<li><input type="checkbox"> '+c+'</li>'; });
+ h += '</ul></div>';
+ }
+ // next step
+ if (s.strat) {
+ h += '<div class="next-guide"><strong>⬇️ After review passes, the Strategy AI will tell you where to go next</strong></div>';
+ }
+ h += '</div>';
+ return h;
+}
+
+function renderUsage(info, label) {
+ return '<div class="usage-box">'
+ + '<div><span class="label">📋 Instructions</span></div>'
+ + '<div><span class="label">Send to: </span><span class="val">'+info.to+'（'+info.tag+'）</span></div>'
+ + '<div><span class="label">When: </span><span class="val">'+info.when+'</span></div>'
+ + '<div><span class="label">Expected: </span><span class="val">'+info.expect+'</span></div>'
+ + '<div><span class="label">Next: </span><span class="val">'+info.next+'</span></div>'
+ + '</div>';
+}
+
+
+// ========== ==========
+function goStage(i) {
+ currentStage = i;
+ renderSidebar();
+ const el = document.getElementById(MODES[currentMode].stages[i].id);
+ if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function copyPrompt(btn) {
+ const block = btn.closest('.prompt-block');
+ const body = block.querySelector('.prompt-body');
+ navigator.clipboard.writeText(body.textContent).then(() => {
+ btn.textContent = 'Copied ✓'; btn.classList.add('copied');
+ setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+ });
+}
+
+
+function escHtml(s) {
+ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// 
+const observer = new IntersectionObserver(entries => {
+ entries.forEach(e => {
+ if (e.isIntersecting) {
+ const mode = MODES[currentMode];
+ const idx = mode.stages.findIndex(s => s.id === e.target.id);
+ if (idx >= 0) {
+ currentStage = idx;
+ renderSidebar();
+ }
+ }
+ });
+}, {rootMargin:'-100px 0px -60% 0px'});
+
+// ========== ==========
+let notepadType = 'req'; // 'req' or 'note'
+const NP_KEY = 'shutong_notepads';
+
+function loadNotepads() {
+ try { return JSON.parse(localStorage.getItem(NP_KEY)) || {req:[],note:[]}; }
+ catch(e) { return {req:[],note:[]}; }
+}
+
+function saveNotepads(data) {
+ localStorage.setItem(NP_KEY, JSON.stringify(data));
+}
+
+function setNotepadType(type) {
+ notepadType = type;
+ document.querySelectorAll('.notepad-tab').forEach(t => t.classList.remove('active'));
+ document.querySelector('.notepad-tab[onclick*="'+type+'"]').classList.add('active');
+ renderNotepads();
+}
+
+function addNotepad() {
+ const data = loadNotepads();
+ const now = new Date();
+ const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+ const item = {id:Date.now(), title:notepadType==='req'?'requirement':'', body:'', time:ts};
+ data[notepadType].unshift(item);
+ saveNotepads(data);
+ renderNotepads();
+}
+
+function deleteNotepad(id) {
+ const data = loadNotepads();
+ data[notepadType] = data[notepadType].filter(n => n.id !== id);
+ saveNotepads(data);
+ renderNotepads();
+}
+
+function updateNotepad(id, field, value) {
+ const data = loadNotepads();
+ const item = data[notepadType].find(n => n.id === id);
+ if (item) { item[field] = value; saveNotepads(data); }
+}
+
+function copyNotepadBody(id) {
+ const data = loadNotepads();
+ const item = data[notepadType].find(n => n.id === id);
+ if (!item) return;
+ navigator.clipboard.writeText(item.body).then(() => {
+ const btn = document.querySelector('[data-copy="'+id+'"]');
+ if (btn) { btn.textContent='Copied ✓'; setTimeout(()=>btn.textContent='copy',1200); }
+ });
+}
+
+function exportNotepads() {
+ const data = loadNotepads();
+ let text = '=== requirement ===\n\n';
+ data.req.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
+ text += '=== ===\n\n';
+ data.note.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
+ const blob = new Blob([text], {type:'text/plain'});
+ const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+ a.download = 'shutong-notepads.txt'; a.click();
+}
+
+function toggleNotepad() {
+ const panel = document.getElementById('notepadPanel');
+ const btn = document.getElementById('notepadToggle');
+ panel.classList.toggle('hidden');
+ btn.textContent = panel.classList.contains('hidden') ? '▶' : '◀';
+ document.querySelector('.main-content').style.marginRight = panel.classList.contains('hidden') ? '0' : '320px';
+}
+
+function renderNotepads() {
+ const data = loadNotepads();
+ const list = data[notepadType];
+ const container = document.getElementById('notepadList');
+ if (!list.length) {
+ container.innerHTML = '<div class="notepad-empty">'+(notepadType==='req'?'requirement':'')+'<br>「＋ New」</div>';
+ return;
+ }
+ let html = '';
+ list.forEach(n => {
+ html += '<div class="notepad-card">';
+ html += '<div class="notepad-card-head">';
+ html += '<span class="notepad-card-time">'+n.time+'</span>';
+ html += '<div class="notepad-card-actions">';
+ html += '<button data-copy="'+n.id+'" onclick="copyNotepadBody('+n.id+')">copy</button>';
+ html += '<button class="del" onclick="deleteNotepad('+n.id+')"></button>';
+ html += '</div></div>';
+ html += '<input class="notepad-card-title" value="'+n.title.replace(/"/g,'&quot;')+'" onchange="updateNotepad('+n.id+',\'title\',this.value)">';
+ html += '<textarea class="notepad-card-body" placeholder="content..." oninput="updateNotepad('+n.id+',\'body\',this.value)">'+n.body+'</textarea>';
+ html += '</div>';
+ });
+ container.innerHTML = html;
+}
+
+function initNotepad() { renderNotepads(); }
+
+// init
+setMode('b');
+setTimeout(() => {
+ MODES[currentMode].stages.forEach(s => {
+ const el = document.getElementById(s.id);
+ if (el) observer.observe(el);
+ });
+}, 100);
+initNotepad();
+</script>
+</body>
+</html>

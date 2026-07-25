@@ -1,258 +1,123 @@
 # Shutong Dev Workflow
 
-> English | [中文](README.md)
+> English | [中文](shutong-dev-workflow.html)
 
-> A complete anti-drift playbook for non-programmers using AI-assisted development
+> A complete anti-drift playbook for non-programmers using AI-assisted development v2.0
 
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
 
-**Core principle: Unsure → Stop → Ask → Record → Code → Answer**
+**Core principle: Unsure -> Stop -> Ask -> Record -> Code -> Answer**
 
 ---
 
 ## What is this?
 
-A development workflow designed for **users who can't code but want to use AI to transform their projects**. Through a dual-AI collaboration (Strategy AI + Execution AI), it breaks vague requirements into executable staged operations, with clear prompts, review checklists, and status markers at every step.
+A development workflow designed for **users who can't code but want to build projects with AI**. Through dual-AI collaboration (Strategy AI + Execution AI), it breaks vague requirements into executable staged operations, with clear prompts, review checklists, and status markers.
 
-You don't need to know code — you just need to know how to **copy-paste** and **click confirm**.
-
----
-
-## The Problem This Solves
-
-The most dangerous pitfall in AI-assisted programming isn't errors — it's **requirement drift**. The code runs, but the direction is wrong.
-
-Symptoms include:
-- AI gradually drifts from the original requirement without realizing it
-- Code is built on wrong assumptions, compounding the mistake
-- Changing multiple files at once breaks the call chain — no errors on the surface, but the underlying logic is broken
-- User can't code, so they can't tell whether AI went off track
-
-**A single AI cannot self-check this problem** — it won't question its own output. This workflow uses a dual-AI division of labor (Strategy AI reviews direction + Execution AI writes code) with checkpoints at every stage to prevent requirement drift at its root.
+You don't need to know code - just **copy-paste** and **click confirm**.
 
 ---
 
-## Quick Start (3 Steps)
+## Quick Start
+
+**Open `shutong-dev-workflow_en.html`, choose a mode, copy prompts stage by stage.**
 
 ```text
 1. Open two AI windows
-   - Window A (Strategy Layer): Kimi / ChatGPT / Claude — review direction, generate instructions
-   - Window B (Execution Layer): Mimo Code — read code, modify code, run verification
+   - Window A (Strategy): Kimi / ChatGPT / Claude - review direction, generate instructions
+   - Window B (Execution): Mimo Code / Cursor / Copilot - read code, modify code, verify
 
-2. Copy prompts from prompts/ directory stage by stage
-   - Each stage has an [Execution AI Prompt] and a [Strategy AI Prompt]
-   - Replace {{placeholders}} with your actual content
+2. Choose your scenario (3 modes)
+   - New Project: No code, build from scratch
+   - Add Feature: Have code, adding new functionality
+   - Fix Issue: Have code, something is broken
 
-3. Follow the playbook step by step, wait for confirmation at each step
-   - Execution AI never advances until you say "confirm"
-   - Each step has a status marker (e.g. [PROBE_DONE]) for precise recovery when stuck
+3. Copy prompts stage by stage, wait for confirmation at each step
+   - Each prompt card has instructions (who to send to, when, expected result)
+   - Strategy AI tells you where to go after review passes
 ```
 
 ---
 
-## Two Modes
+## Three Modes
 
-### Mode A: Modify Existing Project
+### New Project
 
-For projects with an existing codebase that need modifications or feature enhancements.
-
-```text
-PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE
-```
-
-- PROBE: Understand current code state
-- DESIGN: Freeze modification plan
-- CONTRACT: Confirm interface contract
-- CODE: Modify files one at a time
-- VERIFY: Verify modification worked
-- DONE: Cleanup
-
-### Mode B: Build from Scratch
-
-For projects with no codebase that need to be built from the ground up.
+For building from scratch with no existing code.
 
 ```text
-INIT → DESIGN → CONTRACT → CODE → VERIFY → DEPLOY → DONE
+Init -> Design -> Contract -> Code -> Verify -> Deploy -> Done
 ```
 
-- INIT: Tech stack selection, directory structure, dependency planning
-- DESIGN: Freeze architecture design
-- CONTRACT: Design data models and API interfaces
-- CODE: Build skeleton layer by layer
-- VERIFY: Acceptance testing (based on criteria defined in INIT)
-- DEPLOY: Deploy to production, smoke test
-- DONE: Cleanup and handover
+### Add Feature
+
+For adding new features to an existing codebase.
+
+```text
+Probe -> Design -> Contract -> Code -> Verify -> Done
+```
+
+### Fix Issue
+
+For fixing broken functionality in an existing codebase.
+
+```text
+Probe -> Diagnose -> Contract -> Code -> Verify -> Done
+```
 
 ---
 
-## Directory Structure
+## Features
 
-```text
+| Feature | Description |
+|---------|-------------|
+| **3 Modes** | New Project / Add Feature / Fix Issue |
+| **Dual-AI** | Strategy AI reviews direction + Execution AI writes code |
+| **Instructions** | Each prompt card shows: who, when, expected result, next step |
+| **Copy Button** | One-click copy for prompts |
+| **Notepad** | Requirements and Notes tabs, localStorage persistence |
+| **Dark Theme** | Eye-friendly dark interface with mode-colored accents |
+| **Checklists** | Manual review checkpoints embedded in each stage |
+
+---
+
+## File Structure
+
+```
 shutong-dev-workflow/
-├── LICENSE                          # MIT License
-├── README.md                        # Chinese version
-├── README_EN.md                     # This file (English)
-├── CONTRIBUTING.md                  # Contributing guide
-├── CHANGELOG.md                     # Chinese changelog
-├── CHANGELOG_EN.md                  # English changelog
-├── prompts/                         # Stage prompts (use in order)
-│   ├── 00-setup.md                  # Initialization (with mode selection)
-│   ├── 01-probe.md                  # PROBE: understand state / INIT: from-scratch init
-│   ├── 02-design.md                 # DESIGN: freeze architecture
-│   ├── 03-contract.md               # CONTRACT: interface contract
-│   ├── 04-code.md                   # CODE: single-file changes
-│   ├── 05-verify.md                 # VERIFY: run verification
-│   ├── 06-done.md                   # DONE: cleanup
-│   ├── 07-exception-handling.md     # Exception handling cheat sheet
-│   ├── 08-git-safety.md            # Git safety
-│   ├── 09-deploy.md                 # DEPLOY: deploy to production (from-scratch mode)
-│   └── en/                          # English prompts
-│       ├── 00-setup_en.md
-│       ├── 01-probe_en.md
-│       ├── 02-design_en.md
-│       ├── 03-contract_en.md
-│       ├── 04-code_en.md
-│       ├── 05-verify_en.md
-│       ├── 06-done_en.md
-│       ├── 07-exception-handling_en.md
-│       ├── 08-git-safety_en.md
-│       └── 09-deploy_en.md
-├── docs/                            # Design documents
-│   ├── comparison.md                # Comparison with alternatives
-│   ├── why-two-ai.md               # Why two AIs?
-│   └── en/                          # English docs
-│       ├── comparison_en.md
-│       └── why-two-ai_en.md
-└── examples/
-    ├── example-session.md           # Full example sessions (Chinese)
-    └── en/
-        └── example-session_en.md    # Full example sessions (English)
+├── shutong-dev-workflow.html      # Chinese interactive page (main)
+├── shutong-dev-workflow_en.html   # English version
+├── README.md                      # Chinese README
+├── README_EN.md                   # This file
+├── prompts/                       # Prompt reference docs (Markdown)
+│   ├── 00-setup.md ~ 09-deploy.md
+│   └── en/                        # English prompts
+├── docs/                          # Design documents
+├── examples/                      # Example sessions
+├── CHANGELOG.md                   # Changelog
+└── LICENSE                        # MIT License
 ```
-
----
-
-## Stage Flow
-
-### Mode A: Modify Existing Project
-
-```text
-┌─────────┐     ┌─────────┐     ┌──────────┐     ┌──────┐     ┌────────┐     ┌──────┐
-│  PROBE  │────▶│ DESIGN  │────▶│ CONTRACT │────▶│ CODE │────▶│ VERIFY │────▶│ DONE │
-│  Scout  │     │  Plan   │     │ Contract │     │ Edit │     │  Test  │     │ Clean│
-└─────────┘     └─────────┘     └──────────┘     └──────┘     └────────┘     └──────┘
-     │                │                                                  │
-     │          ┌─────┴─────┐                                            │
-     │          ▼           ▼                                            │
-     │    State A (new)  State B (partial)                                │
-     │    Build fresh    Diagnose ──────────────────────────────────────────┘
-     │                                                                      ▲
-     └──────────────────────────────────────────────────────────────────────┘
-                          VERIFY failure falls back to CODE
-```
-
-### Mode B: Build from Scratch
-
-```text
-┌──────────┐     ┌─────────┐     ┌──────────┐     ┌──────┐     ┌────────┐     ┌────────┐     ┌──────┐
-│   INIT   │────▶│ DESIGN  │────▶│ CONTRACT │────▶│ CODE │────▶│ VERIFY │────▶│ DEPLOY │────▶│ DONE │
-│   Plan   │     │  Arch   │     │ Contract │     │Build │     │Accept  │     │Deploy  │     │Clean │
-└──────────┘     └─────────┘     └──────────┘     └──────┘     └────────┘     └────────┘     └──────┘
-                                            │           │               │
-                                            │     ┌─────┴─────┐         │
-                                            │     ▼           ▼         │
-                                            │  Config → Utility → Business │
-                                            │  Build layer by layer      │
-                                            │                           │
-                                            └───────────────────────────┘
-                                                     VERIFY failure falls back to CODE
-```
-
-At each stage:
-- Execution AI produces output + status marker (e.g. `[INIT_DONE]`)
-- User copies it to Strategy AI for review
-- Strategy AI generates next-stage instructions
-- User copies instructions to Execution AI
-
----
-
-## Comparison with Alternatives
-
-| Feature | Single AI Tools (Cursor/Copilot) | This Workflow |
-|---------|----------------------------------|---------------|
-| AI Architecture | Single AI, self-questioning | Dual AI cross-check (Strategy + Execution) |
-| Anti-drift | None, AI may drift | Strategy AI reviews every output |
-| Progress Management | None | Progress coordinates ([STEP X/N]) |
-| Non-programmer Friendly | Requires some coding | Pure copy-paste + confirm |
-| Error Recovery | Restart conversation | Resume from specific step |
-| Version Control | None | Git safety (rollback) |
-| Interface Contract | None | CONTRACT stage freezes it |
-| Supported Scenarios | Modify only | **Modify + Build from scratch** |
-
-See [docs/en/comparison_en.md](docs/en/comparison_en.md)
-
----
-
-## Who Is This For?
-
-- Users who **can't code** but want to use AI to transform their projects
-- Users who have ideas but don't know how to communicate with AI
-- Users who have been burned by AI making things worse, and want safety guarantees
-- Teams that need repeatable, rollback-able development workflows
-- **Non-programmers who want to build a project from scratch** (v1.2)
 
 ---
 
 ## Core Principles
 
-1. **PROBE is a state sensor** — Not just "check it", but decide "build fresh" or "debug existing"
-2. **Progress markers are anti-stuck core** — Give "stuck → stop → resume" precise coordinates
-3. **Strategy AI never touches code** — It reviews "are there 6 answers" / "is there a [PROBE] log", not code logic
-4. **User is just a switch** — Confirm, rollback, next step, resume from step X — no code knowledge needed
-5. **Direction drift is more dangerous than errors** — System runs fine but logic is wrong, only PROBE+VERIFY layers can expose it
-6. **When unsure, stop** — Any anomaly at any stage: stop immediately, wait for Strategy AI judgment
-7. **From-scratch mode builds layer by layer** — Config → Utility → Business, verify each layer before proceeding (v1.2)
+1. **Strategy AI never touches code** - Only reviews direction and completeness
+2. **One file at a time** - Prevents call chain breakage
+3. **Status markers at every step** - Precise recovery when stuck
+4. **When unsure, stop** - Any anomaly: stop immediately, wait for Strategy AI
 
 ---
 
 ## Versions
 
-- **v1.0** — 7-stage complete workflow (PROBE → DESIGN → CONTRACT → CODE → VERIFY → DONE)
-- **v1.1** — Git safety, exception handling hardening, PROBE scope limiting, execution discipline
-- **v1.2** — From-scratch project mode (INIT stage, DEPLOY stage, layer-by-layer building, acceptance testing)
-
-See [CHANGELOG_EN.md](CHANGELOG_EN.md) | [CHANGELOG.md](CHANGELOG.md)
-
----
-
-## Contributing
-
-This project is currently a **prompt-based playbook** — you follow it by copy-pasting. It works, but it's manual.
-
-**We're looking for developers who want to turn this workflow into something programmable.**
-
-### What we want to build
-
-| Tool | Description |
-|------|-------------|
-| **CLI tool** | `shutong init`, `shutong probe`, `shutong verify` — run stages from terminal |
-| **VS Code extension** | Side panel with stage buttons, auto-paste prompts, status tracking |
-| **Web dashboard** | Visual stage pipeline, progress overview, log viewer |
-| **API / SDK** | Embed the workflow into any AI coding tool as a middleware layer |
-| **GitHub Action** | Auto-run PROBE on PR, VERIFY on push |
-
-### How to contribute
-
-1. Fork this repo
-2. Pick an idea above (or propose your own)
-3. Open an issue to discuss your approach
-4. Submit a PR
-
-The prompts in `prompts/` are the spec — your tool should wrap them programmatically so users don't need to copy-paste.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+- **v2.0** - 3 modes, interactive HTML, notepad, instruction cards
+- **v1.2** - New project mode (INIT/DEPLOY stages)
+- **v1.1** - Git safety, exception handling hardening
+- **v1.0** - Initial release (PROBE->DESIGN->CONTRACT->CODE->VERIFY->DONE)
 
 ---
 
 ## License
 
-[MIT License](LICENSE) — Attribution: Shutong Protocol Contributors
+[MIT License](LICENSE) - Attribution: Shutong Protocol Contributors
