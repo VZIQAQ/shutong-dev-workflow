@@ -1085,14 +1085,8 @@ MVP文档：
 
 如选B，请列出需要补充的具体问题清单（用户可以直接复制给执行AI）。`;
 
-const PRE_KW={
-  A:['完整','8分','9分','10分','直接进入设计','进入设计','进入契约','进入编码','A.'],
-  B:['有缺口','5分','6分','7分','补充','初始化','先补充','B.'],
-  C:['不足','0分','1分','2分','3分','4分','重新梳理','重新来','C.']
-};
-
 function startPreReview(mode){
-  S={mode:'mode'+mode,isPreReview:true,preReview:{document:'',result:'',verdict:null},step:0,layer:0,branchStack:[],stepsData:[],done:false};
+  S={mode:'mode'+mode,isPreReview:true,preReview:{document:'',verdict:null},step:0,layer:0,branchStack:[],stepsData:[],done:false};
   document.body.className=P[S.mode].themeCls;
   renderModeBtns();
   saveState();
@@ -1109,19 +1103,16 @@ function renderPreReview(){
   h+=`<div class="pre-step"><h4>第1步：粘贴你的MVP文档</h4>`;
   h+=`<textarea placeholder="在此粘贴你和AI讨论产出的MVP文档完整内容..." oninput="S.preReview.document=this.value;saveState()">${pr.document}</textarea></div>`;
 
-  h+=`<div class="pre-step"><h4>第2步：发给策略AI审查</h4>`;
+  h+=`<div class="pre-step"><h4>第2步：复制审查提示词，发给策略AI</h4>`;
   h+=`<div class="usage"><span class="ul">📋 使用说明</span><br>`;
   h+=`<span class="ul">发给：</span><span class="uv">窗口A（策略AI / Kimi）</span><br>`;
   h+=`<span class="ul">时机：</span><span class="uv">正式进入工作流之前，先审查文档质量</span><br>`;
-  h+=`<span class="ul">预期：</span><span class="uv">10项审查维度评分 + 缺口清单 + 分流建议</span><br>`;
-  h+=`<span class="ul">下一步：</span><span class="uv">根据审查结论选择进入阶段</span></div>`;
-  h+=`<div class="pblock"><div class="phead"><span class="ptag ptag-s">S 审查提示词</span><button class="copybtn" onclick="cpBlock(this)">一键复制</button></div>`;
+  h+=`<span class="ul">预期：</span><span class="uv">10项维度评分 + 缺口清单 + 分流建议</span><br>`;
+  h+=`<span class="ul">注意：</span><span class="uv">点击「复制」后，上方粘贴的文档会自动嵌入提示词</span></div>`;
+  h+=`<div class="pblock"><div class="phead"><span class="ptag ptag-s">S 审查提示词</span><button class="copybtn" onclick="copyReviewPrompt()">📋 复制审查提示词</button></div>`;
   h+=`<div class="pbody">${esc(PRE_REVIEW_PROMPT)}</div></div></div>`;
 
-  h+=`<div class="pre-step"><h4>第3步：粘贴策略AI的审查结论</h4>`;
-  h+=`<textarea placeholder="在此粘贴策略AI的审查回复..." oninput="onPreReviewInput(this)">${pr.result}</textarea></div>`;
-
-  h+=`<div class="pre-step"><h4>第4步：根据审查结论，选择进入工作流的阶段</h4>`;
+  h+=`<div class="pre-step"><h4>第3步：阅读策略AI的审查结论后，手动选择</h4>`;
   h+=`<div class="pre-radios">`;
   h+=`<label class="opt-a"><input type="radio" name="preVerdict" value="A" ${pr.verdict==='A'?'checked':''} onclick="S.preReview.verdict='A';saveState()"> ✅ A. 文档完整（8-10分）→ 直接进入「设计」阶段</label>`;
   h+=`<label class="opt-b"><input type="radio" name="preVerdict" value="B" ${pr.verdict==='B'?'checked':''} onclick="S.preReview.verdict='B';saveState()"> ⚠️ B. 有缺口（5-7分）→ 进入「初始化」补充缺口后推进</label>`;
@@ -1136,18 +1127,16 @@ function renderPreReview(){
   document.getElementById('app').innerHTML=h;
 }
 
-function onPreReviewInput(ta){
-  S.preReview.result=ta.value;
-  const text=ta.value;
-  let detected=null;
-  for(const kw of PRE_KW.A){if(text.includes(kw)){detected='A';break}}
-  if(!detected)for(const kw of PRE_KW.B){if(text.includes(kw)){detected='B';break}}
-  if(!detected)for(const kw of PRE_KW.C){if(text.includes(kw)){detected='C';break}}
-  if(detected){
-    S.preReview.verdict=detected;
-    document.querySelectorAll('input[name=preVerdict]').forEach(r=>{r.checked=r.value===detected});
-  }
-  saveState();
+function copyReviewPrompt(){
+  if(!S||!S.isPreReview)return;
+  const doc=S.preReview.document;
+  if(!doc||!doc.trim()){alert('请先粘贴MVP文档');return}
+  const full=PRE_REVIEW_PROMPT.replace('{{粘贴你的MVP文档}}',doc);
+  navigator.clipboard.writeText(full).then(()=>{
+    const btns=document.querySelectorAll('.copybtn');
+    const btn=Array.from(btns).find(b=>b.textContent.includes('复制审查'));
+    if(btn){btn.textContent='已复制 ✓';btn.classList.add('ok');setTimeout(()=>{btn.textContent='📋 复制审查提示词';btn.classList.remove('ok')},1500)}
+  });
 }
 
 function enterWorkflowFromPreReview(){
@@ -1155,7 +1144,6 @@ function enterWorkflowFromPreReview(){
   const verdict=S.preReview.verdict;
   if(!verdict){alert('请先选择审查结论（A/B/C）');return}
   const mode=S.mode;
-  const m=P[mode];
   const pr=S.preReview;
 
   S=defaultState(mode);
@@ -1165,8 +1153,7 @@ function enterWorkflowFromPreReview(){
     S.step=1;
     S.stepsData[0].review=pr.document;
   } else if(verdict==='B'){
-    S.stepsData[0].review=pr.result;
-    S.stepsData[0].verdict='补充';
+    S.stepsData[0].review='参考文档（有缺口，需补充）：\n'+pr.document.substring(0,500)+'...';
   } else {
     S.stepsData[0].review='参考文档（质量不足，需重新梳理）：\n'+pr.document.substring(0,500)+'...';
   }
