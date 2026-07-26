@@ -237,15 +237,7 @@ modeA:{
 1. 【技术选型】根据需求，推荐技术栈（前端/后端/数据库/部署），说明理由
 2. 【目录结构】设计项目目录树，说明每个目录放什么
 3. 【依赖规划】核心依赖有哪些？版本建议？
-4. 【入口层方案】项目有哪些用户交互入口？
-   - CLI 入口：是否需要？启动命令是什么？
-   - Web 入口：是否需要前端界面？
-     * 如需要，技术选型（Gradio/Streamlit/其他）及理由
-     * 前端页面包含哪些组件？（聊天框、设置面板、状态显示等）
-     * 启动方式（命令行启动后自动打开浏览器？）
-   - 如果双入口并存，它们如何复用同一套业务逻辑层？
-   - 如果只需要 CLI，明确声明"本项目无 Web 入口，确认"
-   - 启动参数（如有）
+4. 【入口设计】主入口文件是什么？启动方式？
 5. 【配置设计】需要哪些配置文件？环境变量？
 6. 【扩展预留】未来可能扩展的模块，预留什么接口/目录？
 7. 【验收标准】你希望怎么证明这个项目"做完了"？功能清单、验收测试、性能要求
@@ -294,14 +286,8 @@ Please answer the following questions. Each must provide specific suggestions an
    - Suggest version numbers
    - Mark required vs optional
 
-4. [Entry Layer Plan] What user interaction entry points does the project have?
-   - CLI entry: Is it needed? What is the startup command?
-   - Web entry: Is a frontend UI needed?
-     * If yes, tech choice (Gradio/Streamlit/other) and rationale
-     * What components on the frontend? (chat box, settings panel, status display, etc.)
-     * Startup method (auto-open browser after CLI start?)
-   - If dual entries coexist, how do they share the same business logic layer?
-   - If CLI only, explicitly state "This project has no Web entry, confirmed"
+4. [Entry Point] What is the main entry file?
+   - Startup method (CLI/script/double-click)
    - Startup parameters (if any)
 
 5. [Config Design] What config files are needed?
@@ -435,14 +421,6 @@ If review passes, output [CONTRACT-Interface] instruction.
 3. 【模块接口】内部模块间的调用约定
 4. 【异常处理策略】错误码定义、降级方案
 5. 【技术选型确认】用户确认后的技术栈冻结
-5.5 【入口层契约】
-   - CLI 入口：文件路径、函数签名、启动方式
-   - Web 入口（如有）：
-     * 文件路径（如 webui.py）
-     * 前端框架及版本
-     * 页面路由/组件清单
-     * 如何调用主循环层（输入参数映射）
-   - 如果无 Web 入口，明确声明"入口层仅含 CLI，确认"
 6. 【编码纪律】禁止破坏性操作、必须遵循的规范
 
 要求：输出 [CONTRACT_DONE]`,
@@ -477,14 +455,6 @@ Please answer:
 3. [Module Interface] What are the function/method interfaces between modules?
 4. [Error Handling] How does each module handle exceptions? Error codes?
 5. [Tech Stack Confirmation] Please restate the confirmed tech stack.
-5.5 [Entry Layer Contract]
-   - CLI entry: file path, function signature, startup method
-   - Web entry (if applicable):
-     * File path (e.g. webui.py)
-     * Frontend framework and version
-     * Page routes/component list
-     * How to call the main logic layer (input parameter mapping)
-   - If no Web entry, explicitly state "Entry layer contains CLI only, confirmed"
 6. [Coding Discipline] Will coding create only one file at a time? Confirm.
 
 After confirmation, I will reply "confirm" to start building.
@@ -561,26 +531,24 @@ Requirements: Based on Layer 1 config, verify each file after creation.
 [Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
 Output [CODE_L2_DONE]`},
 
-        {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层（按契约确认的内容执行）
+        {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层
 
 请创建：
-1. 如契约含 CLI 入口：创建 main.py（启动命令、参数解析）
-2. 如契约含 Web 入口：创建 webui.py（及前端相关文件）
-3. 如契约含双入口：先 CLI 后 Web，逐个创建，逐个确认
-4. 每个入口文件必须能独立运行（启动后不报错）
+1. 主入口文件（如 app.py, main.js 等）
+2. 路由/控制器骨架
+3. 启动脚本
 
-要求：基于第1-2层，严格按契约的入口层方案执行。
+要求：基于第1-2层，运行验证能启动不报错。
 【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
 输出 [CODE_L3_DONE]`,
-         execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer (per contract)
+         execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer
 
 Please create:
-1. If contract has CLI entry: create main.py (startup command, argument parsing)
-2. If contract has Web entry: create webui.py (and frontend files)
-3. If contract has dual entry: CLI first, then Web, create one by one, confirm each
-4. Each entry file must run independently (no errors on startup)
+1. Main entry file (e.g. app.py, main.js)
+2. Router/controller skeleton
+3. Startup script
 
-Requirements: Based on Layers 1-2, strictly follow the entry layer plan from CONTRACT.
+Requirements: Based on Layers 1-2, verify it starts without errors.
 [Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
 Output [CODE_L3_DONE]`},
 
@@ -857,7 +825,7 @@ Please analyze the following deploy result from Execution AI.
 
 状态判断：通过 → 项目完成！`,
      stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查',next:'项目完成！'},
-     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成','入口层方案已在 INIT 阶段确认（CLI/Web/双端），无遗漏'],checksEn:['README complete','Env config docs clear','Handover checklist generated','git archive complete','Entry layer plan confirmed in INIT (CLI/Web/dual), no omissions'],
+     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成'],checksEn:['README complete','Env config docs clear','Handover checklist generated','git archive complete'],
     execEn:`[Stage: DONE-FromScratch] Project wrap-up, complete new build.
 
 Verification passed:
@@ -890,27 +858,25 @@ modeB:{
 5. 【技术约束】现有技术栈对新功能有什么限制？
 6. 【数据对接】新功能需要读写哪些现有数据？
 
-【特殊场景：追加入口】
-如果本次新增的是一个独立的入口文件（如 Web 前端、新的 CLI 入口）：
-- 列出当前所有已有入口文件
-- 说明新增入口与现有入口的关系（替代/并存）
-- 确认新增入口文件应放在哪个目录、命名规范是什么
-
-【子场景：架构重构】
-如果本次新增涉及以下任一情况，请在探测结果中明确标注【ARCH_REFACTOR】：
-- 需要修改主循环/核心数据流
-- 需要新增≥2个模块且它们之间有依赖关系
-- 需要改变现有节点的生命周期（创建/合并/删除逻辑）
-- 需要修改已有数据结构的字段
-
-标注后，DESIGN 阶段必须回答：
-1. 新增模块清单及依赖顺序
-2. 改造文件清单及修改点
-3. 回退策略（如何回到改造前状态）
-
 要求：只探测，不改代码。输出 [PROBE_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'新增功能开始时',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】探测阶段
 
-     execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
+请审查以下探测结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 插入点是否合理？
+2. 影响范围是否评估完整？
+3. 技术约束是否识别？
+
+状态判断：
+A. 无相关代码，需新增 → 进入「设计」
+B. 有残留/新旧混杂 → 进入「设计」（诊断分支）
+C. 功能已存在且正常 → 结束`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到探测结果后',expect:'状态判断 + 下一步指令',next:'按指令进入设计'},
+     checks:['插入点已定位','影响范围已评估','技术约束已识别'],checksEn:['Insertion point located','Impact scope assessed','Technical constraints identified'],
+    execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
 
 Requirement: {{your requirement}}
 
@@ -931,30 +897,11 @@ Please perform a comprehensive probe of the codebase. Each answer must reference
 
 6. [Extension Points] If adding a module, where should it go? What naming convention?
 
-[Special Scenario: Add Entry Point]
-If the new feature is an independent entry file (e.g. Web frontend, new CLI entry):
-- List all existing entry files
-- Explain relationship with existing entries (replace/coexist)
-- Confirm directory and naming convention for the new entry file
-
-[Sub-scenario: Architecture Refactoring]
-If the new feature involves any of the following, explicitly mark [ARCH_REFACTOR] in probe results:
-- Need to modify main loop / core data flow
-- Need to add ≥2 modules with dependencies between them
-- Need to change lifecycle of existing nodes (create/merge/delete logic)
-- Need to modify fields of existing data structures
-
-If marked, DESIGN stage must answer:
-1. New module list and dependency order
-2. Files to modify and modification points
-3. Rollback strategy (how to revert to pre-modification state)
-
 Requirements:
 - Paste complete code of key methods (do not omit)
 - Mark file paths with code blocks
-- Output [PROBE_DONE]
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'新增功能开始时',whenEn:'When starting to add feature',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-    stratEn:[PROBE Review Task]
+- Output [PROBE_DONE]`,
+    stratEn:`[PROBE Review Task]
 
 Please review the following PROBE result from Execution AI and judge code state.
 
@@ -989,15 +936,24 @@ If review passes, output [DESIGN-Add Feature] instruction.
 5. 【回退策略】新增失败如何清理
 6. 【验证方案】新增后如何验证
 
-7. 【架构重构补充】（如 PROBE 标注了【ARCH_REFACTOR】）
-   - 新增模块之间如何协作？画出模块依赖图
-   - 现有代码中哪些函数签名需要变更？
-   - 数据结构变更是否影响已有存储（如 graph 的节点属性）？
-   - 改造期间是否需要冻结其他功能开发？
-
 要求：只设计，不编码。输出 [DESIGN_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'探测通过后',expect:'设计方案 + [DESIGN_DONE]',expectEn:'Design plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】设计阶段
 
-     execEn:`[Stage: DESIGN] Answer design questions only. No code, no commands.
+请审查以下设计方案：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 架构是否清晰？
+2. 对接方案是否可行？
+3. 回退策略是否完整？
+
+状态判断：通过 / 需补充
+
+如通过，进入「契约」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到设计方案后',whenEn:'After receiving design plan',expect:'审查结论',next:'进入契约'},
+     checks:['新增架构清晰','对接方案可行','回退策略已定义'],checksEn:['New architecture clear','Integration plan feasible','Rollback strategy defined'],
+    execEn:`[Stage: DESIGN] Answer design questions only. No code, no commands.
 
 Based on code you just probed, this feature goal: {{repeat your requirement}}
 
@@ -1014,16 +970,9 @@ Please answer:
 5. [Verification] How to prove new feature works? Where to add temp logs?
 6. [Risk Points] What existing features might break? How to mitigate?
 
-7. [Architecture Refactoring Supplement] (if PROBE marked [ARCH_REFACTOR])
-   - How do new modules collaborate? Draw module dependency diagram
-   - Which existing function signatures need to change?
-   - Do data structure changes affect existing storage (e.g. graph node properties)?
-   - Should other feature development be frozen during refactoring?
-
 After answering clearly, I will reply "confirm" before you write code.
-Output [DESIGN_DONE]
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'探测通过后',whenEn:'After probe review passes',expect:'设计方案 + [DESIGN_DONE]',expectEn:'Design plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-    stratEn:[DESIGN Review Task]
+Output [DESIGN_DONE]`,
+    stratEn:`[DESIGN Review Task]
 
 Please review the following DESIGN result from Execution AI.
 
@@ -1058,15 +1007,24 @@ If review passes, output [CONTRACT-Confirmation] instruction.
 5. 【降级路径】新功能不可用时的回退方案
 6. 【编码纪律】禁止超出契约范围的修改
 
-6.5 【架构重构契约】（如 DESIGN 包含架构重构）
-   - 新增模块的完整接口定义（函数名、参数类型、返回值）
-   - 改造文件的变更范围（哪些行/哪些逻辑块）
-   - 冻结值：阈值、权重、枚举值等一旦设定不得在执行中变更
-   - 回退指令：如果某一步改造失败，执行什么命令回退
-
 要求：输出 [CONTRACT_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】契约阶段
 
-     execEn:`[Stage: CONTRACT] Confirm interface. No code, no commands.
+请审查以下契约：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 接口定义是否清晰？
+2. 数据变更是否合理？
+3. 降级路径是否可行？
+
+状态判断：通过 / 需补充
+
+如通过，进入「编码」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约后',whenEn:'After receiving contract',expect:'审查结论',next:'进入编码'},
+     checks:['新增接口清晰','数据变更有评估','降级路径已定义','编码纪律已确认'],checksEn:['New interface clear','Data changes assessed','Degradation path defined','Coding discipline confirmed'],
+    execEn:`[Stage: CONTRACT] Confirm interface. No code, no commands.
 
 [New Module]
 - Input: {{your expected input params}}
@@ -1083,16 +1041,9 @@ Please answer:
 4. Will coding modify only one file at a time? Confirm.
 5. Does the frontend-backend API change?
 
-5.5 [Architecture Refactoring Contract] (if DESIGN includes architecture refactoring)
-   - Complete interface definition for new modules (function names, param types, return values)
-   - Scope of changes to existing files (which lines/logic blocks)
-   - Frozen values: thresholds, weights, enums that must not change during execution
-   - Rollback instruction: what command to run if a modification step fails
-
 After confirmation, I will reply "confirm" to start coding.
-Output [CONTRACT_DONE]
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'设计通过后',whenEn:'After design review passes',expect:'接口定义 + [CONTRACT_DONE]',expectEn:'Interface definition + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-    stratEn:[CONTRACT Review Task]
+Output [CONTRACT_DONE]`,
+    stratEn:`[CONTRACT Review Task]
 
 Please review the following contract confirmation from Execution AI.
 
@@ -1124,18 +1075,24 @@ If review passes, output [CODE-File1] instruction.
 
 要求：禁止超出契约范围的修改。
 【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
-
-【架构重构编码顺序】
-如本次为架构重构，按以下顺序执行：
-1. 先创建新增模块（无依赖的先创建）
-2. 每创建完一个模块，独立验证其接口可用性
-3. 再改造现有文件（按依赖关系，被依赖的先改）
-4. 主循环最后改（因为它依赖所有新模块）
-5. 禁止一次性修改主循环和新增模块
-
 输出 [CODE_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】编码阶段
 
-     execEn:`[Stage: CODE-File1] Modify only this file. Do not touch others.
+请审查以下编码结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 是否按契约实现？
+2. 是否有破坏性操作？
+3. 运行是否通过？
+
+状态判断：通过 / 需修复
+
+如通过，进入「验证」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到编码结果后',expect:'审查结论',next:'进入验证'},
+     checks:['按契约实现','无破坏性操作','运行验证通过'],checksEn:['Implemented per contract','No destructive operations','Runtime verification passed'],
+    execEn:`[Stage: CODE-File1] Modify only this file. Do not touch others.
 
 [Absolute Rules]
 1. Never advance to next file until user says "confirm"
@@ -1161,18 +1118,9 @@ Requirements:
 - Code style must match existing project
 - Output only this file code
 
-[Architecture Refactoring Code Order]
-If this is an architecture refactoring, execute in this order:
-1. Create new modules first (no-dependency modules first)
-2. After each module, independently verify its interface is usable
-3. Then modify existing files (by dependency, depended-on first)
-4. Main loop last (because it depends on all new modules)
-5. Never modify main loop and new modules at once
-
 Add [FILE_DONE: {{filename}}] after output.
-Wait for me to say "next step" before continuing.
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-    stratEn:[CODE Review Task]
+Wait for me to say "next step" before continuing.`,
+    stratEn:`[CODE Review Task]
 
 Please review the following code changes from Execution AI.
 
