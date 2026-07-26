@@ -896,6 +896,18 @@ modeB:{
 - 说明新增入口与现有入口的关系（替代/并存）
 - 确认新增入口文件应放在哪个目录、命名规范是什么
 
+【子场景：架构重构】
+如果本次新增涉及以下任一情况，请在探测结果中明确标注【ARCH_REFACTOR】：
+- 需要修改主循环/核心数据流
+- 需要新增≥2个模块且它们之间有依赖关系
+- 需要改变现有节点的生命周期（创建/合并/删除逻辑）
+- 需要修改已有数据结构的字段
+
+标注后，DESIGN 阶段必须回答：
+1. 新增模块清单及依赖顺序
+2. 改造文件清单及修改点
+3. 回退策略（如何回到改造前状态）
+
 要求：只探测，不改代码。输出 [PROBE_DONE]`,
 
      execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
@@ -924,6 +936,18 @@ If the new feature is an independent entry file (e.g. Web frontend, new CLI entr
 - List all existing entry files
 - Explain relationship with existing entries (replace/coexist)
 - Confirm directory and naming convention for the new entry file
+
+[Sub-scenario: Architecture Refactoring]
+If the new feature involves any of the following, explicitly mark [ARCH_REFACTOR] in probe results:
+- Need to modify main loop / core data flow
+- Need to add ≥2 modules with dependencies between them
+- Need to change lifecycle of existing nodes (create/merge/delete logic)
+- Need to modify fields of existing data structures
+
+If marked, DESIGN stage must answer:
+1. New module list and dependency order
+2. Files to modify and modification points
+3. Rollback strategy (how to revert to pre-modification state)
 
 Requirements:
 - Paste complete code of key methods (do not omit)
@@ -964,24 +988,15 @@ If review passes, output [DESIGN-Add Feature] instruction.
 5. 【回退策略】新增失败如何清理
 6. 【验证方案】新增后如何验证
 
+7. 【架构重构补充】（如 PROBE 标注了【ARCH_REFACTOR】）
+   - 新增模块之间如何协作？画出模块依赖图
+   - 现有代码中哪些函数签名需要变更？
+   - 数据结构变更是否影响已有存储（如 graph 的节点属性）？
+   - 改造期间是否需要冻结其他功能开发？
+
 要求：只设计，不编码。输出 [DESIGN_DONE]`,
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'探测通过后',expect:'设计方案 + [DESIGN_DONE]',expectEn:'Design plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-     strat:`【策略AI审查】设计阶段
 
-请审查以下设计方案：
-{{粘贴执行AI的返回}}
-
-审查要点：
-1. 架构是否清晰？
-2. 对接方案是否可行？
-3. 回退策略是否完整？
-
-状态判断：通过 / 需补充
-
-如通过，进入「契约」`,
-     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到设计方案后',whenEn:'After receiving design plan',expect:'审查结论',next:'进入契约'},
-     checks:['新增架构清晰','对接方案可行','回退策略已定义'],checksEn:['New architecture clear','Integration plan feasible','Rollback strategy defined'],
-    execEn:`[Stage: DESIGN] Answer design questions only. No code, no commands.
+     execEn:`[Stage: DESIGN] Answer design questions only. No code, no commands.
 
 Based on code you just probed, this feature goal: {{repeat your requirement}}
 
@@ -997,6 +1012,12 @@ Please answer:
 4. [Rollback Strategy] If new logic fails, how does system rollback?
 5. [Verification] How to prove new feature works? Where to add temp logs?
 6. [Risk Points] What existing features might break? How to mitigate?
+
+7. [Architecture Refactoring Supplement] (if PROBE marked [ARCH_REFACTOR])
+   - How do new modules collaborate? Draw module dependency diagram
+   - Which existing function signatures need to change?
+   - Do data structure changes affect existing storage (e.g. graph node properties)?
+   - Should other feature development be frozen during refactoring?
 
 After answering clearly, I will reply "confirm" before you write code.
 Output [DESIGN_DONE]`,
@@ -1035,24 +1056,15 @@ If review passes, output [CONTRACT-Confirmation] instruction.
 5. 【降级路径】新功能不可用时的回退方案
 6. 【编码纪律】禁止超出契约范围的修改
 
+6.5 【架构重构契约】（如 DESIGN 包含架构重构）
+   - 新增模块的完整接口定义（函数名、参数类型、返回值）
+   - 改造文件的变更范围（哪些行/哪些逻辑块）
+   - 冻结值：阈值、权重、枚举值等一旦设定不得在执行中变更
+   - 回退指令：如果某一步改造失败，执行什么命令回退
+
 要求：输出 [CONTRACT_DONE]`,
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-     strat:`【策略AI审查】契约阶段
 
-请审查以下契约：
-{{粘贴执行AI的返回}}
-
-审查要点：
-1. 接口定义是否清晰？
-2. 数据变更是否合理？
-3. 降级路径是否可行？
-
-状态判断：通过 / 需补充
-
-如通过，进入「编码」`,
-     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约后',whenEn:'After receiving contract',expect:'审查结论',next:'进入编码'},
-     checks:['新增接口清晰','数据变更有评估','降级路径已定义','编码纪律已确认'],checksEn:['New interface clear','Data changes assessed','Degradation path defined','Coding discipline confirmed'],
-    execEn:`[Stage: CONTRACT] Confirm interface. No code, no commands.
+     execEn:`[Stage: CONTRACT] Confirm interface. No code, no commands.
 
 [New Module]
 - Input: {{your expected input params}}
@@ -1068,6 +1080,12 @@ Please answer:
 3. If new logic fails, what is the degradation path? Which old method to call?
 4. Will coding modify only one file at a time? Confirm.
 5. Does the frontend-backend API change?
+
+5.5 [Architecture Refactoring Contract] (if DESIGN includes architecture refactoring)
+   - Complete interface definition for new modules (function names, param types, return values)
+   - Scope of changes to existing files (which lines/logic blocks)
+   - Frozen values: thresholds, weights, enums that must not change during execution
+   - Rollback instruction: what command to run if a modification step fails
 
 After confirmation, I will reply "confirm" to start coding.
 Output [CONTRACT_DONE]`,
@@ -1103,24 +1121,18 @@ If review passes, output [CODE-File1] instruction.
 
 要求：禁止超出契约范围的修改。
 【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
+
+【架构重构编码顺序】
+如本次为架构重构，按以下顺序执行：
+1. 先创建新增模块（无依赖的先创建）
+2. 每创建完一个模块，独立验证其接口可用性
+3. 再改造现有文件（按依赖关系，被依赖的先改）
+4. 主循环最后改（因为它依赖所有新模块）
+5. 禁止一次性修改主循环和新增模块
+
 输出 [CODE_DONE]`,
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
-     strat:`【策略AI审查】编码阶段
 
-请审查以下编码结果：
-{{粘贴执行AI的返回}}
-
-审查要点：
-1. 是否按契约实现？
-2. 是否有破坏性操作？
-3. 运行是否通过？
-
-状态判断：通过 / 需修复
-
-如通过，进入「验证」`,
-     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到编码结果后',expect:'审查结论',next:'进入验证'},
-     checks:['按契约实现','无破坏性操作','运行验证通过'],checksEn:['Implemented per contract','No destructive operations','Runtime verification passed'],
-    execEn:`[Stage: CODE-File1] Modify only this file. Do not touch others.
+     execEn:`[Stage: CODE-File1] Modify only this file. Do not touch others.
 
 [Absolute Rules]
 1. Never advance to next file until user says "confirm"
@@ -1145,6 +1157,14 @@ Requirements:
 - All exceptions must be caught
 - Code style must match existing project
 - Output only this file code
+
+[Architecture Refactoring Code Order]
+If this is an architecture refactoring, execute in this order:
+1. Create new modules first (no-dependency modules first)
+2. After each module, independently verify its interface is usable
+3. Then modify existing files (by dependency, depended-on first)
+4. Main loop last (because it depends on all new modules)
+5. Never modify main loop and new modules at once
 
 Add [FILE_DONE: {{filename}}] after output.
 Wait for me to say "next step" before continuing.`,
