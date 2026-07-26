@@ -952,8 +952,9 @@ If marked, DESIGN stage must answer:
 Requirements:
 - Paste complete code of key methods (do not omit)
 - Mark file paths with code blocks
-- Output [PROBE_DONE]`,
-    stratEn:`[PROBE Review Task]
+- Output [PROBE_DONE]
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'新增功能开始时',whenEn:'When starting to add feature',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+    stratEn:[PROBE Review Task]
 
 Please review the following PROBE result from Execution AI and judge code state.
 
@@ -1020,8 +1021,9 @@ Please answer:
    - Should other feature development be frozen during refactoring?
 
 After answering clearly, I will reply "confirm" before you write code.
-Output [DESIGN_DONE]`,
-    stratEn:`[DESIGN Review Task]
+Output [DESIGN_DONE]
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'探测通过后',whenEn:'After probe review passes',expect:'设计方案 + [DESIGN_DONE]',expectEn:'Design plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+    stratEn:[DESIGN Review Task]
 
 Please review the following DESIGN result from Execution AI.
 
@@ -1088,8 +1090,9 @@ Please answer:
    - Rollback instruction: what command to run if a modification step fails
 
 After confirmation, I will reply "confirm" to start coding.
-Output [CONTRACT_DONE]`,
-    stratEn:`[CONTRACT Review Task]
+Output [CONTRACT_DONE]
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'设计通过后',whenEn:'After design review passes',expect:'接口定义 + [CONTRACT_DONE]',expectEn:'Interface definition + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+    stratEn:[CONTRACT Review Task]
 
 Please review the following contract confirmation from Execution AI.
 
@@ -1167,8 +1170,9 @@ If this is an architecture refactoring, execute in this order:
 5. Never modify main loop and new modules at once
 
 Add [FILE_DONE: {{filename}}] after output.
-Wait for me to say "next step" before continuing.`,
-    stratEn:`[CODE Review Task]
+Wait for me to say "next step" before continuing.
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+    stratEn:[CODE Review Task]
 
 Please review the following code changes from Execution AI.
 
