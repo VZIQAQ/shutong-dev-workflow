@@ -858,6 +858,18 @@ modeB:{
 5. 【技术约束】现有技术栈对新功能有什么限制？
 6. 【数据对接】新功能需要读写哪些现有数据？
 
+【子场景：架构重构】
+如果本次新增涉及以下任一情况，请在探测结果中明确标注【ARCH_REFACTOR】：
+- 需要修改主循环/核心数据流
+- 需要新增≥2个模块且它们之间有依赖关系
+- 需要改变现有节点的生命周期（创建/合并/删除逻辑）
+- 需要修改已有数据结构的字段
+
+标注后，DESIGN 阶段必须回答：
+1. 新增模块清单及依赖顺序
+2. 改造文件清单及修改点
+3. 回退策略（如何回到改造前状态）
+
 要求：只探测，不改代码。输出 [PROBE_DONE]`,
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'新增功能开始时',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】探测阶段
@@ -936,6 +948,12 @@ If review passes, output [DESIGN-Add Feature] instruction.
 5. 【回退策略】新增失败如何清理
 6. 【验证方案】新增后如何验证
 
+7. 【架构重构补充】（如 PROBE 标注了【ARCH_REFACTOR】）
+   - 新增模块之间如何协作？画出模块依赖图
+   - 现有代码中哪些函数签名需要变更？
+   - 数据结构变更是否影响已有存储（如 graph 的节点属性）？
+   - 改造期间是否需要冻结其他功能开发？
+
 要求：只设计，不编码。输出 [DESIGN_DONE]`,
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'探测通过后',expect:'设计方案 + [DESIGN_DONE]',expectEn:'Design plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】设计阶段
@@ -1005,8 +1023,14 @@ If review passes, output [CONTRACT-Confirmation] instruction.
 3. 【现有接口影响】是否修改现有接口
 4. 【异常处理】新增功能的错误处理策略
 5. 【降级路径】新功能不可用时的回退方案
-6. 【编码纪律】禁止超出契约范围的修改
 
+5.5 【架构重构契约】（如 DESIGN 包含架构重构）
+   - 新增模块的完整接口定义（函数名、参数类型、返回值）
+   - 改造文件的变更范围（哪些行/哪些逻辑块）
+   - 冻结值：阈值、权重、枚举值等一旦设定不得在执行中变更
+   - 回退指令：如果某一步改造失败，执行什么命令回退
+
+6. 【编码纪律】禁止超出契约范围的修改
 要求：输出 [CONTRACT_DONE]`,
      execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】契约阶段
@@ -1075,8 +1099,10 @@ If review passes, output [CODE-File1] instruction.
 
 要求：禁止超出契约范围的修改。
 【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
+【架构重构编码顺序】如本次为架构重构，按以下顺序执行：1.先创建新增模块（无依赖的先创建）2.每创建完一个模块，独立验证其接口可用性 3.再改造现有文件（按依赖关系，被依赖的先改）4.主循环最后改 5.禁止一次性修改主循环和新增模块
 输出 [CODE_DONE]`,
-     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'代码实现 + [CODE_DONE]',expectEn:'Code implementation + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
      strat:`【策略AI审查】编码阶段
 
 请审查以下编码结果：
