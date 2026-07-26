@@ -1,1450 +1,2455 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>书童开发工作流 v2.0</title>
-    <style>
-        :root {
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-tertiary: #21262d;
-            --border-color: #30363d;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --accent: #58a6ff;
-            --accent-hover: #79c0ff;
-            --success: #3fb950;
-            --warning: #d29922;
-            --danger: #f85149;
-            --code-bg: #1e2530;
-            --mode-a: #3fb950;   /* 绿色 - 从零新建 */
-            --mode-b: #58a6ff;   /* 蓝色 - 新增功能 */
-            --mode-c: #d29922;   /* 橙色 - 修复问题 */
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg-primary); color: var(--text-primary); line-height:1.6; overflow-x:hidden;
-        }
-        /* ===== 顶部栏 ===== */
-        .top-bar {
-            position:fixed; top:0; left:0; right:0; height:60px;
-            background:var(--bg-secondary); border-bottom:1px solid var(--border-color);
-            display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:1000;
-        }
-        .logo { font-size:17px; font-weight:700; display:flex; align-items:center; gap:8px; }
-        .logo .ver { font-size:11px; color:var(--text-secondary); font-weight:400; background:var(--bg-tertiary); padding:2px 6px; border-radius:4px; }
-        .mode-tabs { display:flex; gap:8px; }
-        .mode-btn {
-            padding:8px 16px; border-radius:8px; border:2px solid var(--border-color);
-            background:var(--bg-tertiary); color:var(--text-primary); cursor:pointer;
-            font-size:13px; font-weight:600; transition:all .2s; white-space:nowrap;
-        }
-        .mode-btn:hover { border-color:var(--text-secondary); }
-        .mode-btn.active-a { border-color:var(--mode-a); background:rgba(63,185,80,.12); color:var(--mode-a); }
-        .mode-btn.active-b { border-color:var(--mode-b); background:rgba(88,166,255,.12); color:var(--mode-b); }
-        .mode-btn.active-c { border-color:var(--mode-c); background:rgba(210,153,34,.12); color:var(--mode-c); }
-        /* ===== 布局 ===== */
-        .layout { display:flex; margin-top:60px; min-height:calc(100vh - 60px); }
-        .sidebar {
-            width:240px; background:var(--bg-secondary); border-right:1px solid var(--border-color);
-            position:fixed; top:60px; bottom:0; overflow-y:auto; padding:16px 0;
-        }
-        .nav-title { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); padding:8px 16px; margin-bottom:4px; }
-        .nav-item {
-            display:flex; align-items:center; gap:10px; padding:10px 16px; cursor:pointer;
-            color:var(--text-secondary); font-size:13px; transition:all .15s; border-left:3px solid transparent;
-        }
-        .nav-item:hover { background:var(--bg-tertiary); color:var(--text-primary); }
-        .nav-item.active { background:rgba(88,166,255,.08); color:var(--accent); border-left-color:var(--accent); }
-        .nav-item .num {
-            display:inline-flex; align-items:center; justify-content:center;
-            width:22px; height:22px; border-radius:5px; background:var(--bg-tertiary);
-            font-size:11px; font-weight:700; flex-shrink:0;
-        }
-        .nav-item.active .num { background:var(--accent); color:#fff; }
-        .nav-arrow { color:var(--text-secondary); font-size:10px; text-align:center; padding:2px 0; opacity:.4; }
-        .nav-end { color:var(--text-secondary); font-size:12px; text-align:center; padding:12px 16px; border-top:1px dashed var(--border-color); margin-top:8px; }
-        .main-content { margin-left:240px; margin-right:320px; flex:1; padding:28px 32px; max-width:920px; }
-        /* ===== 右侧记事本 ===== */
-        .notepad-panel {
-            width:300px; position:fixed; top:60px; right:0; bottom:0;
-            background:var(--bg-secondary); border-left:1px solid var(--border-color);
-            display:flex; flex-direction:column; overflow:hidden;
-        }
-        .notepad-header {
-            padding:14px 16px; border-bottom:1px solid var(--border-color);
-            display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
-        }
-        .notepad-header h3 { font-size:14px; font-weight:700; }
-        .notepad-tabs { display:flex; gap:4px; }
-        .notepad-tab {
-            padding:4px 10px; font-size:11px; border-radius:4px; border:1px solid var(--border-color);
-            background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
-        }
-        .notepad-tab:hover { border-color:var(--accent); color:var(--accent); }
-        .notepad-tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .notepad-actions { padding:8px 16px; border-bottom:1px solid var(--border-color); display:flex; gap:6px; flex-shrink:0; }
-        .notepad-actions button {
-            flex:1; padding:6px 0; font-size:12px; border-radius:5px; border:1px solid var(--border-color);
-            background:var(--bg-tertiary); color:var(--text-primary); cursor:pointer; transition:all .15s;
-        }
-        .notepad-actions button:hover { border-color:var(--accent); color:var(--accent); }
-        .notepad-list { flex:1; overflow-y:auto; padding:8px; }
-        .notepad-card {
-            background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px;
-            margin-bottom:8px; overflow:hidden; transition:border-color .15s;
-        }
-        .notepad-card:hover { border-color:var(--text-secondary); }
-        .notepad-card-head {
-            padding:8px 10px; display:flex; align-items:center; justify-content:space-between;
-            border-bottom:1px solid var(--border-color); background:var(--bg-tertiary);
-        }
-        .notepad-card-time { font-size:10px; color:var(--text-secondary); }
-        .notepad-card-actions { display:flex; gap:4px; }
-        .notepad-card-actions button {
-            padding:2px 6px; font-size:10px; border-radius:3px; border:1px solid var(--border-color);
-            background:transparent; color:var(--text-secondary); cursor:pointer; transition:all .15s;
-        }
-        .notepad-card-actions button:hover { border-color:var(--accent); color:var(--accent); }
-        .notepad-card-actions button.del:hover { border-color:var(--danger); color:var(--danger); }
-        .notepad-card-title {
-            width:100%; padding:6px 10px; font-size:12px; font-weight:600; border:none; border-bottom:1px solid var(--border-color);
-            background:transparent; color:var(--text-primary); outline:none;
-        }
-        .notepad-card-title:focus { border-bottom-color:var(--accent); }
-        .notepad-card-body {
-            width:100%; min-height:80px; padding:8px 10px; font-size:12px; border:none; resize:vertical;
-            background:transparent; color:var(--text-primary); outline:none; line-height:1.6;
-            font-family:inherit;
-        }
-        .notepad-card-body:focus { background:var(--bg-secondary); }
-        .notepad-empty { text-align:center; padding:40px 16px; color:var(--text-secondary); font-size:13px; }
-        .notepad-toggle {
-            position:fixed; right:300px; top:50%; transform:translateY(-50%);
-            width:20px; height:60px; background:var(--bg-secondary); border:1px solid var(--border-color);
-            border-right:none; border-radius:6px 0 0 6px; cursor:pointer; z-index:999;
-            display:flex; align-items:center; justify-content:center; color:var(--text-secondary);
-            font-size:12px; transition:all .2s;
-        }
-        .notepad-toggle:hover { color:var(--accent); border-color:var(--accent); }
-        .notepad-panel.hidden { display:none; }
-        .notepad-panel.hidden ~ .notepad-toggle { right:0; }
-        @media(max-width:1200px) {
-            .notepad-panel { display:none; }
-            .notepad-toggle { display:none; }
-            .main-content { margin-right:0; }
-        }
-        /* ===== 流程图 ===== */
-        .flow-bar {
-            display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:16px 20px;
-            background:var(--bg-tertiary); border-radius:10px; margin-bottom:28px; border:1px solid var(--border-color);
-        }
-        .flow-step {
-            padding:6px 14px; background:var(--bg-secondary); border:1px solid var(--border-color);
-            border-radius:6px; font-size:12px; font-weight:600;
-        }
-        .flow-arrow { color:var(--text-secondary); font-size:14px; }
-        .flow-loop { font-size:11px; color:var(--text-secondary); margin-left:8px; }
-        /* ===== 阶段卡片 ===== */
-        .stage-card {
-            margin-bottom:40px; background:var(--bg-secondary); border:1px solid var(--border-color);
-            border-radius:12px; overflow:hidden; scroll-margin-top:80px;
-        }
-        .card-head {
-            padding:20px 24px 16px; border-bottom:1px solid var(--border-color);
-            display:flex; align-items:center; gap:12px;
-        }
-        .card-badge {
-            width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-            font-size:18px; font-weight:700; color:#fff; flex-shrink:0;
-        }
-        .card-head h2 { font-size:20px; font-weight:700; }
-        .card-head p { color:var(--text-secondary); font-size:13px; margin-top:2px; }
-        /* ===== 使用说明 ===== */
-        .usage-box {
-            margin:16px 20px; padding:14px 16px; border-radius:8px;
-            border:1px dashed var(--border-color); font-size:13px; line-height:1.8;
-        }
-        .usage-box .label { font-weight:700; margin-right:6px; }
-        .usage-box .val { color:var(--text-secondary); }
-        /* ===== 提示词块 ===== */
-        .prompt-block {
-            margin:12px 20px; border:1px solid var(--border-color); border-radius:10px; overflow:hidden;
-        }
-        .prompt-head {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:12px 16px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color);
-        }
-        .prompt-head .tag { font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; }
-        .tag-e { color:var(--success); }
-        .tag-s { color:var(--accent); }
-        .copy-btn {
-            padding:4px 12px; font-size:12px; border-radius:5px; background:transparent;
-            border:1px solid var(--border-color); color:var(--text-secondary); cursor:pointer; transition:all .2s;
-        }
-        .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
-        .copy-btn.copied { border-color:var(--success); color:var(--success); }
-        .prompt-body {
-            padding:16px; background:var(--code-bg); font-family:"SF Mono","Fira Code","JetBrains Mono",Consolas,monospace;
-            font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word; max-height:500px; overflow-y:auto;
-        }
-        /* ===== 检查清单 ===== */
-        .checklist { margin:12px 20px 16px; }
-        .checklist-title { font-size:13px; font-weight:600; color:var(--warning); margin-bottom:8px; }
-        .checklist ul { list-style:none; }
-        .checklist li { padding:6px 0; border-bottom:1px solid var(--border-color); display:flex; align-items:center; gap:8px; font-size:13px; }
-        .checklist li:last-child { border-bottom:none; }
-        .checklist input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; }
-        /* ===== 下一步引导 ===== */
-        .next-guide {
-            margin:0 20px 16px; padding:12px 16px; border-radius:8px; font-size:13px;
-            border:1px dashed var(--border-color); color:var(--text-secondary);
-        }
-        .next-guide strong { color:var(--text-primary); }
-        /* ===== 连接线 ===== */
-        .card-connector {
-            text-align:center; padding:4px 0; color:var(--text-secondary); font-size:18px; opacity:.4;
-        }
-        /* ===== 主题色跟随 ===== */
-        body.mode-a .card-badge { background:var(--mode-a); }
-        body.mode-a .nav-item.active { color:var(--mode-a); border-left-color:var(--mode-a); }
-        body.mode-a .nav-item.active .num { background:var(--mode-a); }
-        body.mode-a .flow-step.current { border-color:var(--mode-a); color:var(--mode-a); background:rgba(63,185,80,.08); }
-        body.mode-b .card-badge { background:var(--mode-b); }
-        body.mode-b .nav-item.active { color:var(--mode-b); border-left-color:var(--mode-b); }
-        body.mode-b .nav-item.active .num { background:var(--mode-b); }
-        body.mode-b .flow-step.current { border-color:var(--mode-b); color:var(--mode-b); background:rgba(88,166,255,.08); }
-        body.mode-c .card-badge { background:var(--mode-c); }
-        body.mode-c .nav-item.active { color:var(--mode-c); border-left-color:var(--mode-c); }
-        body.mode-c .nav-item.active .num { background:var(--mode-c); }
-        body.mode-c .flow-step.current { border-color:var(--mode-c); color:var(--mode-c); background:rgba(210,153,34,.08); }
-        /* ===== 响应式 ===== */
-        @media(max-width:900px) {
-            .sidebar { display:none; }
-            .main-content { margin-left:0; padding:16px; }
-            .mode-tabs { gap:4px; }
-            .mode-btn { padding:6px 10px; font-size:12px; }
-        }
-        ::-webkit-scrollbar { width:6px; }
-        ::-webkit-scrollbar-track { background:var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:3px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>书童开发工作流</title>
+<style>
+:root{
+  --bg:#0f0f0f;--card:#1a1a1a;--border:#2a2a2a;--text:#e5e5e5;--text2:#a0a0a0;
+  --accent:#3b82f6;--accent-hi:#60a5fa;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
+  --code-bg:#141414;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+/* 顶栏 */
+.topbar{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.topbar .logo{font-size:16px;font-weight:700;white-space:nowrap}
+.topbar .modes{display:flex;gap:6px}
+.mbtn{padding:7px 14px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;transition:.2s;white-space:nowrap}
+.mbtn:hover{border-color:var(--text2)}
+.mbtn.on{border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,.08)}
+.mbtn.on-a{border-color:var(--ok);color:var(--ok);background:rgba(34,197,94,.08)}
+.mbtn.on-b{border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,.08)}
+.mbtn.on-c{border-color:#f97316;color:#f97316;background:rgba(249,115,22,.08)}
+.topbar .tools{display:flex;gap:6px}
+.tbtn{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-size:12px;transition:.2s}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+/* 面包屑 */
+.breadcrumb{padding:10px 20px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);background:var(--card)}
+.breadcrumb span{color:var(--text)}
+/* 进度条 */
+.progress{padding:16px 20px;display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.dot-wrap{display:flex;align-items:center}
+.dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text2);transition:.3s;position:relative}
+.dot.done{border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,.12)}
+.dot.done::after{content:'✓';position:absolute;font-size:14px}
+.dot.done span{visibility:hidden}
+.dot.now{border-color:var(--accent);color:#fff;background:var(--accent);transform:scale(1.15)}
+.dot-line{width:28px;height:2px;background:var(--border);transition:.3s}
+.dot-line.done{background:var(--accent)}
+.dot-label{font-size:10px;color:var(--text2);text-align:center;margin-top:4px;position:absolute;top:36px;white-space:nowrap;left:50%;transform:translateX(-50%)}
+/* 主内容 */
+.main{max-width:860px;margin:0 auto;padding:20px 20px 120px}
+/* 步骤卡片 */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:20px}
+.step-head{padding:20px 24px;border-bottom:1px solid var(--border);overflow:visible}
+.step-num{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px}
+.step-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:14px;color:var(--text2)}
+.step-tip{display:none}
+/* 使用说明 */
+.usage{margin:16px 20px;padding:14px 16px;border:1px dashed var(--border);border-radius:8px;font-size:13px;line-height:1.9}
+.usage .ul{font-weight:700;margin-right:4px}
+.usage .uv{color:var(--text2)}
+/* 提示词块 */
+.pblock{margin:12px 20px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.phead{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--code-bg);border-bottom:1px solid var(--border)}
+.ptag{font-size:12px;font-weight:600}
+.ptag-e{color:var(--ok)}
+.ptag-s{color:var(--accent)}
+.copybtn{padding:4px 10px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:.2s}
+.copybtn:hover{border-color:var(--accent);color:var(--accent)}
+.copybtn.ok{border-color:var(--ok);color:var(--ok)}
+.pbody{padding:14px;background:var(--code-bg);font-family:"SF Mono","Fira Code",Consolas,monospace;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto;color:var(--text)}
+/* 审查结论区 */
+.review{margin:16px 20px;padding:16px;border:1px solid var(--border);border-radius:10px;background:rgba(59,130,246,.03)}
+.review h4{font-size:14px;margin-bottom:10px;color:var(--accent)}
+.review textarea{width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;outline:none;font-family:inherit}
+.review textarea:focus{border-color:var(--accent)}
+.review .radios{margin-top:10px;display:flex;gap:12px;flex-wrap:wrap}
+.review label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;color:var(--text2)}
+.review input[type=radio]{accent-color:var(--accent)}
+/* 检查清单 */
+.checks{margin:16px 20px;padding:14px 16px;border:1px solid var(--border);border-radius:10px}
+.checks h4{font-size:13px;color:var(--warn);margin-bottom:8px}
+.checks label{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border)}
+.checks label:last-child{border-bottom:none}
+.checks input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px}
+/* 问题折叠 */
+.trouble{margin:12px 20px}
+.trouble-btn{width:100%;padding:10px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:13px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;transition:.2s}
+.trouble-btn:hover{border-color:var(--accent)}
+.trouble-body{display:none;margin-top:8px;padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:13px;line-height:1.8}
+.trouble-body.open{display:block}
+.trouble-body h5{color:var(--warn);margin:10px 0 4px;font-size:13px}
+.trouble-body h5:first-child{margin-top:0}
+.trouble-body code{background:var(--code-bg);padding:2px 6px;border-radius:3px;font-size:12px;cursor:pointer;transition:.15s}
+.trouble-body code:hover{background:rgba(59,130,246,.15);color:var(--accent)}
+/* 操作栏 */
+.actionbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:10px;z-index:100}
+.abtn{padding:10px 22px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:14px;font-weight:600;transition:.2s;display:flex;align-items:center;gap:6px}
+.abtn:hover{border-color:var(--accent);color:var(--accent)}
+.abtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.abtn.primary:hover{background:var(--accent-hi)}
+.abtn.branch{border-color:var(--warn);color:var(--warn)}
+.abtn.branch:hover{background:rgba(245,158,11,.1)}
+.abtn:disabled{opacity:.3;cursor:not-allowed}
+/* 编码分层指示 */
+.layer-indicator{margin:12px 20px;padding:10px 14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:8px;font-size:13px;color:var(--accent);text-align:center;font-weight:600}
+/* 合并计划 */
+.merge-plan{margin:16px 20px;padding:16px;border:2px solid var(--warn);border-radius:10px;background:rgba(245,158,11,.04)}
+.merge-plan h4{color:var(--warn);margin-bottom:10px}
+.merge-plan .summary{background:var(--bg);padding:12px;border-radius:6px;margin-bottom:12px;font-size:13px}
+.merge-plan label{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;cursor:pointer}
+.merge-plan input[type=radio]{accent-color:var(--warn)}
+/* 完成总结 */
+.done-summary{margin:16px 20px;padding:20px;border:2px solid var(--ok);border-radius:10px;background:rgba(34,197,94,.04);text-align:center}
+.done-summary h3{color:var(--ok);font-size:20px;margin-bottom:12px}
+.done-summary .stats{display:flex;justify-content:center;gap:24px;margin-bottom:16px;font-size:14px}
+.done-summary .stat-val{font-size:24px;font-weight:700;color:var(--accent)}
+/* 记事本 */
+.np-toggle{position:fixed;right:0;top:50%;transform:translateY(-50%);width:24px;height:60px;background:var(--card);border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;z-index:99;transition:.3s}
+.np-toggle:hover{color:var(--accent);border-color:var(--accent)}
+.np-toggle.shifted{right:300px}
+.np-panel{position:fixed;right:0;top:0;bottom:0;width:300px;background:var(--card);border-left:1px solid var(--border);z-index:101;display:flex;flex-direction:column;transform:translateX(100%);transition:.3s}
+.np-panel.open{transform:translateX(0)}
+.np-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.np-head h3{font-size:14px}
+.np-tabs{display:flex;gap:4px}
+.np-tab{padding:4px 10px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:.15s}
+.np-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.np-actions{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-shrink:0}
+.np-actions button{flex:1;padding:5px 0;font-size:11px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;transition:.15s}
+.np-actions button:hover{border-color:var(--accent);color:var(--accent)}
+.np-list{flex:1;overflow-y:auto;padding:8px}
+.np-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;overflow:hidden}
+.np-card-head{padding:6px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.np-card-time{font-size:10px;color:var(--text2)}
+.np-card-btns{display:flex;gap:3px}
+.np-card-btns button{padding:2px 6px;font-size:10px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
+.np-card-btns button:hover{border-color:var(--accent);color:var(--accent)}
+.np-card-btns button.del:hover{border-color:var(--err);color:var(--err)}
+.np-card-title{width:100%;padding:5px 8px;font-size:12px;font-weight:600;border:none;border-bottom:1px solid var(--border);background:transparent;color:var(--text);outline:none}
+.np-card-title:focus{border-bottom-color:var(--accent)}
+.np-card-body{width:100%;min-height:60px;padding:6px 8px;font-size:12px;border:none;resize:vertical;background:transparent;color:var(--text);outline:none;font-family:inherit;line-height:1.5}
+.np-empty{text-align:center;padding:30px 16px;color:var(--text2);font-size:12px}
+/* 首页模式选择 */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:24px}
+.welcome h2{font-size:24px}
+.welcome p{color:var(--text2);font-size:14px}
+.mode-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.mode-card{width:240px;padding:24px;border:2px solid var(--border);border-radius:14px;cursor:pointer;transition:.2s;text-align:center}
+.mode-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.mode-card h3{font-size:18px;margin-bottom:8px}
+.mode-card p{font-size:13px;color:var(--text2)}
+.mc-a{border-color:var(--ok)}.mc-a:hover{border-color:var(--ok)}
+.mc-a h3{color:var(--ok)}
+.mc-b{border-color:var(--accent)}.mc-b:hover{border-color:var(--accent)}
+.mc-b h3{color:var(--accent)}
+.mc-c{border-color:#f97316}.mc-c:hover{border-color:#f97316}
+.mc-c h3{color:#f97316}
+/* 预审页 */
+.pre-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;max-width:860px;margin:0 auto}
+.pre-head{padding:20px 24px;border-bottom:1px solid var(--border)}
+.pre-head h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.pre-head p{font-size:13px;color:var(--text2)}
+.pre-step{padding:16px 24px}
+.pre-step h4{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--accent)}
+.pre-step textarea{width:100%;min-height:200px;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;resize:vertical;outline:none;font-family:inherit;line-height:1.6}
+.pre-step textarea:focus{border-color:var(--accent)}
+.pre-radios{margin-top:10px}
+.pre-radios label{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px;cursor:pointer;color:var(--text2)}
+.pre-radios input[type=radio]{margin-top:3px;accent-color:var(--accent)}
+.pre-radios .opt-a{color:var(--ok)}
+.pre-radios .opt-b{color:var(--accent)}
+.pre-radios .opt-c{color:var(--err)}
+.mc-btns{display:flex;gap:8px;margin-top:14px}
+.mc-btn{flex:1;padding:8px 0;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;transition:.2s;text-align:center}
+.mc-btn:hover{border-color:var(--accent);color:var(--accent)}
+.mc-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.mc-btn.primary:hover{background:var(--accent-hi)}
+/* 主题跟随 */
+body.th-a{--accent:#22c55e;--accent-hi:#4ade80}
+body.th-b{--accent:#3b82f6;--accent-hi:#60a5fa}
+body.th-c{--accent:#f97316;--accent-hi:#fb923c}
+/* 响应式 */
+@media(max-width:768px){
+  .topbar{flex-wrap:wrap;gap:8px}
+  .topbar .modes{order:3;width:100%;justify-content:center}
+  .main{padding:12px 12px 120px}
+  .actionbar{padding:10px 12px;gap:6px}
+  .abtn{padding:8px 14px;font-size:13px}
+  .np-panel{width:100%}
+  .mode-cards{flex-direction:column;align-items:center}
+}
+</style>
 </head>
-<body class="mode-b">
-<!-- ===== 顶部栏 ===== -->
-<div class="top-bar">
-    <div class="logo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        <span>书童开发工作流</span>
-        <span class="ver">v2.0</span>
-    </div>
-    <div class="mode-tabs">
-        <button class="mode-btn active-b" onclick="setMode('a')" id="btn-a">🆕 从零新建</button>
-        <button class="mode-btn active-b" onclick="setMode('b')" id="btn-b">➕ 新增功能</button>
-        <button class="mode-btn active-b" onclick="setMode('c')" id="btn-c">🔧 修复问题</button>
-    </div>
+<body class="th-b">
+
+<div class="topbar">
+  <div class="logo"><span id="logoText" style="cursor:pointer" onclick="goHome()">📋 书童开发工作流</span></div>
+  <div class="modes" id="modeBtns"></div>
+  <div class="tools">
+    <button class="tbtn" onclick="toggleLang()" id="langBtn">EN</button>
+    <button class="tbtn" onclick="exportState()" id="expBtn">📥 导出</button>
+    <button class="tbtn" onclick="importState()" id="impBtn">📤 导入</button>
+    <button class="tbtn" onclick="resetState()" id="rstBtn">🔄 重置</button>
+  </div>
 </div>
 
-<div class="layout">
-<!-- ===== 左侧导航 ===== -->
-<nav class="sidebar" id="sidebar"></nav>
+<div id="app"></div>
 
-<!-- ===== 主内容区 ===== -->
-<main class="main-content" id="main"></main>
+<div class="np-toggle" onclick="toggleNP()" id="npToggle">◀</div>
+<div class="np-panel" id="npPanel">
+  <div class="np-head">
+    <h3><span id="npTitle">📋 记事本</span> <span style="cursor:pointer;margin-left:8px;font-size:16px" onclick="toggleNP()">✕</span></h3>
+    <div class="np-tabs">
+      <button class="np-tab on" id="npTabReq" onclick="setNPType('req')">需求</button>
+      <button class="np-tab" id="npTabNote" onclick="setNPType('note')">笔记</button>
+    </div>
+  </div>
+  <div class="np-actions">
+    <button onclick="addNP()" id="npNewBtn">＋ 新建</button>
+    <button onclick="exportNP()" id="npExpBtn">📥 导出</button>
+  </div>
+  <div class="np-list" id="npList"></div>
+</div>
 
-<!-- ===== 右侧记事本 ===== -->
-<aside class="notepad-panel" id="notepadPanel">
-    <div class="notepad-header">
-        <h3>📋 记事本</h3>
-        <div class="notepad-tabs">
-            <button class="notepad-tab active" onclick="setNotepadType('req')">需求</button>
-            <button class="notepad-tab" onclick="setNotepadType('note')">笔记</button>
-        </div>
-    </div>
-    <div class="notepad-actions">
-        <button onclick="addNotepad()">＋ 新建</button>
-        <button onclick="exportNotepads()">📥 导出</button>
-    </div>
-    <div class="notepad-list" id="notepadList"></div>
-</aside>
-<button class="notepad-toggle" id="notepadToggle" onclick="toggleNotepad()">◀</button>
+<div class="actionbar" id="actionBar" style="display:none">
+  <button class="abtn" id="btnPrev" onclick="goPrev()">⬅️ 上一步</button>
+  <button class="abtn branch" id="btnBranch" onclick="doBranch()">➕ 插入新需求</button>
+  <button class="abtn primary" id="btnNext" onclick="goNext()">下一步 ➡️</button>
 </div>
 
 <script>
-// ========== 数据定义 ==========
-const MODES = {
-    a: {
-        name:'从零新建项目', color:'mode-a', btnClass:'active-a',
-        flow:['初始化','设计','契约','编码','验证','部署','完成'],
-        stages:[
-            {id:'a-init', num:1, title:'初始化', desc:'技术选型、目录结构、依赖规划、验收标准',
-             exec:{tag:'执行AI',to:'窗口B',when:'从零新建项目时，第一步',
-                   expect:'7个问题的答案 + [INIT_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：INIT】从零新建项目，先搭建骨架，不改代码。
+// ========== 提示词数据 ==========
+const P={
+modeA:{
+  name:'从零新建项目',nameEn:'New Project',theme:'green',themeCls:'th-a',
+  steps:[
+    {id:'init',name:'初始化',nameEn:'Init',desc:'跟AI聊清楚用什么技术、怎么组织文件、做完怎么验收',descEn:'Clarify tech stack, file structure, and acceptance criteria with AI',
+     exec:`【阶段：初始化】从零新建项目，先搭建骨架，不改代码。
 
 需求：{{你的项目需求}}
 
-请回答以下问题。每个问题必须给出具体建议和理由。如果存在多种技术选型，列出选项和利弊对比。
-
-1. 【技术选型】根据需求，推荐技术栈
-   - 前端：框架、UI库、构建工具（如适用）
-   - 后端：语言、框架、ORM（如适用）
-   - 数据库：类型、版本（如适用）
-   - 部署：目标平台、容器化方案（如适用）
-   - 每个选择说明理由
-
-2. 【目录结构】设计项目目录树
-   - 用树状图展示完整目录结构
-   - 每个目录/文件说明放什么内容
-   - 标注哪些是核心模块、哪些是辅助模块
-
-3. 【依赖规划】核心依赖有哪些？
-   - 列出所有需要安装的依赖包
-   - 建议版本号
-   - 标注哪些是必须的、哪些是可选的
-
-4. 【入口设计】主入口文件是什么？
-   - 启动方式（命令行/脚本/双击）
+请回答：
+1. 【技术选型】根据需求，推荐技术栈（前端/后端/数据库/部署），说明理由
+2. 【目录结构】设计项目目录树，说明每个目录放什么
+3. 【依赖规划】核心依赖有哪些？版本建议？
+4. 【入口层方案】项目有哪些用户交互入口？
+   - CLI 入口：是否需要？启动命令是什么？
+   - Web 入口：是否需要前端界面？
+     * 如需要，技术选型（Gradio/Streamlit/其他）及理由
+     * 前端页面包含哪些组件？（聊天框、设置面板、状态显示等）
+     * 启动方式（命令行启动后自动打开浏览器？）
+   - 如果双入口并存，它们如何复用同一套业务逻辑层？
+   - 如果只需要 CLI，明确声明"本项目无 Web 入口，确认"
    - 启动参数（如有）
-
-5. 【配置设计】需要哪些配置文件？
-   - 环境变量列表（名称、用途、默认值）
-   - 配置文件格式（YAML/JSON/TOML/.env）
-
-6. 【扩展预留】未来可能扩展的模块
-   - 预留什么接口/目录
-
-7. 【验收标准】你希望怎么证明这个项目"做完了"？
-   - 功能清单：哪些功能必须可用？
-   - 验收测试：怎么验证这些功能？
+5. 【配置设计】需要哪些配置文件？环境变量？
+6. 【扩展预留】未来可能扩展的模块，预留什么接口/目录？
+7. 【验收标准】你希望怎么证明这个项目"做完了"？功能清单、验收测试、性能要求
 
 要求：
 - 只输出设计，不生成代码
 - 如果有不确定的技术选型，列出选项和利弊，等待用户确认
 - 输出 [INIT_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的INIT返回后',
-                    expect:'完整性审查 + 技术选型确认 + 下一步指令',next:'按策略AI给出的指令，去「设计」阶段'},
-             stratText:`【INIT审查任务】
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'项目开始时',whenEn:'When project starts',expect:'7个答案 + [INIT_DONE]',expectEn:'7 answers + [INIT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】初始化阶段
 
-请审查以下执行AI返回的项目初始化方案。
+请审查以下初始化方案：
+{{粘贴执行AI的返回}}
 
-## 执行AI的INIT返回：
-{{执行AI的INIT返回}}
+审查要点：
+1. 技术选型是否合理？是否匹配项目需求？
+2. 目录结构是否清晰？是否符合该技术的最佳实践？
+3. 依赖规划是否完整？版本是否稳定？
+4. 验收标准是否可验证？是否具体？
 
-## 你的任务：
+状态判断：直接通过 / 需补充 / 需调整
 
-### 第一步：完整性审查
-- [ ] 7个问题全部回答
-- [ ] 技术选型有具体框架名和版本号
-- [ ] 目录结构有完整的树状图
-- [ ] 依赖列表有包名和版本
-- [ ] 入口文件和启动方式明确
-- [ ] 配置文件清单完整
-- [ ] 验收标准具体可测试（有功能清单和验收方式）
-- [ ] 末尾有 [INIT_DONE] 标记
+如通过，输出下一步指令：进入「设计」阶段`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到初始化方案后',expect:'审查结论 + 下一步指令',next:'进入「设计」阶段'},
+     checks:['技术选型匹配项目需求','目录结构符合最佳实践','依赖版本稳定且兼容','验收标准具体可验证'],checksEn:['Tech stack matches project requirements','Directory structure follows best practices','Dependency versions stable and compatible','验收标准具体可验证'],
+    execEn:`[Stage: INIT] Build new project from scratch. Design skeleton first, no code changes.
 
-如果以上有任何一项未通过，输出【追问指令】。
+Requirement: {{your project requirement}}
 
-### 第二步：技术选型确认
-检查技术选型是否合理：
-- 是否与用户需求匹配？
-- 是否有明显的兼容性问题？
-- 依赖数量是否合理？
+Please answer the following questions. Each must provide specific suggestions and rationale.
 
-### 第三步：输出下一阶段指令
-如果审查通过，输出【DESIGN-架构设计】指令。
+1. [Tech Stack] Based on requirements, recommend tech stack
+   - Frontend: framework, UI library, build tools (if applicable)
+   - Backend: language, framework, ORM (if applicable)
+   - Database: type, version (if applicable)
+   - Deployment: target platform, containerization (if applicable)
+   - Explain rationale for each choice
 
-【审查通过！下一步】
-→ 请去「02-设计」阶段，复制「执行AI提示词」`,
-             checks:['7个问题全部回答','技术选型有具体框架名和版本号','目录结构有完整树状图','验收标准具体可测试','末尾有 [INIT_DONE] 标记']
-            },
-            {id:'a-design', num:2, title:'设计', desc:'数据流、骨架搭建顺序、模块依赖图、清理策略',
-             exec:{tag:'执行AI',to:'窗口B',when:'INIT审查通过后',
-                   expect:'6个问题的答案 + [DESIGN_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：DESIGN-架构设计】只回答设计问题，不写代码，不执行命令。
+2. [Directory Structure] Design project directory tree
+   - Show complete structure as a tree diagram
+   - Explain what each directory/file contains
+   - Mark which are core modules, which are auxiliary
 
-基于 INIT 阶段确认的方案，本次目标：{{重复你的项目需求}}
+3. [Dependency Planning] What are the core dependencies?
+   - List all packages to install
+   - Suggest version numbers
+   - Mark required vs optional
 
-已确认的技术栈：
-- {{前端框架/后端框架/数据库/其他}}
+4. [Entry Layer Plan] What user interaction entry points does the project have?
+   - CLI entry: Is it needed? What is the startup command?
+   - Web entry: Is a frontend UI needed?
+     * If yes, tech choice (Gradio/Streamlit/other) and rationale
+     * What components on the frontend? (chat box, settings panel, status display, etc.)
+     * Startup method (auto-open browser after CLI start?)
+   - If dual entries coexist, how do they share the same business logic layer?
+   - If CLI only, explicitly state "This project has no Web entry, confirmed"
+   - Startup parameters (if any)
 
-已确认的目录结构：
-{{粘贴INIT阶段确认的目录树}}
+5. [Config Design] What config files are needed?
+   - Environment variables (name, purpose, default)
+   - Config file format (YAML/JSON/TOML/.env)
 
-请回答：
-1. 【数据流】项目的核心数据流是什么？用 → 表示。
-2. 【骨架搭建顺序】按依赖关系排列需要创建的文件，标注被依赖的（必须先创建）。
-3. 【模块依赖图】各模块之间的调用关系是什么？
-4. 【清理策略】如果骨架搭建到一半失败，如何清理？
-5. 【验证方案】每搭完一层（配置层/工具层/业务层），如何验证骨架不塌？
-6. 【风险点】搭建过程中可能遇到什么问题？
+6. [Extension Points] Future modules to reserve
+   - What interfaces/directories to reserve
 
-回答清楚后，我回复"确认"你再开始搭建。
-输出末尾加 [DESIGN_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的设计返回后',
-                    expect:'完整性审查 + 下一步指令',next:'按策略AI给出的指令，去「契约」阶段'},
-             stratText:`【DESIGN-架构设计审查任务】
+7. [Acceptance Criteria] How to prove this project is "done"?
+   - Feature list: which features must work?
+   - Acceptance tests: how to verify?
 
-请审查以下执行AI返回的架构设计方案。
+Requirements:
+- Output design only, do not generate code
+- If tech selection is uncertain, list options with pros/cons
+- Output [INIT_DONE]`,
+    stratEn:`[INIT Review Task]
 
-## 执行AI的架构设计返回：
-{{执行AI的架构设计返回}}
+Please review the following initialization plan from Execution AI.
 
-## 你的任务：
+## Execution AI Init Response:
+{{Execution AI Init Response}}
 
-### 第一步：完整性审查
-- [ ] 有完整的数据流图（包含 → 箭头）
-- [ ] 骨架搭建顺序按依赖排列（被依赖的在前）
-- [ ] 有模块依赖图
-- [ ] 清理策略明确（失败时删除哪些文件）
-- [ ] 验证方案具体（具体运行什么命令）
-- [ ] 列出了至少1个风险点
-- [ ] 末尾有 [DESIGN_DONE] 标记
+## Your Task:
 
-如果以上有任何一项未通过，输出【追问指令】。
+### Step 1: Completeness Review
+- [ ] All 7 questions answered
+- [ ] Tech stack has specific framework and version
+- [ ] Directory structure has complete tree diagram
+- [ ] Dependency list has names and versions
+- [ ] Entry file and startup method are clear
+- [ ] Config file checklist is complete
+- [ ] Acceptance criteria are specific and testable
+- [ ] Has [INIT_DONE] marker at end
 
-### 第二步：输出下一阶段指令
-如果审查通过，输出【CONTRACT-接口契约】指令。
+If any item fails, output [Follow-up Instruction].
 
-【审查通过！下一步】
-→ 请去「03-契约」阶段，复制「执行AI提示词」`,
-             checks:['有完整数据流图','骨架搭建顺序按依赖排列','有模块依赖图','清理策略明确','验证方案具体','末尾有 [DESIGN_DONE] 标记']
-            },
-            {id:'a-contract', num:3, title:'契约', desc:'数据模型、API接口、模块接口、异常处理策略',
-             exec:{tag:'执行AI',to:'窗口B',when:'设计审查通过后',
-                   expect:'6个问题的答案 + [CONTRACT_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：CONTRACT-从零】设计接口和数据模型，不写代码，不执行命令。
+### Step 2: Tech Stack Confirmation
+- Does it match user requirements?
+- Any obvious compatibility issues?
+- Is dependency count reasonable?
 
-基于 DESIGN 阶段确认的架构设计：
-{{粘贴DESIGN阶段确认的模块依赖图和数据流}}
+### Step 3: Output Next Stage Instruction
+If review passes, output [DESIGN-Architecture] instruction.
 
-【技术选型（已确认）】
-- {{前端框架/后端框架/数据库/其他}}
+[Review Passed! Next Step]
+-> Go to Design stage, copy Execution AI Prompt`},
 
-请回答：
-1. 【数据模型设计】核心数据实体有哪些？列出每个实体的字段名、类型、约束。
-2. 【API接口设计】需要哪些接口？列出每个接口的路径、方法、请求参数、返回结构。
-3. 【模块接口设计】各模块之间的函数/方法调用接口是什么？输入参数和返回值类型。
-4. 【异常处理策略】每个模块的异常如何处理？是抛出还是捕获？错误码如何定义？
-5. 【技术选型确认】请复述已确认的技术栈。
-6. 【编码纪律确认】编码阶段是否一次只创建一个文件？确认。
+    {id:'design',name:'设计',nameEn:'Design',desc:'画清楚数据怎么流转、先搭什么后搭什么',descEn:'Map out data flow and build order',
+     exec:`【阶段：设计】从零新建项目的架构设计
 
-确认后我回复"确认"，进入搭建。
-输出末尾加 [CONTRACT_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的契约确认后',
-                    expect:'完整性审查 + 一致性审查 + 下一步指令',next:'按策略AI给出的指令，去「编码」阶段'},
-             stratText:`【CONTRACT-从零审查任务】
+基于初始化方案，请设计：
+1. 【数据流设计】从空项目到完整功能的数据流
+2. 【骨架搭建顺序】先配置→再工具→再业务（被依赖的先创建）
+3. 【模块依赖图】各模块之间的依赖关系
+4. 【清理策略】骨架搭建失败时的回退方案
+5. 【验证方案】每层骨架搭建后如何验证不塌
+6. 【风险点】可能遇到的问题和预防措施
 
-请审查以下执行AI返回的接口和数据模型设计。
+要求：只输出设计，不生成代码。输出 [DESIGN_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'初始化通过后',expect:'架构设计 + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】设计阶段
 
-## 执行AI的契约确认：
-{{执行AI的契约确认}}
+请审查以下架构设计：
+{{粘贴执行AI的返回}}
 
-## 你的任务：
+审查要点：
+1. 数据流是否完整？
+2. 骨架顺序是否合理？（被依赖的先创建）
+3. 模块依赖是否有循环？
+4. 风险点是否覆盖主要风险？
 
-### 第一步：完整性审查
-- [ ] 数据模型有具体的字段名和类型
-- [ ] API接口有路径、方法、参数、返回值
-- [ ] 模块接口有函数签名和类型标注
-- [ ] 异常处理策略明确
-- [ ] 技术选型与INIT阶段确认的一致
-- [ ] 编码纪律确认（一次只创建一个文件）
-- [ ] 末尾有 [CONTRACT_DONE] 标记
+状态判断：通过 / 需补充
 
-### 第二步：一致性审查
-- [ ] API接口的返回结构与数据模型字段一致
-- [ ] 模块接口的参数类型与数据模型一致
+如通过，进入「契约」阶段`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到设计方案后',whenEn:'After receiving design plan',expect:'审查结论',next:'进入「契约」阶段'},
+     checks:['数据流设计完整','骨架搭建顺序合理','模块依赖无循环','风险点已识别'],checksEn:['Data flow design complete','Build order is reasonable','Module dependencies have no cycles','Risk points identified'],
+    execEn:`[Stage: DESIGN-Architecture] Answer design questions only. No code, no commands.
 
-### 第三步：输出下一阶段指令
-如果审查通过，输出【CODE-骨架1】指令。
+Based on the confirmed Init plan, this goal: {{repeat your project requirement}}
 
-【审查通过！下一步】
-→ 请去「04-编码」阶段，复制「执行AI提示词 - 配置层」`,
-             checks:['数据模型有具体字段名和类型','API接口有路径/方法/参数/返回值','异常处理策略明确','编码纪律确认','末尾有 [CONTRACT_DONE] 标记']
-            },
-            {id:'a-code', num:4, title:'编码', desc:'按层级搭建：配置层→工具层→入口层→业务层，每层验证',
-             exec:{tag:'执行AI',to:'窗口B',when:'契约审查通过后',
-                   expect:'每层文件代码 + [FILE_DONE] + [LAYER_DONE]',next:'每层完成后把结果复制给策略AI审查'},
-             execText:`【阶段：CODE-骨架-配置层】只创建配置文件，不要动其他文件。
+Confirmed tech stack:
+- {{frontend framework/backend framework/database/other}}
 
-【绝对铁律】
-1. 用户没有说"确认"，绝不进入下一层
-2. 绝不一次性创建多个层的文件
-3. 每创建完一个文件，必须 git add + git commit
-4. 禁止 git push --force、git reset --hard
-5. 禁止一次性 git add .
+Confirmed directory structure:
+{{paste directory tree from Init}}
 
-已确认的配置清单：
-{{粘贴CONTRACT阶段确认的配置文件列表}}
+Please answer:
+1. [Data Flow] What is the core data flow? Use -> to表示.
+2. [Build Order] List files to create in dependency order, mark depended-on (must create first).
+3. [Module Dependency] What are the call relationships between modules?
+4. [Cleanup Strategy] If building fails midway, how to clean up?
+5. [Verification] After each layer (config/utility/business), how to verify?
+6. [Risk Points] What problems might occur? How to mitigate?
 
-请创建以下配置文件：
-- {{配置文件1路径}}：{{用途说明}}
+After answering clearly, I will reply "confirm" before you start building.
+Output [DESIGN_DONE]`,
+    stratEn:`[DESIGN-Architecture Review Task]
 
-要求：
-- 每个文件输出完整代码
-- 配置文件必须有合理的默认值
-- 必须有注释说明每个配置项的用途
-- 创建完后，验证每个文件能被正常读取/导入
+Please review the following architecture design from Execution AI.
 
-验证方式：{{运行什么命令验证配置文件有效}}
+## Execution AI Architecture Design:
+{{Execution AI Architecture Design}}
 
-输出后加 [FILE_DONE: {{文件名}}]
-每创建完一个文件等待我发"下一步"再继续。
+## Your Task:
+
+### Step 1: Completeness Review
+- [ ] Has complete data flow diagram (with -> arrows)
+- [ ] Build order follows dependencies (depended-on first)
+- [ ] Has module dependency diagram
+- [ ] Cleanup strategy clear (which files to delete on failure)
+- [ ] Verification plan specific (what exact commands to run)
+- [ ] Lists at least 1 risk point
+- [ ] Has [DESIGN_DONE] marker at end
+
+If any item fails, output [Follow-up Instruction].
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [CONTRACT-Interface] instruction.
+
+[Review Passed! Next Step]
+-> Go to Contract stage, copy Execution AI Prompt`},
+
+    {id:'contract',name:'契约',nameEn:'Contract',desc:'把接口、字段、规则定死，防止AI乱写',descEn:'Lock down interfaces, fields, and rules',
+     exec:`【阶段：契约】从零新建项目的接口与数据模型设计
+
+请设计：
+1. 【数据模型】核心数据结构和字段定义
+2. 【API接口】对外接口的输入输出定义
+3. 【模块接口】内部模块间的调用约定
+4. 【异常处理策略】错误码定义、降级方案
+5. 【技术选型确认】用户确认后的技术栈冻结
+5.5 【入口层契约】
+   - CLI 入口：文件路径、函数签名、启动方式
+   - Web 入口（如有）：
+     * 文件路径（如 webui.py）
+     * 前端框架及版本
+     * 页面路由/组件清单
+     * 如何调用主循环层（输入参数映射）
+   - 如果无 Web 入口，明确声明"入口层仅含 CLI，确认"
+6. 【编码纪律】禁止破坏性操作、必须遵循的规范
+
+要求：输出 [CONTRACT_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'设计通过后',expect:'接口定义 + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】契约阶段
+
+请审查以下契约设计：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 接口定义是否清晰？输入输出是否明确？
+2. 数据模型是否完整？字段类型是否无误？
+3. 异常处理是否覆盖主要错误场景？
+4. 编码纪律是否明确？
+
+状态判断：通过 / 需补充
+
+如通过，进入「编码」阶段`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约设计后',expect:'审查结论',next:'进入「编码」阶段'},
+     checks:['接口定义清晰','数据结构完整','异常处理已定义','编码纪律已确认'],checksEn:['Interface definitions clear','Data structures complete','Error handling defined','Coding discipline confirmed'],
+    execEn:`[Stage: CONTRACT-FromScratch] Design interfaces and data models. No code, no commands.
+
+Based on DESIGN confirmed architecture:
+{{paste module dependency graph and data flow from Design}}
+
+[Tech Stack (Confirmed)]
+- {{frontend framework/backend framework/database/other}}
+
+Please answer:
+1. [Data Model] What are the core data entities? List field names, types, constraints.
+2. [API Interface] What interfaces are needed? List path, method, params, return structure.
+3. [Module Interface] What are the function/method interfaces between modules?
+4. [Error Handling] How does each module handle exceptions? Error codes?
+5. [Tech Stack Confirmation] Please restate the confirmed tech stack.
+5.5 [Entry Layer Contract]
+   - CLI entry: file path, function signature, startup method
+   - Web entry (if applicable):
+     * File path (e.g. webui.py)
+     * Frontend framework and version
+     * Page routes/component list
+     * How to call the main logic layer (input parameter mapping)
+   - If no Web entry, explicitly state "Entry layer contains CLI only, confirmed"
+6. [Coding Discipline] Will coding create only one file at a time? Confirm.
+
+After confirmation, I will reply "confirm" to start building.
+Output [CONTRACT_DONE]`,
+    stratEn:`[CONTRACT-FromScratch Review Task]
+
+Please review the following interface and data model design from Execution AI.
+
+## Execution AI Contract Confirmation:
+{{Execution AI Contract Confirmation}}
+
+## Your Task:
+
+### Step 1: Completeness Review
+- [ ] Data model has specific field names and types
+- [ ] API has path, method, params, return values
+- [ ] Module interface has function signatures and type annotations
+- [ ] Error handling strategy is clear
+- [ ] Tech stack matches what was confirmed in Init
+- [ ] Coding discipline confirmed (one file at a time)
+- [ ] Has [CONTRACT_DONE] marker at end
+
+### Step 2: Consistency Review
+- [ ] API return structure matches data model fields
+- [ ] Module interface param types match data model
+
+### Step 3: Output Next Stage Instruction
+If review passes, output [CODE-Skeleton1] instruction.
+
+[Review Passed! Next Step]
+-> Go to Code stage, copy Execution AI Prompt - Config Layer`},
+
+    {id:'code',name:'编码',nameEn:'Code',desc:'一层一层搭，配置→工具→入口→业务',descEn:'Build layer by layer: config -> utility -> entry -> business',isLayered:true,
+      layers:[
+        {name:'配置层',nameEn:'Config Layer',exec:`【阶段：编码 - 第1层：配置层】搭建配置层
+
+请创建：
+1. 配置文件（如 .env, config.py 等）
+2. 依赖清单（requirements.txt, package.json 等）
+3. 基础配置加载代码
+
+要求：每个文件创建后必须能独立运行。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_L1_DONE]`,
+         execEn:`[Stage: CODE - Layer 1: Config] Build config layer
+
+Please create:
+1. Config files (e.g. .env, config.py)
+2. Dependency list (requirements.txt, package.json)
+3. Basic config loading code
+
+Requirements: Each file must run independently after creation.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_L1_DONE]`},
+
+        {name:'工具层',nameEn:'Utility Layer',exec:`【阶段：编码 - 第2层：工具层】搭建工具层
+
+请创建：
+1. 数据库连接工具
+2. 日志工具
+3. 通用工具函数
+
+要求：基于第1层配置，每个文件创建后运行验证。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_L2_DONE]`,
+         execEn:`[Stage: CODE - Layer 2: Utility] Build utility layer
+
+Please create:
+1. Database connection utility
+2. Logging utility
+3. Common utility functions
+
+Requirements: Based on Layer 1 config, verify each file after creation.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_L2_DONE]`},
+
+        {name:'入口层',nameEn:'Entry Layer',exec:`【阶段：编码 - 第3层：入口层】搭建入口层（按契约确认的内容执行）
+
+请创建：
+1. 如契约含 CLI 入口：创建 main.py（启动命令、参数解析）
+2. 如契约含 Web 入口：创建 webui.py（及前端相关文件）
+3. 如契约含双入口：先 CLI 后 Web，逐个创建，逐个确认
+4. 每个入口文件必须能独立运行（启动后不报错）
+
+要求：基于第1-2层，严格按契约的入口层方案执行。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_L3_DONE]`,
+         execEn:`[Stage: CODE - Layer 3: Entry] Build entry layer (per contract)
+
+Please create:
+1. If contract has CLI entry: create main.py (startup command, argument parsing)
+2. If contract has Web entry: create webui.py (and frontend files)
+3. If contract has dual entry: CLI first, then Web, create one by one, confirm each
+4. Each entry file must run independently (no errors on startup)
+
+Requirements: Based on Layers 1-2, strictly follow the entry layer plan from CONTRACT.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_L3_DONE]`},
+
+        {name:'业务层',nameEn:'Business Layer',exec:`【阶段：编码 - 第4层：业务层】实现业务逻辑
+
+请创建：
+1. 业务模块代码
+2. 接口实现
+3. 前端页面（如需要）
+
+要求：基于第1-3层，逐文件实现。每完成一个文件运行验证。
+【契约冲突处理】如果用户指令与CONTRACT确认的内容不一致，立即停止，指出差异，等待确认。
+输出 [CODE_DONE]`,
+         execEn:`[Stage: CODE - Layer 4: Business] Implement business logic
+
+Please create:
+1. Business module code
+2. Interface implementations
+3. Frontend pages (if needed)
+
+Requirements: Based on Layers 1-3, implement file by file. Verify each file after creation.
+[Contract Conflict] If user instruction conflicts with CONTRACT, STOP, point out difference, wait for confirmation.
+Output [CODE_DONE]`}
+      ],
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'每层代码 + 验证 + 层完成标记',expectEn:'Layer code + verification + layer done marker',next:'每层完成后复制给策略AI审查'},
+     strat:`【策略AI审查】编码阶段
+
+请审查以下编码结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 代码是否符合契约定义？
+2. 是否有破坏性操作？
+3. 运行验证是否通过？
+
+状态判断：
+- 通过 → 进入下一层（或验证，如果是最后一层）
+- 需修复 → 指出问题，在当前层重新编码`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'每层编码结果后',whenEn:'After each layer coding result',expect:'每层审查结论',next:'通过进入下一层，全部完成后进入验证'},
+     checks:['代码符合契约','无破坏性操作','运行验证通过'],checksEn:['Code matches contract','No destructive operations','Runtime verification passed'],
+    execEn:`[Stage: CODE-Skeleton-Config] Create config files only. Do not touch others.
+
+[Absolute Rules]
+1. Never advance to next layer until user says "confirm"
+2. Never create files from multiple layers at once
+3. After creating each file, must git add + git commit
+4. Never git push --force, git reset --hard
+5. Never git add .
+6. [Contract Conflict] If user instruction conflicts with CONTRACT (files, fields, interfaces, tech stack), STOP immediately, point out the difference, wait for confirmation. Never choose the "more reasonable" option on your own.
+
+Confirmed config list:
+{{paste config file list from Contract}}
+
+Please create the following config files:
+- {{config file path}}: {{purpose}}
+
+Requirements:
+- Output complete code for each file
+- Config files must have reasonable defaults
+- Must have comments explaining each config item
+- After creation, verify each file can be read/imported
+
+Verification: {{what command to verify config file}}
+
+Add [FILE_DONE: {{filename}}] after output.
+Wait for me to say "next step" after each file.
 
 ---
-搭建顺序：
-第1层：配置文件 → 第2层：工具类 → 第3层：入口文件 → 第4层：业务模块
-每层完成后验证，验证通过后进入下一层。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'每层验证完成后',
-                    expect:'合规性审查 + 判断下一层或验证',next:'还有下一层→复制下一层CODE指令。最后一层→去「验证」阶段'},
-             stratText:`【CODE-骨架审查任务】
+Build order:
+Layer 1: Config -> Layer 2: Utility -> Layer 3: Entry -> Layer 4: Business
+Verify after each layer, proceed to next after passing.`,
+    stratEn:`[CODE-Skeleton Review Task]
 
-请审查以下执行AI返回的骨架搭建结果。
+Please review the following skeleton build result from Execution AI.
 
-## 执行AI的搭建结果：
-{{执行AI的搭建结果}}
+## Execution AI Build Result:
+{{Execution AI Build Result}}
 
-## 你的任务：
+## Your Task:
 
-### 第一步：合规性审查
-- [ ] 本层所有文件都已创建（有 [FILE_DONE] 标记）
-- [ ] 本层验证通过（有 [LAYER_DONE] 标记）
-- [ ] 文件内容与CONTRACT阶段定义的接口一致
-- [ ] 有异常处理
-- [ ] 有类型标注
+### Step 1: Compliance Review
+- [ ] All layer files created (has [FILE_DONE] marker)
+- [ ] Layer verification passed (has [LAYER_DONE] marker)
+- [ ] File content matches interfaces defined in Contract
+- [ ] Has error handling
+- [ ] Has type annotations
 
-### 第二步：判断下一步
-- 如果本层验证通过且还有下一层：输出下一层的CODE指令
-- 如果本层验证通过且是最后一层：输出【VERIFY】指令
-- 如果本层验证失败：输出修复指令
+### Step 2: Determine Next Step
+- If layer passed and more layers: output next layer CODE instruction
+- If layer passed and last layer: output [VERIFY] instruction
+- If layer failed: output fix instruction
 
-【审查通过！下一步】
-→ 还有下一层：复制下一层CODE指令给执行AI
-→ 最后一层完成：去「05-验证」阶段`,
-             checks:['本层文件全部创建','本层验证通过','文件内容与契约一致','有异常处理','有类型标注']
-            },
-            {id:'a-verify', num:5, title:'验证', desc:'按INIT定义的验收条件逐项检查',
-             exec:{tag:'执行AI',to:'窗口B',when:'编码阶段全部完成后',
-                   expect:'验收结果汇总表 + 每步通过/失败',next:'把结果复制给策略AI分析'},
-             execText:`【阶段：VERIFY-从零】执行功能验收，带进度标记。
+[Review Passed! Next Step]
+-> More layers: copy next CODE instruction to Execution AI
+-> Last layer done: go to Verify stage`},
 
-【执行铁律】
-- 每完成一步，输出 [STEP X/N: 步骤名]
-- 如果失败，输出 [STEP X/N FAILED: 原因] 并停止
-- 用户可能中途停止并指定"从第X步继续"
-- VERIFY阶段只运行不改代码
+    {id:'verify',name:'验证',nameEn:'Verify',desc:'照着验收清单一个个测',descEn:'Check against acceptance criteria one by one',
+     exec:`【阶段：验证】从零新建项目的功能验收
 
-验收条件清单（INIT阶段定义）：
-{{列出INIT阶段定义的验收条件}}
+按INIT阶段定义的验收条件逐项检查：
+1. 【功能验收】功能清单是否全部可用？
+2. 【异常验收】异常场景是否按契约处理？
+3. 【汇总表】验收结果汇总
 
-请执行以下验收步骤：
-1. 【环境检查】确认所有依赖已安装，配置文件正确
-2. 【启动检查】启动项目，确认无报错，服务就绪
-3. 【功能验收1】{{验收条件1}} — 执行操作，记录结果
-4. 【功能验收2】{{验收条件2}} — 执行操作，记录结果
-5. 【功能验收N】{{验收条件N}} — 执行操作，记录结果
-6. 【异常验收】故意触发异常场景，验证异常处理是否按CONTRACT设计工作
-7. 【汇总】输出验收结果汇总表
+要求：逐项验证，不通过的要说明原因。输出 [VERIFY_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'编码完成后',expect:'验收报告 + [VERIFY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】验证阶段
 
-每步输出格式：
-[STEP X/N: 步骤名] ✓ 通过 / ✗ 失败（原因）
+请审查以下验证结果：
+{{粘贴执行AI的返回}}
 
-开始执行。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的验收结果后',
-                    expect:'验收结果分析 + 根因判断 + 下一步决策',next:'全部通过→去「部署」阶段。有失败→回「编码」修复'},
-             stratText:`【VERIFY-从零分析任务】
+审查要点：
+1. 验收是否完整？
+2. 不通过项的根因是什么？
 
-请分析以下执行AI返回的验收结果。
+状态判断：
+- 全部通过 → 进入「部署」
+- 部分不通过 → 回退到「编码」修复`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到验收结果后',expect:'审查结论',next:'通过进入部署，不通过回退编码'},
+     checks:['功能清单全部验证','异常场景已测试','验收结果有结论'],checksEn:['功能清单全部验证','Exception scenarios tested','验收结果有结论'],
+    execEn:`[Stage: VERIFY-FromScratch] Execute acceptance testing with progress markers.
 
-## 执行AI的VERIFY返回：
-{{执行AI的VERIFY返回}}
+[Execution Rules]
+- After each step, output [STEP X/N: step_name]
+- If failed, output [STEP X/N FAILED: reason] and stop
+- VERIFY stage only runs, does not modify code
 
-## 你的任务：
+Acceptance criteria checklist (defined in Init):
+{{list acceptance criteria from Init}}
 
-### 第一步：验收结果分析
-1. 【环境检查通过？】是/否。证据：
-2. 【启动检查通过？】是/否。证据：
-3. 【功能验收通过率】通过X/N项
-4. 【异常验收通过？】是/否。证据：
-5. 【哪些功能验收失败？】列出失败项和原因
+Please execute the following acceptance steps:
+1. [Environment Check] Confirm all dependencies installed, config files correct
+2. [Startup Check] Start project, confirm no errors, service ready
+3. [Acceptance Test 1] {{criterion 1}} - Execute, record result
+4. [Acceptance Test 2] {{criterion 2}} - Execute, record result
+5. [Acceptance Test N] {{criterion N}} - Execute, record result
+6. [Exception Test] Deliberately trigger exceptions, verify error handling per Contract
+7. [Summary] Output acceptance result summary table
 
-### 第二步：根因判断
-对每个失败项，分析根因：
-- 是代码逻辑错误？是接口不一致？是配置问题？是验收标准不合理？
+Output format per step:
+[STEP X/N: step_name] ✓ Pass / ✗ Fail (reason)
 
-### 第三步：下一步决策
-- 如果所有验收通过：输出【DEPLOY】指令
-- 如果有功能验收失败：输出【CODE-修复】指令（回退到编码阶段）
-- 如果验收标准不合理：输出调整建议
+Begin execution.`,
+    stratEn:`[VERIFY-FromScratch Analysis Task]
 
-【审查通过！下一步】
-→ 全部通过：去「06-部署」阶段
-→ 有失败：回「04-编码」阶段修复`,
-             checks:['环境检查通过','启动检查通过','功能验收全部通过','异常验收通过']
-            },
-            {id:'a-deploy', num:6, title:'部署', desc:'环境检查、依赖安装、部署执行、冒烟测试',
-             exec:{tag:'执行AI',to:'窗口B',when:'验证全部通过后',
-                   expect:'6步部署结果 + [DEPLOY_DONE]',next:'把结果复制给策略AI分析'},
-             execText:`【阶段：DEPLOY】部署上线，带进度标记。
+Please analyze the following acceptance results from Execution AI.
 
-【执行铁律】
-- 每完成一步，输出 [STEP X/6: 步骤名]
-- 如果失败，输出 [STEP X/6 FAILED: 原因] 并停止
-- DEPLOY阶段只执行部署操作，不修改业务代码
+## Execution AI VERIFY Response:
+{{Execution AI VERIFY Response}}
 
-部署目标：
-- 项目：{{项目名称}}
-- 目标平台：{{服务器/云平台/本地}}
-- 部署方式：{{手动/自动}}
+## Your Task:
+
+### Step 1: Acceptance Result Analysis
+1. [Environment check passed?] Yes/No. Evidence:
+2. [Startup check passed?] Yes/No. Evidence:
+3. [Acceptance pass rate] Passed X/N
+4. [Exception test passed?] Yes/No. Evidence:
+5. [Which acceptance tests failed?] List failures and reasons
+
+### Step 2: Root Cause Judgment
+For each failure, analyze root cause
+
+### Step 3: Next Step Decision
+- If all acceptance passed: output [DEPLOY] instruction
+- If acceptance failures: output [CODE-Fix] instruction (back to Code)
+
+[Review Passed! Next Step]
+-> All pass: go to Deploy stage
+-> Failures: back to Code stage to fix`},
+
+    {id:'deploy',name:'部署',nameEn:'Deploy',desc:'部署到服务器，跑通冒烟测试',descEn:'Deploy to server, run smoke test',
+     exec:`【阶段：部署】部署上线
 
 步骤清单：
-1. 【环境检查】确认目标环境就绪，环境变量已配置
-2. 【依赖安装】在目标环境安装项目依赖
-3. 【构建打包】（如有构建步骤）执行构建
-4. 【部署执行】按部署方式执行上线
-5. 【冒烟测试】访问线上地址/接口，验证核心功能正常
-6. 【监控确认】确认日志输出正常（无ERROR）
+1. 环境检查：确认服务器/云平台就绪，环境变量配置正确
+2. 依赖安装：安装项目依赖，确认版本一致
+3. 构建打包：如有构建步骤，执行构建
+4. 部署执行：按部署文档执行上线
+5. 冒烟测试：访问线上地址，确认核心功能正常
+6. 监控确认：确认日志、监控、告警正常
 
 【回退策略】
-- 部署失败时：{{回滚方式}}
-- 线上出现严重BUG时：{{紧急回滚流程}}
+- 部署失败时，如何回滚到上一版本？
+- 数据迁移失败时，如何恢复？
 
-输出末尾加 [DEPLOY_DONE]
-开始执行。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的部署结果后',
-                    expect:'部署结果分析 + 下一步决策',next:'全部通过→去「完成」阶段。失败→确认回滚'},
-             stratText:`【DEPLOY分析任务】
+输出 [DEPLOY_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'验证通过后',whenEn:'After verification passes',expect:'部署报告 + [DEPLOY_DONE]',expectEn:'Deploy report + [DEPLOY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】部署阶段
 
-请分析以下执行AI返回的部署结果。
+请审查以下部署结果：
+{{粘贴执行AI的返回}}
 
-## 执行AI的DEPLOY返回：
-{{执行AI的DEPLOY返回}}
+审查要点：
+1. 部署步骤是否完整？
+2. 回退策略是否可行？
+3. 冒烟测试是否通过？
 
-## 你的任务：
+状态判断：通过 / 需修复
 
-### 第一步：部署结果分析
-1. 【环境检查通过？】是/否
-2. 【依赖安装成功？】是/否
-3. 【构建打包成功？】是/否/跳过
-4. 【部署执行成功？】是/否
-5. 【冒烟测试通过？】是/否
-6. 【监控确认正常？】是/否
+如通过，进入「完成」阶段`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到部署结果后',whenEn:'After receiving deploy result',expect:'审查结论',next:'通过进入完成'},
+     checks:['环境检查通过','依赖安装成功','冒烟测试通过','回退策略已确认'],checksEn:['Environment check passed','Dependencies installed','Smoke test passed','回退策略已确认'],
+    execEn:`[Stage: DEPLOY] Deploy to production with progress markers.
 
-### 第二步：下一步决策
-- 如果所有步骤通过：输出【DONE-从零模式】指令
-- 如果部署失败：输出回滚指令
-- 如果冒烟测试失败：输出【CODE-修复】指令
+[Execution Rules]
+- After each step, output [STEP X/6: step_name]
+- If failed, output [STEP X/6 FAILED: reason] and stop
+- DEPLOY stage only deploys, does not modify business code
 
-【审查通过！下一步】
-→ 全部通过：去「07-完成」阶段`,
-             checks:['目标环境就绪','依赖安装成功','部署执行成功','冒烟测试通过','日志无ERROR','回滚方案已确认']
-            },
-            {id:'a-done', num:7, title:'完成', desc:'补全文档、交接清单、git tag归档',
-             exec:{tag:'执行AI',to:'窗口B',when:'部署通过后',
-                   expect:'文档补全 + 归档结果 + [ALL_DONE]',next:'项目新建完成'},
-             execText:`【阶段：DONE-从零模式】项目收尾，完成新建。
+Deploy target:
+- Project: {{project name}}
+- Target platform: {{server/cloud/local}}
+- Method: {{manual/automatic}}
 
-验证已通过：
-- {{简述验证结果}}
+Step checklist:
+1. [Environment Check] Confirm target environment ready, env vars configured
+2. [Dependency Install] install project dependencies in target environment
+3. [Build and Package] (if build step exists) execute build
+4. [Deploy Execution] execute deployment per method
+5. [Smoke Test] access production URL, verify core functionality
+6. [Monitoring Check] confirm log output normal (no ERROR)
 
-请执行：
+[Rollback Strategy]
+- On deploy failure: {{rollback method}}
+- On critical bug: {{emergency rollback}}
+
+Output [DEPLOY_DONE]
+Begin execution.`,
+    stratEn:`[DEPLOY Analysis Task]
+
+Please analyze the following deploy result from Execution AI.
+
+## Execution AI DEPLOY Response:
+{{Execution AI DEPLOY Response}}
+
+## Your Task:
+
+### Step 1: Deploy Result Analysis
+1. [Environment check passed?] Yes/No
+2. [Dependencies installed?] Yes/No
+3. [Build succeeded?] Yes/No/Skipped
+4. [Deploy executed?] Yes/No
+5. [Smoke test passed?] Yes/No
+6. [Monitoring normal?] Yes/No
+
+### Step 2: Next Step Decision
+- If all passed: output [DONE-FromScratch] instruction
+- If deploy failed: output rollback instruction
+- If smoke test failed: output [CODE-Fix] instruction
+
+[Review Passed! Next Step]
+-> All pass: go to Done stage`},
+
+    {id:'done',name:'完成',nameEn:'Done',desc:'写README、打tag、收尾',descEn:'Write README, tag, wrap up',
+     exec:`【阶段：完成】项目收尾，完成新建
+
 1. 补全项目文档：README.md（项目说明、安装步骤、启动方式）
 2. 补全环境配置说明：.env.example 或配置文档
 3. 生成交接清单：项目结构说明、关键文件位置、后续扩展建议
 4. 最终归档：git add + git commit + git tag v0.1
 5. 冒烟测试：按README步骤从零克隆安装，确认能跑通
 
-输出修改后的文件列表和归档结果。
-输出末尾加 [ALL_DONE]`,
-             strat:null,
-             checks:['README.md 已补全','环境配置说明已补全','交接清单已生成','已 git commit + git tag v0.1','冒烟测试通过']
-            }
-        ]
-    },
-    b: {
-        name:'新增功能/模块', color:'mode-b', btnClass:'active-b',
-        flow:['探测','设计','契约','编码','验证','完成'],
-        stages:[
-            {id:'b-probe', num:1, title:'探测', desc:'找到在哪里插入新功能，摸清相关代码',
-             exec:{tag:'执行AI',to:'窗口B',when:'确定要新增功能后',
-                   expect:'6个问题的答案 + [PROBE_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：PROBE】只查询，不改代码，不生成代码，不执行系统命令。
+输出 [ALL_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'部署通过后',whenEn:'After deploy passes',expect:'文档 + 归档 + [ALL_DONE]',expectEn:'Docs + archive + [ALL_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】完成阶段
 
-需求：{{你的需求}}
+请审查以下收尾结果：
+{{粘贴执行AI的返回}}
 
-请对当前代码库进行全面探测，回答以下问题。每个问题必须具体到文件名、方法/函数名、类名、行号范围。
+审查要点：
+1. 文档是否完整？
+2. 交接清单是否清晰？
+3. 归档是否正确？
 
-1. 【现状定位】当前实现该需求的代码在哪？
-   - 后端：列出所有相关文件、方法/类、关键代码片段
-   - 前端：列出所有相关组件/页面、方法、关键代码片段
+状态判断：通过 → 项目完成！`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查',next:'项目完成！'},
+     checks:['README完整','环境配置说明清晰','交接清单已生成','git归档完成','入口层方案已在 INIT 阶段确认（CLI/Web/双端），无遗漏'],checksEn:['README complete','Env config docs clear','Handover checklist generated','git archive complete','Entry layer plan confirmed in INIT (CLI/Web/dual), no omissions'],
+    execEn:`[Stage: DONE-FromScratch] Project wrap-up, complete new build.
 
-2. 【调用链】触发该功能的完整调用链是什么？
-   - 从用户操作/请求入口到最终处理，用 → 表示每一步
+Verification passed:
+- {{brief verification result}}
 
-3. 【外部能力】项目已有的模型调用/AI分析/外部API封装在哪？
+Please execute:
+1. Complete README.md (project description, install steps, startup method)
+2. Complete env config documentation (.env.example or config docs)
+3. Generate handover checklist (project structure, key files, extension suggestions)
+4. Final archive: git add + git commit + git tag v0.1
+5. Smoke test: Follow README to clone and install from scratch
 
-4. 【数据结构】核心数据结构定义在哪？
-   - 实体类/数据模型/接口定义的文件位置
-   - 关键字段名和类型
+Output modified file list and archive result.
+Output [ALL_DONE]`}
+  ]
+},
+modeB:{
+  name:'新增功能/模块',nameEn:'Add Feature',theme:'blue',themeCls:'th-b',
+  steps:[
+    {id:'probe',name:'探测',nameEn:'Probe',desc:'找到代码里该插在哪、改了会影响什么',descEn:'Find where to insert in code, assess impact',
+     exec:`【阶段：探测】新增功能，定位插入点
 
-5. 【判断逻辑】相关的条件判断、循环处理是批量还是逐条？在哪实现？
-
-6. 【扩展点】如果要新增模块/组件，按项目结构应放在哪个目录？命名规范是什么？
-
-要求：
-- 贴出关键方法的完整代码（不要省略）
-- 文件路径用代码块标记
-- 最后输出 [PROBE_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的探测返回后',
-                    expect:'完整性审查 + 下一步指令',next:'按策略AI给出的指令，去「设计」阶段'},
-             stratText:`【PROBE审查任务】
-
-请审查以下执行AI返回的PROBE结果，并判断代码状态。
-
-## 执行AI的PROBE返回：
-{{执行AI的PROBE返回}}
-
-## 你的任务：
-
-### 第一步：完整性审查
-- [ ] 6个问题全部回答（数一下，1-6都有）
-- [ ] 有具体的文件路径（能看到 xxx.py 格式）
-- [ ] 有方法/函数名和行号范围
-- [ ] 关键代码完整贴出（不是只有方法签名）
-- [ ] 末尾有 [PROBE_DONE] 标记
-
-如果以上有任何一项未通过，输出【追问指令】。
-
-### 第二步：输出下一阶段指令
-如果审查通过，输出【DESIGN-新增功能】指令。
-
-【审查通过！下一步】
-→ 请去「02-设计」阶段，复制「执行AI提示词」`,
-             checks:['6个问题全部回答','有具体文件路径和行号','关键代码完整贴出','末尾有 [PROBE_DONE] 标记']
-            },
-            {id:'b-design', num:2, title:'设计', desc:'数据流、改造点、调用关系、回退策略',
-             exec:{tag:'执行AI',to:'窗口B',when:'探测审查通过后',
-                   expect:'6个问题的答案 + [DESIGN_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：DESIGN】只回答设计问题，不写代码，不执行命令。
-
-基于你刚才查到的代码，本次新增功能目标：{{重复你的需求}}
-
-当前代码状态（PROBE发现）：
-- 相关代码在 {{文件}} 的 {{方法}}
-- 模型调用能力在 {{文件}} 的 {{方法}}
-- 数据结构在 {{文件}}
+目标功能：{{你要新增的功能}}
 
 请回答：
-1. 【数据流】新增功能后的完整数据流是什么？用 → 表示。标注新增环节。
-2. 【改造点】本次涉及哪几个文件？按依赖顺序排列。
-3. 【调用关系】新增/修改的模块由谁调用？输出给谁？
-4. 【回退策略】如果新逻辑失败，系统如何回退？
-5. 【验证方案】如何证明新功能生效？建议在哪几个位置添加临时日志？
-6. 【风险点】可能破坏哪些现有功能？如何规避？
+1. 【现状概览】项目当前有哪些相关功能？
+2. 【插入点定位】新功能应该加在哪个文件/模块？
+3. 【依赖分析】新功能依赖哪些现有模块？
+4. 【影响范围】修改会影响哪些现有功能？
+5. 【技术约束】现有技术栈对新功能有什么限制？
+6. 【数据对接】新功能需要读写哪些现有数据？
 
-回答清楚后，我回复"确认"你再写代码。
-输出末尾加 [DESIGN_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的设计返回后',
-                    expect:'完整性审查 + 下一步指令',next:'按策略AI给出的指令，去「契约」阶段'},
-             stratText:`【DESIGN审查任务】
+【特殊场景：追加入口】
+如果本次新增的是一个独立的入口文件（如 Web 前端、新的 CLI 入口）：
+- 列出当前所有已有入口文件
+- 说明新增入口与现有入口的关系（替代/并存）
+- 确认新增入口文件应放在哪个目录、命名规范是什么
 
-请审查以下执行AI返回的DESIGN结果。
+【子场景：架构重构】
+如果本次新增涉及以下任一情况，请在探测结果中明确标注【ARCH_REFACTOR】：
+- 需要修改主循环/核心数据流
+- 需要新增≥2个模块且它们之间有依赖关系
+- 需要改变现有节点的生命周期（创建/合并/删除逻辑）
+- 需要修改已有数据结构的字段
 
-## 执行AI的DESIGN返回：
-{{执行AI的DESIGN返回}}
+标注后，DESIGN 阶段必须回答：
+1. 新增模块清单及依赖顺序
+2. 改造文件清单及修改点
+3. 回退策略（如何回到改造前状态）
 
-## 你的任务：
+要求：只探测，不改代码。输出 [PROBE_DONE]`,
 
-### 第一步：完整性审查
-- [ ] 有完整的数据流图
-- [ ] 列出了具体文件（有文件路径）
-- [ ] 有明确的修改顺序
-- [ ] 回退策略清晰
-- [ ] 验证方案具体
-- [ ] 列出了至少1个风险点
-- [ ] 末尾有 [DESIGN_DONE] 标记
+     execEn:`[Stage: PROBE] Query only. No code changes, no code generation, no system commands.
 
-### 第二步：输出下一阶段指令
-如果审查通过，输出【CONTRACT-契约确认】指令。
+Requirement: {{your requirement}}
 
-【审查通过！下一步】
-→ 请去「03-契约」阶段，复制「执行AI提示词」`,
-             checks:['有完整数据流图','列出具体文件','有明确修改顺序','回退策略清晰','验证方案具体','末尾有 [DESIGN_DONE] 标记']
-            },
-            {id:'b-contract', num:3, title:'契约', desc:'接口字段、降级路径、编码纪律',
-             exec:{tag:'执行AI',to:'窗口B',when:'设计审查通过后',
-                   expect:'5个问题的答案 + [CONTRACT_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：CONTRACT】确认接口，不写代码，不执行命令。
+Please perform a comprehensive probe of the codebase. Each answer must reference specific file names, method/function names, class names, and line ranges.
 
-【新增模块】
-- 输入：{{你期望的输入参数}}
-- 输出：{{你期望的返回结构}}
-- 失败时：{{你期望的失败行为}}
+1. [Current State] Where is the code related to this requirement?
+   - Backend: list all related files, methods/classes, key code snippets
+   - Frontend: list all related components/pages, methods, key code snippets
 
-【现有数据结构】
-- {{数据对象名}} 字段：{{列出PROBE中找到的实际字段}}
+2. [Call Chain] What is the complete call chain for this feature?
+   - From user action/request entry to final processing, use -> for each step
+
+3. [External Capabilities] Where are existing model calls/AI analysis/external API wrappers?
+
+4. [Data Structures] Where are core data structures defined?
+
+5. [Judgment Logic] Are related conditionals/loops batch or item-by-item? Where?
+
+6. [Extension Points] If adding a module, where should it go? What naming convention?
+
+[Special Scenario: Add Entry Point]
+If the new feature is an independent entry file (e.g. Web frontend, new CLI entry):
+- List all existing entry files
+- Explain relationship with existing entries (replace/coexist)
+- Confirm directory and naming convention for the new entry file
+
+[Sub-scenario: Architecture Refactoring]
+If the new feature involves any of the following, explicitly mark [ARCH_REFACTOR] in probe results:
+- Need to modify main loop / core data flow
+- Need to add ≥2 modules with dependencies between them
+- Need to change lifecycle of existing nodes (create/merge/delete logic)
+- Need to modify fields of existing data structures
+
+If marked, DESIGN stage must answer:
+1. New module list and dependency order
+2. Files to modify and modification points
+3. Rollback strategy (how to revert to pre-modification state)
+
+Requirements:
+- Paste complete code of key methods (do not omit)
+- Mark file paths with code blocks
+- Output [PROBE_DONE]`,
+    stratEn:`[PROBE Review Task]
+
+Please review the following PROBE result from Execution AI and judge code state.
+
+## Execution AI PROBE Response:
+{{Execution AI PROBE Response}}
+
+## Your Task:
+
+### Step 1: Completeness Review
+- [ ] All 6 questions answered (check 1-6 are all present)
+- [ ] Has specific file paths (can see xxx.py format)
+- [ ] Has method/function names and line ranges
+- [ ] Key code fully pasted (not just signatures)
+- [ ] Has [PROBE_DONE] marker at end
+
+If any item fails, output [Follow-up Instruction].
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [DESIGN-Add Feature] instruction.
+
+[Review Passed! Next Step]
+-> Go to Design stage, copy Execution AI Prompt`},
+
+    {id:'design',name:'设计',nameEn:'Design',desc:'想清楚新功能怎么加、怎么跟现有代码对接',descEn:'Plan how to add the feature and integrate with existing code',
+     exec:`【阶段：设计】新增功能的架构设计
+
+请设计：
+1. 【新增架构】新功能的模块划分和职责
+2. 【数据流】新增数据如何流入流出
+3. 【接口设计】新增接口的定义
+4. 【与现有系统对接】如何与现有代码集成
+5. 【回退策略】新增失败如何清理
+6. 【验证方案】新增后如何验证
+
+7. 【架构重构补充】（如 PROBE 标注了【ARCH_REFACTOR】）
+   - 新增模块之间如何协作？画出模块依赖图
+   - 现有代码中哪些函数签名需要变更？
+   - 数据结构变更是否影响已有存储（如 graph 的节点属性）？
+   - 改造期间是否需要冻结其他功能开发？
+
+要求：只设计，不编码。输出 [DESIGN_DONE]`,
+
+     execEn:`[Stage: DESIGN] Answer design questions only. No code, no commands.
+
+Based on code you just probed, this feature goal: {{repeat your requirement}}
+
+Current code state (PROBE findings):
+- Related code in {{file}} {{method}}
+- Model call capability in {{file}} {{method}}
+- Data structure in {{file}}
+
+Please answer:
+1. [Data Flow] Complete data flow after adding feature? Use -> . Mark new stages.
+2. [Modification Points] Which files involved? List in dependency order.
+3. [Call Relationships] Who calls new/modified modules? Who do they output to?
+4. [Rollback Strategy] If new logic fails, how does system rollback?
+5. [Verification] How to prove new feature works? Where to add temp logs?
+6. [Risk Points] What existing features might break? How to mitigate?
+
+7. [Architecture Refactoring Supplement] (if PROBE marked [ARCH_REFACTOR])
+   - How do new modules collaborate? Draw module dependency diagram
+   - Which existing function signatures need to change?
+   - Do data structure changes affect existing storage (e.g. graph node properties)?
+   - Should other feature development be frozen during refactoring?
+
+After answering clearly, I will reply "confirm" before you write code.
+Output [DESIGN_DONE]`,
+    stratEn:`[DESIGN Review Task]
+
+Please review the following DESIGN result from Execution AI.
+
+## Execution AI DESIGN Response:
+{{Execution AI DESIGN Response}}
+
+## Your Task:
+
+### Step 1: Completeness Review
+- [ ] Has complete data flow diagram
+- [ ] Lists specific files (has file paths)
+- [ ] Has clear modification order
+- [ ] Rollback strategy is clear
+- [ ] Verification plan is specific
+- [ ] Lists at least 1 risk point
+- [ ] Has [DESIGN_DONE] marker at end
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [CONTRACT-Confirmation] instruction.
+
+[Review Passed! Next Step]
+-> Go to Contract stage, copy Execution AI Prompt`},
+
+    {id:'contract',name:'契约',nameEn:'Contract',desc:'定好新接口的字段和规则',descEn:'Define new interface fields and rules',
+     exec:`【阶段：契约】新增功能的接口确认
+
+请确认：
+1. 【新增接口】新功能的输入输出定义
+2. 【数据模型变更】是否需要新增/修改数据结构
+3. 【现有接口影响】是否修改现有接口
+4. 【异常处理】新增功能的错误处理策略
+5. 【降级路径】新功能不可用时的回退方案
+6. 【编码纪律】禁止超出契约范围的修改
+
+6.5 【架构重构契约】（如 DESIGN 包含架构重构）
+   - 新增模块的完整接口定义（函数名、参数类型、返回值）
+   - 改造文件的变更范围（哪些行/哪些逻辑块）
+   - 冻结值：阈值、权重、枚举值等一旦设定不得在执行中变更
+   - 回退指令：如果某一步改造失败，执行什么命令回退
+
+要求：输出 [CONTRACT_DONE]`,
+
+     execEn:`[Stage: CONTRACT] Confirm interface. No code, no commands.
+
+[New Module]
+- Input: {{your expected input params}}
+- Output: {{your expected return structure}}
+- On failure: {{your expected failure behavior}}
+
+[Existing Data Structure]
+- {{data object}} fields: {{list actual fields from PROBE}}
+
+Please answer:
+1. What are the actual fields of {{result object}} in your project? List them.
+2. What is the output format when calling external model? (JSON format, field names)
+3. If new logic fails, what is the degradation path? Which old method to call?
+4. Will coding modify only one file at a time? Confirm.
+5. Does the frontend-backend API change?
+
+5.5 [Architecture Refactoring Contract] (if DESIGN includes architecture refactoring)
+   - Complete interface definition for new modules (function names, param types, return values)
+   - Scope of changes to existing files (which lines/logic blocks)
+   - Frozen values: thresholds, weights, enums that must not change during execution
+   - Rollback instruction: what command to run if a modification step fails
+
+After confirmation, I will reply "confirm" to start coding.
+Output [CONTRACT_DONE]`,
+    stratEn:`[CONTRACT Review Task]
+
+Please review the following contract confirmation from Execution AI.
+
+## Execution AI Contract Confirmation:
+{{Execution AI Contract Confirmation}}
+
+## Your Task:
+
+### Step 1: Consistency Review
+- [ ] Field names match data structure from PROBE
+- [ ] Degradation path is clear
+- [ ] Coding discipline confirmed (one file at a time)
+- [ ] Has [CONTRACT_DONE] marker at end
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [CODE-File1] instruction.
+
+[Review Passed! Next Step]
+-> Go to Code stage, copy Execution AI Prompt`},
+
+    {id:'code',name:'编码',nameEn:'Code',desc:'按约定写代码，一个文件一个文件来',descEn:'Implement per contract, one file at a time',
+     exec:`【阶段：编码】新增功能实现
+
+请按契约实现：
+1. 新增文件创建
+2. 现有文件修改（严格按契约范围）
+3. 每完成一个文件运行验证
+4. 新增功能代码标注
+
+要求：禁止超出契约范围的修改。
+【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
+
+【架构重构编码顺序】
+如本次为架构重构，按以下顺序执行：
+1. 先创建新增模块（无依赖的先创建）
+2. 每创建完一个模块，独立验证其接口可用性
+3. 再改造现有文件（按依赖关系，被依赖的先改）
+4. 主循环最后改（因为它依赖所有新模块）
+5. 禁止一次性修改主循环和新增模块
+
+输出 [CODE_DONE]`,
+
+     execEn:`[Stage: CODE-File1] Modify only this file. Do not touch others.
+
+[Absolute Rules]
+1. Never advance to next file until user says "confirm"
+2. Never modify multiple files at once
+3. After each file, must git add + git commit
+4. If modification fails, must git checkout to rollback
+5. Never git push --force, git reset --hard
+6. Never git add .
+7. [Contract Conflict] If user instruction conflicts with CONTRACT (files, fields, interfaces, tech stack), STOP immediately, point out the difference, wait for confirmation. Never choose the "more reasonable" option on your own.
+
+{{Create/Modify}} file: {{file path}}
+Goal: {{specific feature description}}
+
+Current project context (PROBE findings):
+- Model call wrapper in {{file}} {{method}}
+- Related data structure: {{object}} fields are {{field list}}
+
+Requirements:
+- Output only changed code, mark insertion position with comments
+- If creating new file, output complete code
+- Key paths must have [PROBE] logs
+- All exceptions must be caught
+- Code style must match existing project
+- Output only this file code
+
+[Architecture Refactoring Code Order]
+If this is an architecture refactoring, execute in this order:
+1. Create new modules first (no-dependency modules first)
+2. After each module, independently verify its interface is usable
+3. Then modify existing files (by dependency, depended-on first)
+4. Main loop last (because it depends on all new modules)
+5. Never modify main loop and new modules at once
+
+Add [FILE_DONE: {{filename}}] after output.
+Wait for me to say "next step" before continuing.`,
+    stratEn:`[CODE Review Task]
+
+Please review the following code changes from Execution AI.
+
+## Execution AI Code Changes:
+{{Execution AI Code Changes}}
+
+## Your Task:
+
+### Step 1: Compliance Review
+- [ ] Only modified 1 file (only 1 [FILE_DONE] in output)
+- [ ] Has [PROBE] logs
+- [ ] Has exception catching
+- [ ] References methods from PROBE
+- [ ] Field names match CONTRACT
+
+### Step 2: Determine Next Step
+- If more files: output [CODE-FileN] instruction
+- If last file: output [VERIFY] instruction
+
+[Review Passed! Next Step]
+-> More files: continue Code
+-> Last file: go to Verify stage`},
+
+    {id:'verify',name:'验证',nameEn:'Verify',desc:'测新功能能不能用、老功能有没有坏',descEn:'Test new feature works and existing features intact',
+     exec:`【阶段：验证】新增功能验证
+
+1. 【功能验证】新增功能是否按契约工作
+2. 【回归验证】现有功能是否未被破坏
+3. 【异常验证】错误场景是否按契约处理
+4. 【汇总】验证结果
+
+要求：输出 [VERIFY_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'编码完成后',expect:'验证报告 + [VERIFY_DONE]',expectEn:'Verify report + [VERIFY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】验证阶段
+
+请审查以下验证结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 新增功能是否达标？
+2. 现有功能是否完好？
+
+状态判断：
+- 通过 → 进入「完成」
+- 需修复 → 回退到「编码」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到验证结果后',whenEn:'After receiving verify result',expect:'审查结论',next:'通过进入完成'},
+     checks:['新增功能验证通过','回归验证通过','异常场景已测试'],checksEn:['New feature verified','Regression test passed','Exception scenarios tested'],
+    execEn:`[Stage: VERIFY] Execute verification flow with progress markers.
+
+[Execution Rules]
+- After each step, output [STEP X/5: step_name]
+- If failed, output [STEP X/5 FAILED: reason] and stop
+- VERIFY stage only runs, does not modify code
+
+Step checklist:
+1. Save all modified code files
+2. Restart service (background, non-blocking)
+3. Wait 3 seconds, confirm service ready
+4. Send test request to {{API path from PROBE}}
+5. Read logs, filter lines with [PROBE], output analysis
+
+Begin execution.`,
+    stratEn:`[VERIFY Analysis Task]
+
+Please analyze the following verification logs from Execution AI.
+
+## Execution AI VERIFY Response:
+{{Execution AI VERIFY Response}}
+
+## Your Task:
+
+### Step 1: Log Analysis
+1. [PROBE logs exist?] Yes/No. Evidence:
+2. [New logic was called?] Yes/No. Evidence:
+3. [What did the model return?] Raw response:
+4. [Was degradation triggered?] Yes/No. Evidence:
+5. [Is output from new logic or old logic?] Judgment:
+
+### Step 2: Root Cause Judgment
+
+### Step 3: Next Step Decision
+- If feature works: output [DONE] instruction
+- If degradation triggered: output [CODE-Fix] instruction
+- If new logic not called: output [CODE-CallChain Fix]
+- If logs missing: output [CODE-Log Fix] instruction
+
+[Review Passed! Next Step]
+-> Feature works: go to Done stage
+-> Need fix: back to Code stage`},
+
+    {id:'done',name:'完成',nameEn:'Done',desc:'清理临时代码、更新文档、提交',descEn:'Clean up, update docs, commit',
+     exec:`【阶段：完成】新增功能收尾
+
+1. 代码清理：删除临时文件、注释
+2. 文档更新：README、API文档补充
+3. git提交：add + commit + 描述清楚
+4. 功能摘要：本次新增的内容清单
+
+输出 [DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'验证通过后',whenEn:'After verification passes',expect:'清理 + 文档 + 提交 + [DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】完成阶段
+
+请审查以下收尾结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 清理是否彻底？
+2. 文档是否更新？
+3. 提交是否规范？
+
+状态判断：通过 → 触发合并计划`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查 + 合并确认',next:'确认合并，回到主流程',nextEn:'Confirm merge, return to main flow'},
+     checks:['代码清理完成','文档已更新','git提交规范'],checksEn:['Code cleanup complete','Documentation updated','Git commit规范'],
+    execEn:`[Stage: DONE] Clean up probes, complete modification.
+
+Verification passed:
+- {{brief verification result}}
+
+Please execute:
+1. Remove all [PROBE] marked temp log code
+2. Keep normal business logs
+3. After cleanup, do a smoke test: send a message, confirm normal reply, no ERROR
+
+Output modified file list and test results.
+Output [ALL_DONE]`}
+  ]
+},
+modeC:{
+  name:'修复现有问题',nameEn:'Fix Issue',theme:'orange',themeCls:'th-c',
+  steps:[
+    {id:'probe',name:'探测',nameEn:'Probe',desc:'搞清楚问题表现、影响多大',descEn:'Understand symptoms and impact scope',
+     exec:`【阶段：探测】诊断现有问题
+
+问题描述：{{你发现的问题}}
 
 请回答：
-1. 你项目里 {{相关结果对象}} 的实际字段有哪些？列出来。
-2. 调用外部模型时，输出格式要求是什么？（JSON格式、字段名）
-3. 如果新逻辑失败，降级路径是什么？调用哪个旧方法？
-4. 编码阶段是否一次只改一个文件？确认。
-5. 前后端交互的API是否有变化？
-
-确认后我回复"确认"，进入编码。
-输出末尾加 [CONTRACT_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的契约确认后',
-                    expect:'一致性审查 + 下一步指令',next:'按策略AI给出的指令，去「编码」阶段'},
-             stratText:`【CONTRACT审查任务】
-
-请审查以下执行AI返回的契约确认。
-
-## 执行AI的契约确认：
-{{执行AI的契约确认}}
-
-## 你的任务：
-
-### 第一步：一致性审查
-- [ ] 字段名与PROBE中贴出的数据结构一致
-- [ ] 降级路径明确
-- [ ] 编码纪律确认（一次只改一个文件）
-- [ ] 末尾有 [CONTRACT_DONE] 标记
-
-### 第二步：输出下一阶段指令
-如果审查通过，输出【CODE-文件1】指令。
-
-【审查通过！下一步】
-→ 请去「04-编码」阶段，复制「执行AI提示词」`,
-             checks:['字段名与PROBE一致','降级路径明确','编码纪律确认','末尾有 [CONTRACT_DONE] 标记']
-            },
-            {id:'b-code', num:4, title:'编码', desc:'一次只改一个文件，改完等确认再改下一个',
-             exec:{tag:'执行AI',to:'窗口B',when:'契约审查通过后',
-                   expect:'文件代码 + [FILE_DONE]',next:'把结果复制给策略AI审查，等确认后再改下一个文件'},
-             execText:`【阶段：CODE-文件1】只改这一个文件，不要动其他文件。
-
-【绝对铁律】
-1. 用户没有说"确认"，绝不进入下一个文件
-2. 绝不一次性修改多个文件
-3. 每改完一个文件，必须 git add + git commit
-4. 如果修改失败，必须 git checkout 回退
-5. 禁止 git push --force、git reset --hard
-6. 禁止一次性 git add .
-
-{{新建/修改}} 文件：{{文件路径}}
-改造目标：{{具体功能描述}}
-
-当前项目上下文（PROBE发现）：
-- 模型调用封装在 {{文件}} 的 {{方法}}
-- 相关数据结构：{{数据对象}} 字段为 {{字段列表}}
-
-要求：
-- 只输出变更部分的代码，用注释标明插入位置
-- 如果新建文件，输出完整代码
-- 关键路径必须加 [PROBE] 日志
-- 所有异常必须捕获
-- 代码风格与项目现有代码保持一致
-- 只输出这个文件的代码
-
-输出后加 [FILE_DONE: {{文件名}}]
-等待我发"下一步"再继续。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'每改完一个文件后',
-                    expect:'合规性审查 + 判断下一步',next:'还有文件→继续编码。最后一个文件→去「验证」阶段'},
-             stratText:`【CODE审查任务】
-
-请审查以下执行AI返回的代码修改。
-
-## 执行AI的代码修改：
-{{执行AI的代码修改}}
-
-## 你的任务：
-
-### 第一步：合规性审查
-- [ ] 只改了1个文件（输出中只有1个 [FILE_DONE]）
-- [ ] 有 [PROBE] 日志
-- [ ] 有异常捕获
-- [ ] 引用了PROBE中的方法
-- [ ] 字段名与CONTRACT一致
-
-### 第二步：判断下一步
-- 如果还有下一个文件：输出【CODE-文件N】指令
-- 如果是最后一个文件：输出【VERIFY】指令
-
-【审查通过！下一步】
-→ 还有文件：继续「04-编码」
-→ 最后一个文件：去「05-验证」阶段`,
-             checks:['只改了1个文件','有 [PROBE] 日志','有异常捕获','字段名与CONTRACT一致']
-            },
-            {id:'b-verify', num:5, title:'验证', desc:'证明新功能生效了，不是"没报错就是对了"',
-             exec:{tag:'执行AI',to:'窗口B',when:'编码阶段完成后',
-                   expect:'5步验证结果 + 每步通过/失败',next:'把结果（特别是日志）复制给策略AI分析'},
-             execText:`【阶段：VERIFY】执行验证流程，带进度标记。
-
-【执行铁律】
-- 每完成一步，输出 [STEP X/5: 步骤名]
-- 如果失败，输出 [STEP X/5 FAILED: 原因] 并停止
-- VERIFY阶段只运行不改代码
-
-步骤清单：
-1. 保存所有修改的代码文件
-2. 重启服务（后台启动，不阻塞）
-3. 等待3秒，确认服务就绪
-4. 发送测试请求到 {{PROBE中找到的API路径}}
-5. 读取日志，筛选包含 [PROBE] 的行，输出分析
-
-开始执行。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的验证日志后',
-                    expect:'日志分析 + 根因判断 + 下一步决策',next:'新功能生效→去「完成」。需要修复→回「编码」'},
-             stratText:`【VERIFY分析任务】
-
-请分析以下执行AI返回的验证日志。
-
-## 执行AI的VERIFY返回：
-{{执行AI的VERIFY返回}}
-
-## 你的任务：
-
-### 第一步：日志分析
-1. 【PROBE日志存在？】是/否。证据：
-2. 【新逻辑被调用？】是/否。证据：
-3. 【模型返回了什么？】原始响应：
-4. 【是否触发降级？】是/否。证据：
-5. 【输出是新逻辑结果还是旧逻辑？】判断：
-
-### 第二步：根因判断
-
-### 第三步：下一步决策
-- 如果新功能已生效：输出【DONE】指令
-- 如果降级触发：输出【CODE-修复】指令
-- 如果新逻辑没被调用：输出【CODE-调用链修复】指令
-- 如果日志不存在：输出【CODE-日志修复】指令
-
-【审查通过！下一步】
-→ 新功能生效：去「06-完成」阶段
-→ 需要修复：回「04-编码」阶段`,
-             checks:['PROBE日志存在','新逻辑被调用','没有触发降级','输出是新逻辑结果']
-            },
-            {id:'b-done', num:6, title:'完成', desc:'清理临时日志，冒烟测试',
-             exec:{tag:'执行AI',to:'窗口B',when:'验证通过后',
-                   expect:'清理结果 + [ALL_DONE]',next:'新增功能完成'},
-             execText:`【阶段：DONE】清理探针，完成改造。
-
-验证已通过：
-- {{简述验证结果}}
-
-请执行：
-1. 移除所有带 [PROBE] 标记的临时日志代码
-2. 保留正常的业务日志
-3. 改完后做一次冒烟测试：发送一条消息，确认回复正常，控制台无ERROR
-
-输出修改后的文件列表和测试结果。
-输出末尾加 [ALL_DONE]`,
-             strat:null,
-             checks:['所有 [PROBE] 临时日志已移除','正常业务日志保留','冒烟测试通过','代码已 git commit']
-            }
-        ]
-    },
-    c: {
-        name:'修复现有问题', color:'mode-c', btnClass:'active-c',
-        flow:['探测','诊断','契约','编码','验证','完成'],
-        stages:[
-            {id:'c-probe', num:1, title:'探测', desc:'诊断现状，找出哪里坏了',
-             exec:{tag:'执行AI',to:'窗口B',when:'发现功能异常后',
-                   expect:'6个问题的答案 + [PROBE_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：PROBE】只查询，不改代码，不生成代码，不执行系统命令。
-
-问题描述：{{描述你遇到的问题，越具体越好}}
-
-请对当前代码库进行全面探测，回答以下问题。每个问题必须具体到文件名、方法/函数名、类名、行号范围。
-
-1. 【现状定位】与该问题相关的代码在哪？
-   - 后端：列出所有相关文件、方法/类、关键代码片段
-   - 前端：列出所有相关组件/页面、方法、关键代码片段
-
-2. 【调用链】触发该功能的完整调用链是什么？
-   - 从用户操作/请求入口到最终处理，用 → 表示每一步
-
-3. 【外部能力】项目已有的模型调用/AI分析/外部API封装在哪？
-
-4. 【数据结构】核心数据结构定义在哪？
-
-5. 【判断逻辑】相关的条件判断、循环处理是批量还是逐条？在哪实现？
-
-6. 【异常迹象】当前运行时有什么异常日志/错误信息/不正常行为？
-
-要求：
-- 贴出关键方法的完整代码（不要省略）
-- 文件路径用代码块标记
-- 最后输出 [PROBE_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的探测返回后',
-                    expect:'完整性审查 + 下一步指令',next:'按策略AI给出的指令，去「诊断」阶段'},
-             stratText:`【PROBE审查任务】
-
-请审查以下执行AI返回的PROBE结果。
-
-## 执行AI的PROBE返回：
-{{执行AI的PROBE返回}}
-
-## 你的任务：
-
-### 第一步：完整性审查
-- [ ] 6个问题全部回答
-- [ ] 有具体的文件路径
-- [ ] 有方法/函数名和行号范围
-- [ ] 关键代码完整贴出
-- [ ] 末尾有 [PROBE_DONE] 标记
-
-### 第二步：输出下一阶段指令
-如果审查通过，输出【DESIGN-诊断】指令。
-
-【审查通过！下一步】
-→ 请去「02-诊断」阶段，复制「执行AI提示词」`,
-             checks:['6个问题全部回答','有具体文件路径和行号','关键代码完整贴出','末尾有 [PROBE_DONE] 标记']
-            },
-            {id:'c-design', num:2, title:'诊断', desc:'假设列表、验证点、排查顺序、修复预判',
-             exec:{tag:'执行AI',to:'窗口B',when:'探测审查通过后',
-                   expect:'假设列表 + 验证点 + 排查顺序 + [DESIGN_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：DESIGN-诊断】不修改代码，只设计排查方案。
-
-PROBE发现：
-- {{已存在的文件/方法}} 已存在
-- {{调用链位置}} 已调用相关方法
-- 但运行时 {{具体现象，如"返回空结果""报错""行为异常"}}
-
-请设计排查方案，回答：
-1. 【假设列表】列出所有可能原因，按概率排序。
-2. 【验证点】为验证每个假设，需要在哪些位置加什么日志？具体到文件、方法、行号。
-3. 【排查顺序】按概率从高到低列出排查步骤。
-4. 【修复预判】最可能的问题是什么？修复涉及哪些文件？
-5. 【验证方案】修复后如何验证？需要触发什么操作？预期看到什么日志？
-
-不要写代码。
-输出末尾加 [DESIGN_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的诊断方案后',
-                    expect:'完整性审查 + 下一步指令',next:'按策略AI给出的指令，去「契约」阶段'},
-             stratText:`【DESIGN-诊断审查任务】
-
-请审查以下执行AI返回的诊断方案。
-
-## 执行AI的诊断方案：
-{{执行AI的诊断方案}}
-
-## 你的任务：
-
-### 第一步：完整性审查
-- [ ] 假设列表按概率排序
-- [ ] 验证点具体到文件、方法、行号
-- [ ] 排查顺序合理（高概率优先）
-- [ ] 修复预判有依据
-- [ ] 末尾有 [DESIGN_DONE] 标记
-
-### 第二步：输出下一阶段指令
-如果审查通过，输出【CONTRACT-修复接口】指令。
-
-【审查通过！下一步】
-→ 请去「03-契约」阶段，复制「执行AI提示词」`,
-             checks:['假设列表按概率排序','验证点具体到文件/方法/行号','排查顺序合理','修复预判有依据','末尾有 [DESIGN_DONE] 标记']
-            },
-            {id:'c-contract', num:3, title:'契约', desc:'修复接口、降级路径',
-             exec:{tag:'执行AI',to:'窗口B',when:'诊断审查通过后',
-                   expect:'接口确认 + [CONTRACT_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：CONTRACT】确认接口，不写代码，不执行命令。
-
-【修复模块】
-- 输入：{{你期望的输入参数}}
-- 输出：{{你期望的返回结构}}
-- 失败时：{{你期望的失败行为}}
-
-【现有数据结构】
-- {{数据对象名}} 字段：{{列出PROBE中找到的实际字段}}
-
-请回答：
-1. 你项目里 {{相关结果对象}} 的实际字段有哪些？列出来。
-2. 调用外部模型时，输出格式要求是什么？
-3. 如果新逻辑失败，降级路径是什么？调用哪个旧方法？
-4. 编码阶段是否一次只改一个文件？确认。
-
-确认后我回复"确认"，进入编码。
-输出末尾加 [CONTRACT_DONE]`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的契约确认后',
-                    expect:'一致性审查 + 下一步指令',next:'按策略AI给出的指令，去「编码」阶段'},
-             stratText:`【CONTRACT审查任务】
-
-请审查以下执行AI返回的契约确认。
-
-## 执行AI的契约确认：
-{{执行AI的契约确认}}
-
-## 你的任务：
-
-### 第一步：一致性审查
-- [ ] 字段名与PROBE中贴出的数据结构一致
-- [ ] 降级路径明确
-- [ ] 编码纪律确认
-- [ ] 末尾有 [CONTRACT_DONE] 标记
-
-### 第二步：输出下一阶段指令
-如果审查通过，输出【CODE-修复】指令。
-
-【审查通过！下一步】
-→ 请去「04-编码」阶段，复制「执行AI提示词」`,
-             checks:['字段名与PROBE一致','降级路径明确','编码纪律确认','末尾有 [CONTRACT_DONE] 标记']
-            },
-            {id:'c-code', num:4, title:'编码', desc:'一次只改一个文件，修复代码',
-             exec:{tag:'执行AI',to:'窗口B',when:'契约审查通过后',
-                   expect:'修复代码 + [FILE_DONE]',next:'把结果复制给策略AI审查'},
-             execText:`【阶段：CODE-修复】只改这一个文件，不要动其他文件。
-
-【绝对铁律】
-1. 用户没有说"确认"，绝不进入下一个文件
-2. 绝不一次性修改多个文件
-3. 每改完一个文件，必须 git add + git commit
-4. 如果修改失败，必须 git checkout 回退
-5. 禁止 git push --force、git reset --hard
-6. 禁止一次性 git add .
-
-修改 文件：{{文件路径}}
-修复目标：{{具体修复描述}}
-
-当前项目上下文（PROBE发现）：
-- 问题出在 {{文件}} 的 {{方法}}
-- 相关数据结构：{{数据对象}} 字段为 {{字段列表}}
-
-要求：
-- 只输出变更部分的代码，用注释标明插入位置
-- 关键路径必须加 [PROBE] 日志
-- 所有异常必须捕获
-- 只输出这个文件的代码
-
-输出后加 [FILE_DONE: {{文件名}}]
-等待我发"下一步"再继续。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'每改完一个文件后',
-                    expect:'合规性审查 + 判断下一步',next:'还有文件→继续编码。最后一个文件→去「验证」阶段'},
-             stratText:`【CODE审查任务】
-
-请审查以下执行AI返回的代码修改。
-
-## 执行AI的代码修改：
-{{执行AI的代码修改}}
-
-## 你的任务：
-
-### 第一步：合规性审查
-- [ ] 只改了1个文件
-- [ ] 有 [PROBE] 日志
-- [ ] 有异常捕获
-- [ ] 字段名与CONTRACT一致
-
-### 第二步：判断下一步
-- 如果还有文件：输出【CODE-修复N】指令
-- 如果是最后一个文件：输出【VERIFY】指令
-
-【审查通过！下一步】
-→ 还有文件：继续「04-编码」
-→ 最后一个文件：去「05-验证」阶段`,
-             checks:['只改了1个文件','有 [PROBE] 日志','有异常捕获','字段名与CONTRACT一致']
-            },
-            {id:'c-verify', num:5, title:'验证', desc:'证明问题已修复',
-             exec:{tag:'执行AI',to:'窗口B',when:'编码阶段完成后',
-                   expect:'验证结果 + 每步通过/失败',next:'把结果复制给策略AI分析'},
-             execText:`【阶段：VERIFY】执行验证流程，带进度标记。
-
-【执行铁律】
-- 每完成一步，输出 [STEP X/5: 步骤名]
-- 如果失败，输出 [STEP X/5 FAILED: 原因] 并停止
-- VERIFY阶段只运行不改代码
-
-步骤清单：
-1. 保存所有修改的代码文件
-2. 重启服务（后台启动，不阻塞）
-3. 等待3秒，确认服务就绪
-4. 发送测试请求，复现之前的问题场景
-5. 读取日志，筛选包含 [PROBE] 的行，输出分析
-
-开始执行。`,
-             strat:{tag:'策略AI',to:'窗口A',when:'收到执行AI的验证日志后',
-                    expect:'日志分析 + 根因判断 + 下一步决策',next:'问题已修复→去「完成」。未修复→回「编码」'},
-             stratText:`【VERIFY分析任务】
-
-请分析以下执行AI返回的验证日志。
-
-## 执行AI的VERIFY返回：
-{{执行AI的VERIFY返回}}
-
-## 你的任务：
-
-### 第一步：日志分析
-1. 【PROBE日志存在？】是/否。证据：
-2. 【修复逻辑被调用？】是/否。证据：
-3. 【问题是否复现？】是/否。证据：
-4. 【是否触发降级？】是/否。证据：
-
-### 第二步：下一步决策
-- 如果问题已修复：输出【DONE】指令
-- 如果问题仍存在：输出【CODE-修复】指令
-- 如果引入了新问题：输出【CODE-修复】指令
-
-【审查通过！下一步】
-→ 问题已修复：去「06-完成」阶段
-→ 未修复：回「04-编码」阶段`,
-             checks:['PROBE日志存在','修复逻辑被调用','问题不再复现','没有引入新问题']
-            },
-            {id:'c-done', num:6, title:'完成', desc:'清理临时日志，冒烟测试',
-             exec:{tag:'执行AI',to:'窗口B',when:'验证通过后',
-                   expect:'清理结果 + [ALL_DONE]',next:'修复完成'},
-             execText:`【阶段：DONE】清理探针，完成修复。
-
-验证已通过：
-- {{简述验证结果}}
-
-请执行：
-1. 移除所有带 [PROBE] 标记的临时日志代码
-2. 保留正常的业务日志
-3. 改完后做一次冒烟测试：确认修复后功能正常，控制台无ERROR
-
-输出修改后的文件列表和测试结果。
-输出末尾加 [ALL_DONE]`,
-             strat:null,
-             checks:['所有 [PROBE] 临时日志已移除','正常业务日志保留','冒烟测试通过','代码已 git commit']
-            }
-        ]
-    }
+1. 【症状描述】问题表现是什么？错误信息？
+2. 【触发条件】什么操作会触发这个问题？
+3. 【影响范围】影响哪些功能/用户？
+4. 【相关代码】可能涉及的文件和函数？
+5. 【近期变更】最近是否有代码/配置变更？
+6. 【环境信息】开发环境、依赖版本？
+
+要求：只诊断，不改代码。输出 [PROBE_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'发现问题时',expect:'6个答案 + [PROBE_DONE]',expectEn:'6 answers + [PROBE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】探测阶段
+
+请审查以下诊断结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 症状描述是否清晰？
+2. 影响范围是否评估？
+3. 根因是否初步定位？
+
+状态判断：
+A. 问题明确，可直接修复 → 进入「设计」
+B. 问题复杂，需进一步分析 → 补充探测
+C. 非代码问题 → 直接给出修复建议`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到诊断结果后',whenEn:'After receiving diagnosis result',expect:'状态判断 + 下一步指令',next:'按指令执行'},
+     checks:['症状描述清晰','影响范围已评估','根因已初步定位'],checksEn:['Symptom description clear','Impact scope assessed','Root cause initially identified'],
+    execEn:`[Stage: PROBE] Diagnose existing problem. Query only, no code changes.
+
+Problem description: {{describe your issue, as specific as possible}}
+
+Please answer:
+1. [Symptoms] What is the problem? Error messages?
+2. [Trigger] What operation triggers this issue?
+3. [Impact] Which features/users are affected?
+4. [Related Code] Which files and functions are likely involved?
+5. [Recent Changes] Any recent code/config changes?
+6. [Environment] Development environment, dependency versions?
+
+Requirements:
+- Paste complete code of key methods (do not omit)
+- Mark file paths with code blocks
+- Output [PROBE_DONE]`,
+    stratEn:`[PROBE Review Task]
+
+Please review the following diagnosis result from Execution AI.
+
+## Execution AI PROBE Response:
+{{Execution AI PROBE Response}}
+
+## Your Task:
+
+### Step 1: Completeness Review
+- [ ] All 6 questions answered
+- [ ] Has specific file paths
+- [ ] Has method/function names and line ranges
+- [ ] Key code fully pasted
+- [ ] Has [PROBE_DONE] marker at end
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [DESIGN-Diagnosis] instruction.
+
+[Review Passed! Next Step]
+-> Go to Diagnose stage, copy Execution AI Prompt`},
+
+    {id:'design',name:'设计',nameEn:'Design',desc:'找到根本原因，想个最小改动的修复办法',descEn:'Find root cause, design minimal fix',
+     exec:`【阶段：设计】诊断修复方案
+
+请设计：
+1. 【根因分析】问题的根本原因
+2. 【修复方案】具体的修复步骤
+3. 【影响评估】修复会影响哪些其他功能
+4. 【验证方案】修复后如何验证
+5. 【回退方案】修复失败如何恢复
+6. 【预防措施】如何避免类似问题
+
+要求：只设计，不编码。输出 [DESIGN_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'诊断通过后',expect:'修复方案 + [DESIGN_DONE]',expectEn:'Fix plan + [DESIGN_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】设计阶段
+
+请审查以下修复方案：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 根因分析是否准确？
+2. 修复方案是否最小化？
+3. 回退方案是否可行？
+
+状态判断：通过 / 需补充
+
+如通过，进入「契约」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到修复方案后',whenEn:'After receiving fix plan',expect:'审查结论',next:'进入契约'},
+     checks:['根因分析准确','修复方案最小化','回退方案已定义'],checksEn:['Root cause analysis accurate','Fix方案minimal','Rollback plan defined'],
+    execEn:`[Stage: DESIGN-Diagnosis] No code changes, only design troubleshooting plan.
+
+PROBE findings:
+- {{existing file/method}} already exists
+- {{call chain location}} already calls related method
+- But at runtime {{specific symptom, e.g. "returns empty result"}}
+
+Please design troubleshooting plan, answer:
+1. [Hypothesis List] List all possible causes, ranked by probability.
+2. [Verification Points] To verify each hypothesis, where to add what logs? Specific to file, method, line number.
+3. [Troubleshooting Order] List steps from highest to lowest probability.
+4. [Fix Prediction] What is the most likely problem? Which files does the fix involve?
+5. [Verification Plan] After fixing, how to verify? What action to trigger? What logs to expect?
+
+Do not write code.
+Output [DESIGN_DONE]`,
+    stratEn:`[DESIGN-Diagnosis Review Task]
+
+Please review the following diagnosis plan from Execution AI.
+
+## Execution AI Diagnosis Plan:
+{{Execution AI Diagnosis Plan}}
+
+## Your Task:
+
+### Step 1: Completeness Review
+- [ ] Hypothesis list ranked by probability
+- [ ] Verification points specific to file, method, line number
+- [ ] Troubleshooting order reasonable (highest probability first)
+- [ ] Fix prediction has basis
+- [ ] Has [DESIGN_DONE] marker at end
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [CONTRACT-Fix Interface] instruction.
+
+[Review Passed! Next Step]
+-> Go to Contract stage, copy Execution AI Prompt`},
+
+    {id:'contract',name:'契约',nameEn:'Contract',desc:'定好改哪些文件、不影响数据',descEn:'Define fix scope, ensure data safety',
+     exec:`【阶段：契约】修复问题的接口确认
+
+请确认：
+1. 【修复范围】修改哪些文件/函数
+2. 【接口变更】修复是否改变现有接口行为
+3. 【数据兼容性】修复是否影响已有数据
+4. 【异常处理】修复后的错误处理策略
+5. 【编码纪律】禁止扩大修复范围
+
+要求：输出 [CONTRACT_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'修复方案通过后',whenEn:'After fix plan passes',expect:'修复契约 + [CONTRACT_DONE]',expectEn:'Fix contract + [CONTRACT_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】契约阶段
+
+请审查以下修复契约：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 修复范围是否最小？
+2. 接口变更是否合理？
+3. 数据是否安全？
+
+状态判断：通过 / 需补充
+
+如通过，进入「编码」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到契约后',whenEn:'After receiving contract',expect:'审查结论',next:'进入编码'},
+     checks:['修复范围最小化','接口变更已评估','数据安全性已确认'],checksEn:['Fix scope minimal','Interface changes assessed','Data safety confirmed'],
+    execEn:`[Stage: CONTRACT] Confirm fix scope. No code, no commands.
+
+[Fix Module]
+- Input: {{your expected input params}}
+- Output: {{your expected return structure}}
+- On failure: {{your expected failure behavior}}
+
+[Existing Data Structure]
+- {{data object}} fields: {{list actual fields from PROBE}}
+
+Please answer:
+1. What are the actual fields of {{result object}}? List them.
+2. What is the output format when calling external model?
+3. If new logic fails, what is the degradation path?
+4. Will coding modify only one file at a time? Confirm.
+
+After confirmation, I will reply "confirm" to start coding.
+Output [CONTRACT_DONE]`,
+    stratEn:`[CONTRACT Review Task]
+
+Please review the following fix contract from Execution AI.
+
+## Execution AI Contract Confirmation:
+{{Execution AI Contract Confirmation}}
+
+## Your Task:
+
+### Step 1: Consistency Review
+- [ ] Field names match data structure from PROBE
+- [ ] Degradation path is clear
+- [ ] Coding discipline confirmed
+- [ ] Has [CONTRACT_DONE] marker at end
+
+### Step 2: Output Next Stage Instruction
+If review passes, output [CODE-Fix] instruction.
+
+[Review Passed! Next Step]
+-> Go to Code stage, copy Execution AI Prompt`},
+
+    {id:'code',name:'编码',nameEn:'Code',desc:'按约定改代码，尽量少动',descEn:'Fix per contract, minimal changes',
+     exec:`【阶段：编码】修复问题
+
+请按契约修复：
+1. 定位问题代码
+2. 实施修复（严格按契约范围）
+3. 运行验证
+
+要求：禁止超出契约范围的修改。
+【契约冲突处理】如果用户当前指令与CONTRACT阶段确认的内容不一致（文件列表、字段名、接口定义、技术选型等），立即停止，明确指出差异点，等待用户或策略AI确认，绝不擅自选择"更合理"的一方。
+输出 [CODE_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'契约通过后',whenEn:'After contract passes',expect:'修复代码 + [CODE_DONE]',expectEn:'Fix code + [CODE_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】编码阶段
+
+请审查以下修复结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 是否按契约修复？
+2. 是否有副作用？
+3. 运行是否通过？
+
+状态判断：通过 / 需修复
+
+如通过，进入「验证」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到修复结果后',expect:'审查结论',next:'进入验证'},
+     checks:['按契约修复','无超出范围修改','运行验证通过'],checksEn:['Fixed per contract','No changes超出 scope','Runtime verification passed'],
+    execEn:`[Stage: CODE-Fix] Modify only this file. Do not touch others.
+
+[Absolute Rules]
+1. Never advance to next file until user says "confirm"
+2. Never modify multiple files at once
+3. After each file, must git add + git commit
+4. If modification fails, must git checkout to rollback
+5. Never git push --force, git reset --hard
+6. Never git add .
+7. [Contract Conflict] If user instruction conflicts with CONTRACT (files, fields, interfaces, tech stack), STOP immediately, point out the difference, wait for confirmation. Never choose the "more reasonable" option on your own.
+
+Modify file: {{file path}}
+Fix goal: {{specific fix description}}
+
+Current project context (PROBE findings):
+- Problem is in {{file}} {{method}}
+- Related data structure: {{object}} fields are {{field list}}
+
+Requirements:
+- Output only changed code, mark insertion position with comments
+- Key paths must have [PROBE] logs
+- All exceptions must be caught
+- Output only this file code
+
+Add [FILE_DONE: {{filename}}] after output.
+Wait for me to say "next step" before continuing.`,
+    stratEn:`[CODE Review Task]
+
+Please review the following fix result from Execution AI.
+
+## Execution AI Code Changes:
+{{Execution AI Code Changes}}
+
+## Your Task:
+
+### Step 1: Compliance Review
+- [ ] Only modified 1 file
+- [ ] Has [PROBE] logs
+- [ ] Has exception catching
+- [ ] Field names match CONTRACT
+
+### Step 2: Determine Next Step
+- If more files: output [CODE-FixN] instruction
+- If last file: output [VERIFY] instruction
+
+[Review Passed! Next Step]
+-> More files: continue Code
+-> Last file: go to Verify stage`},
+
+    {id:'verify',name:'验证',nameEn:'Verify',desc:'确认问题解决了、没引入新问题',descEn:'Confirm issue resolved, no new problems',
+     exec:`【阶段：验证】修复验证
+
+1. 【问题修复验证】原问题是否已解决
+2. 【回归验证】现有功能是否完好
+3. 【边界验证】边界条件是否处理正确
+4. 【汇总】验证结果
+
+要求：输出 [VERIFY_DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'修复完成后',whenEn:'After fix is complete',expect:'验证报告 + [VERIFY_DONE]',expectEn:'Verify report + [VERIFY_DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】验证阶段
+
+请审查以下验证结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 原问题是否解决？
+2. 是否有新引入的问题？
+
+状态判断：
+- 通过 → 进入「完成」
+- 需修复 → 回退到「编码」`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到验证结果后',whenEn:'After receiving verify result',expect:'审查结论',next:'通过进入完成'},
+     checks:['原问题已解决','回归验证通过','边界条件已测试'],checksEn:['Original issue resolved','Regression test passed','Boundary conditions tested'],
+    execEn:`[Stage: VERIFY] Execute verification flow with progress markers.
+
+[Execution Rules]
+- After each step, output [STEP X/5: step_name]
+- If failed, output [STEP X/5 FAILED: reason] and stop
+- VERIFY stage only runs, does not modify code
+
+Step checklist:
+1. Save all modified code files
+2. Restart service (background, non-blocking)
+3. Wait 3 seconds, confirm service ready
+4. Send test request to reproduce the issue
+5. Read logs, filter lines with [PROBE], output analysis
+
+Begin execution.`,
+    stratEn:`[VERIFY Analysis Task]
+
+Please analyze the following verification logs from Execution AI.
+
+## Execution AI VERIFY Response:
+{{Execution AI VERIFY Response}}
+
+## Your Task:
+
+### Step 1: Log Analysis
+1. [PROBE logs exist?] Yes/No. Evidence:
+2. [Fix logic was called?] Yes/No. Evidence:
+3. [Does issue reproduce?] Yes/No. Evidence:
+4. [Was degradation triggered?] Yes/No. Evidence:
+
+### Step 2: Next Step Decision
+- If fixed: output [DONE] instruction
+- If still exists: output [CODE-Fix] instruction
+- If new issues introduced: output [CODE-Fix] instruction
+
+[Review Passed! Next Step]
+-> Fixed: go to Done stage
+-> Not fixed: back to Code stage`},
+
+    {id:'done',name:'完成',nameEn:'Done',desc:'清理、提交、写修复说明',descEn:'Clean up, commit, write fix summary',
+     exec:`【阶段：完成】修复收尾
+
+1. 代码清理
+2. 文档更新（如需要）
+3. git提交（描述清楚修复内容）
+4. 修复摘要
+
+输出 [DONE]`,
+     execU:{to:'窗口B（执行AI）',toEn:'Window B (Execution AI)',toEn:'Window B (Execution AI)',when:'验证通过后',whenEn:'After verification passes',expect:'清理 + 提交 + [DONE]',expectEn:'Cleanup + commit + [DONE]',next:'复制给策略AI审查',nextEn:'Copy to Strategy AI for review'},
+     strat:`【策略AI审查】完成阶段
+
+请审查以下收尾结果：
+{{粘贴执行AI的返回}}
+
+审查要点：
+1. 清理是否彻底？
+2. 提交描述是否准确？
+
+状态判断：通过 → 修复完成！`,
+     stratU:{to:'窗口A（策略AI）',toEn:'Window A (Strategy AI)',toEn:'Window A (Strategy AI)',when:'收到收尾结果后',whenEn:'After receiving wrap-up result',expect:'最终审查',next:'修复完成！'},
+     checks:['代码清理完成','git提交描述准确'],checksEn:['Code cleanup complete','Git commit message accurate'],
+    execEn:`[Stage: DONE] Clean up probes, complete fix.
+
+Verification passed:
+- {{brief verification result}}
+
+Please execute:
+1. Remove all [PROBE] marked temp log code
+2. Keep normal business logs
+3. After cleanup, do a smoke test: confirm fix works, no ERROR
+
+Output modified file list and test results.
+Output [ALL_DONE]`}
+  ]
+}
 };
 
-let currentMode = 'b';
-let currentStage = 0;
+const TROUBLE=`<h5>卡住话术</h5>
+• AI不回复/回复不完整：<code onclick="cp(this)">请按当前阶段的要求重新输出，确保包含标记</code>
+• AI跳过步骤：<code onclick="cp(this)">请回到当前阶段的要求，完成后再继续</code>
+• AI生成代码而非分析：<code onclick="cp(this)">当前阶段只分析不编码，请输出分析结果</code>
+• AI回复太长/太短：<code onclick="cp(this)">请按检查清单逐项回答，不要遗漏也不要过度展开</code>
+<h5>违规话术</h5>
+• AI想删除文件：<code onclick="cp(this)">禁止删除任何文件，请用注释标记废弃</code>
+• AI想修改未契约的文件：<code onclick="cp(this)">禁止修改契约范围外的文件，请先更新契约</code>
+• AI想执行危险操作：<code onclick="cp(this)">禁止执行rm/rf/drop等破坏性操作</code>
+• AI想跳过验证：<code onclick="cp(this)">验证阶段不可跳过，请逐项检查</code>
+<h5>Git安全速查</h5>
+• 开始前：<code onclick="cp(this)">git status</code>
+• 每阶段后：<code onclick="cp(this)">git add -A && git commit -m "阶段名: 简述"</code>
+• 回退：<code onclick="cp(this)">git checkout -- 文件</code> 或 <code onclick="cp(this)">git reset HEAD~1</code>
+• 禁止：git push -f, git reset --hard, git clean -fd`;
+const TROUBLE_EN=`<h5>Stuck Phrases</h5>
+• AI not responding / incomplete response：<code onclick="cp(this)">Please re-output per current stage requirements, ensure markers are included</code>
+• AI skips steps：<code onclick="cp(this)">Please go back to current stage requirements, complete before continuing</code>
+• AI generates code instead of analysis：<code onclick="cp(this)">Current stage is analysis only, no coding. Please output analysis results</code>
+• AI response too long/short：<code onclick="cp(this)">Please answer per checklist items, no omissions or over-expansion</code>
+<h5>Violation Phrases</h5>
+• AI wants to delete files：<code onclick="cp(this)">Do not delete any files, mark as deprecated with comments</code>
+• AI wants to modify files outside contract：<code onclick="cp(this)">Do not modify files outside contract scope, update contract first</code>
+• AI wants to execute dangerous operations：<code onclick="cp(this)">Do not execute rm/rf/drop or other destructive operations</code>
+• AI wants to skip verification：<code onclick="cp(this)">Verification stage cannot be skipped, check each item</code>
+<h5>Git Safety Quick Reference</h5>
+• Before starting：<code onclick="cp(this)">git status</code>
+• After each stage：<code onclick="cp(this)">git add -A && git commit -m "阶段名: 简述"</code>
+• Rollback：<code onclick="cp(this)">git checkout -- 文件</code> 或 <code onclick="cp(this)">git reset HEAD~1</code>
+• Forbidden：git push -f, git reset --hard, git clean -fd`;
+
+const REVIEW_KW={
+  pass:['通过','进入下一步','进入设计','进入契约','进入编码','进入验证','进入部署','进入完成','审查通过'],
+ 补充:['需补充','需要补充','补充','不够','不完整','需要补充'],
+  fix:['需修复','需要修复','修复','回退','有问题','需要修复']
+};
+
+let lang='zh';
+const LANG_KEY='shutong-lang';
+try{lang=localStorage.getItem(LANG_KEY)||'zh'}catch(e){}
+
+const T={
+zh:{
+  title:'书童开发工作流',newP:'从零新建项目',addF:'新增功能/模块',fixI:'修复现有问题',
+  start:'🚀 从零开始',mvp:'📄 已有MVP文档',prev:'⬅️ 上一步',next:'下一步 ➡️',done:'完成 🎉',
+  insert:'➕ 插入新需求',back:'⬅️ 返回首页',confirm:'确认，进入工作流 ➡️',
+  step:'步骤',layer:'层',of:'共',
+  usage:'📋 使用说明',sendTo:'发给：',timing:'时机：',expect:'预期：',nextStep:'下一步：',
+  execTag:'E 执行AI提示词',stratTag:'S 策略AI提示词',copy:'一键复制',copied:'已复制 ✓',
+  review:'🎯 审查结论',reviewPh:'粘贴策略AI的回复内容...',
+  pass:'✅ 通过 → 进入下一步',need补充:'⚠️ 需补充 → 留在当前步骤',needFix:'❌ 需修复 → 回退上一步',
+  checks:'✅ 检查清单',trouble:'⚠️ 遇到问题？',
+  mergeTitle:'🔀 分支完成 - 合并计划',mergeConfirm:'确认合并并继续',
+  doneTitle:'🎉 项目完成！',steps:'总步骤',branches:'插入分支',exportR:'📥 导出报告',restart:'🔄 重新开始',
+  preTitle:'📄 文档预审',preMode:'模式：',preQuality:'正式进入工作流之前，先审查文档质量',
+  preStep1:'第1步：粘贴你的MVP文档',preStep1Ph:'在此粘贴你和AI讨论产出的MVP文档完整内容...',
+  preStep2:'第2步：复制审查提示词，发给策略AI',preCopy:'📋 复制审查提示词',
+  preStep3:'第3步：阅读策略AI的审查结论后，手动选择',
+  preA:'✅ A. 文档完整（8-10分）→ 直接进入「设计」阶段',
+  preB:'⚠️ B. 有缺口（5-7分）→ 进入「初始化」补充缺口后推进',
+  preC:'❌ C. 质量不足（0-4分）→ 进入「初始化」重新梳理需求',
+  npTitle:'📋 记事本',npReq:'需求',npNote:'笔记',npNew:'＋ 新建',npExport:'📥 导出',
+  npEmpty:'暂无',npEmpty2:'，点击「＋ 新建」创建',npCopy:'复制',npDel:'删除',npPh:'输入内容...',
+  npNewReq:'新需求',npNewNote:'新笔记',
+  exp:'📥 导出',imp:'📤 导入',reset:'🔄 重置',
+  initPh:'窗口B（执行AI）',stratPh:'窗口A（策略AI）',
+  confirmAlert:'请先选择审查结论（A/B/C）',docAlert:'请先粘贴MVP文档',
+  resetConfirm:'确定要重新开始吗？当前进度将丢失。',switchConfirm:'切换模式将重置当前进度，确定吗？',
+  branchName:'分支名称（如：新增登录功能）',branchDefault:'新增需求',
+  welcome:'选择你的场景，按步骤操作即可',
+  flowA:'初始化→设计→契约→编码→验证→部署→完成',
+  flowBC:'探测→设计→契约→编码→验证→完成',
+  noCode:'没有代码，从头搭建',haveCode:'有代码，要加新功能',broken:'有代码，功能坏了',
+  descA:'跟AI聊清楚用什么技术、怎么组织文件、做完怎么验收',
+  descA2:'画清楚数据怎么流转、先搭什么后搭什么',descA3:'把接口、字段、规则定死，防止AI乱写',
+  descA4:'一层一层搭，配置→工具→入口→业务',descA5:'照着验收清单一个个测',
+  descA6:'部署到服务器，跑通冒烟测试',descA7:'写README、打tag、收尾',
+  descB:'找到代码里该插在哪、改了会影响什么',descB2:'想清楚新功能怎么加、怎么跟现有代码对接',
+  descB3:'定好新接口的字段和规则',descB4:'按约定写代码，一个文件一个文件来',
+  descB5:'测新功能能不能用、老功能有没有坏',descB6:'清理临时代码、更新文档、提交',
+  descC:'搞清楚问题表现、影响多大',descC2:'找到根本原因，想个最小改动的修复办法',
+  descC3:'定好改哪些文件、不影响数据',descC4:'按约定改代码，尽量少动',
+  descC5:'确认问题解决了、没引入新问题',descC6:'清理、提交、写修复说明',
+},
+en:{
+  title:'Shutong Dev Workflow',newP:'New Project',addF:'Add Feature',fixI:'Fix Issue',
+  start:'🚀 Start from Scratch',mvp:'📄 Have MVP Document',prev:'⬅️ Previous',next:'Next ➡️',done:'Done 🎉',
+  insert:'➕ Insert Requirement',back:'⬅️ Back to Home',confirm:'Confirm, Enter Workflow ➡️',
+  step:'Step',layer:'Layer',of:'of',
+  usage:'📋 Instructions',sendTo:'Send to:',timing:'When:',expect:'Expected:',nextStep:'Next:',
+  execTag:'E Execution AI Prompt',stratTag:'S Strategy AI Prompt',copy:'Copy',copied:'Copied ✓',
+  review:'🎯 Review Conclusion',reviewPh:'Paste the Strategy AI response here...',
+  pass:'✅ Pass -> Next step',need补充:'⚠️ Need补充 -> Stay here',needFix:'❌ Need fix -> Go back',
+  checks:'✅ Checklist',trouble:'⚠️ Having trouble?',
+  mergeTitle:'🔀 Branch Complete - Merge Plan',mergeConfirm:'Confirm Merge & Continue',
+  doneTitle:'🎉 Project Complete!',steps:'Total Steps',branches:'Branches',exportR:'📥 Export Report',restart:'🔄 Start Over',
+  preTitle:'📄 Document Pre-Review',preMode:'Mode:',preQuality:'Review document quality before entering the workflow',
+  preStep1:'Step 1: Paste your MVP document',preStep1Ph:'Paste your complete MVP document here...',
+  preStep2:'Step 2: Copy review prompt, send to Strategy AI',preCopy:'📋 Copy Review Prompt',
+  preStep3:'Step 3: After reading Strategy AI review, select manually',
+  preA:'✅ A. Complete (8-10 pts) -> Enter Design directly',
+  preB:'⚠️ B. Has gaps (5-7 pts) -> Enter Init to fill gaps',
+  preC:'❌ C. Insufficient (0-4 pts) -> Enter Init to re-scope',
+  npTitle:'📋 Notepad',npReq:'Requirements',npNote:'Notes',npNew:'＋ New',npExport:'📥 Export',
+  npEmpty:'No ',npEmpty2:' yet. Click "+ New" to create.',npCopy:'Copy',npDel:'Delete',npPh:'Enter content...',
+  npNewReq:'New Requirement',npNewNote:'New Note',
+  exp:'📥 Export',imp:'📤 Import',reset:'🔄 Reset',
+  initPh:'Window B (Execution AI)',stratPh:'Window A (Strategy AI)',
+  confirmAlert:'Please select a review conclusion (A/B/C) first',docAlert:'Please paste your MVP document first',
+  resetConfirm:'Are you sure? Current progress will be lost.',switchConfirm:'Switching mode will reset progress. Continue?',
+  branchName:'Branch name (e.g. Add User Login)',branchDefault:'New Requirement',
+  welcome:'Choose your scenario and follow the steps',
+  flowA:'Init -> Design -> Contract -> Code -> Verify -> Deploy -> Done',
+  flowBC:'Probe -> Design -> Contract -> Code -> Verify -> Done',
+  noCode:'No code, build from scratch',haveCode:'Have code, adding new feature',broken:'Have code, something is broken',
+  descA:'Clarify tech stack, file structure, and acceptance criteria with AI',
+  descA2:'Map out data flow and build order',descA3:'Lock down interfaces, fields, and rules',
+  descA4:'Build layer by layer: config -> utility -> entry -> business',descA5:'Check against acceptance criteria one by one',
+  descA6:'Deploy to server, run smoke test',descA7:'Write README, tag, wrap up',
+  descB:'Find where to insert in code, assess impact',descB2:'Plan how to add the feature and integrate with existing code',
+  descB3:'Define new interface fields and rules',descB4:'Implement per contract, one file at a time',
+  descB5:'Test new feature works and existing features intact',descB6:'Clean up, update docs, commit',
+  descC:'Understand symptoms and impact scope',descC2:'Find root cause, design minimal fix',
+  descC3:'Define fix scope, ensure data safety',descC4:'Fix per contract, minimal changes',
+  descC5:'Confirm issue resolved, no new problems',descC6:'Clean up, commit, write fix summary',
+}};
+
+function t(k){return (T[lang]&&T[lang][k])||k}
+
+function toggleLang(){
+  lang=lang==='zh'?'en':'zh';
+  localStorage.setItem(LANG_KEY,lang);
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+  render();
+}
+const STATE_KEY='shutong-wizard-v1';
+let S=null;
+
+function defaultState(mode){
+  const m=P[mode];
+  return {
+    mode:mode,
+    step:0,
+    layer:0,
+    branchStack:[],
+    stepsData:m.steps.map(()=>({review:'',verdict:null,checks:[]})),
+    done:false,
+    preReview:null,
+    isPreReview:false
+  };
+}
+
+function loadState(){
+  try{return JSON.parse(localStorage.getItem(STATE_KEY))||null}catch(e){return null}
+}
+function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(S))}
 
 // ========== 渲染 ==========
-function setMode(m) {
-    currentMode = m;
-    currentStage = 0;
-    document.body.className = 'mode-' + m;
-    ['a','b','c'].forEach(k => {
-        document.getElementById('btn-' + k).className = 'mode-btn ' + (k===m ? MODES[k].btnClass : '');
-    });
-    renderSidebar();
-    renderMain();
+function render(){
+  document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
+  document.getElementById('logoText').textContent=lang==='zh'?'📋 书童开发工作流':'📋 Shutong Dev Workflow';
+  document.getElementById('expBtn').textContent=t('exp');
+  document.getElementById('impBtn').textContent=t('imp');
+  document.getElementById('rstBtn').textContent=t('reset');
+  document.getElementById('npTitle').textContent=lang==='zh'?'📋 记事本':'📋 Notepad';
+  document.getElementById('npTabReq').textContent=t('npReq');
+  document.getElementById('npTabNote').textContent=t('npNote');
+  document.getElementById('npNewBtn').textContent=t('npNew');
+  document.getElementById('npExpBtn').textContent=t('npExport');
+  renderNP();
+  if(!S){renderWelcome();return}
+  if(S.isPreReview){
+    document.body.className=P[S.mode].themeCls;
+    renderModeBtns();
+    renderPreReview();return;
+  }
+  const m=P[S.mode];
+  document.body.className=m.themeCls;
+  renderModeBtns();
+  if(S.done){renderDone();return}
+  if(S.branchStack.length && S.branchStack[S.branchStack.length-1].mergePending){renderMerge();return}
+  renderStep();
+  document.getElementById('actionBar').style.display='flex';
+  updateActionBtns();
 }
 
-function renderSidebar() {
-    const mode = MODES[currentMode];
-    let html = '<div class="nav-title">' + mode.name + '</div>';
-    mode.stages.forEach((s, i) => {
-        if (i > 0) html += '<div class="nav-arrow">↓</div>';
-        html += '<div class="nav-item' + (i===currentStage?' active':'') + '" onclick="goStage('+i+')">';
-        html += '<span class="num">'+s.num+'</span> '+s.title;
-        html += '</div>';
-    });
-    html += '<div class="nav-arrow">↓</div>';
-    html += '<div class="nav-end">✅ 结束</div>';
-    document.getElementById('sidebar').innerHTML = html;
+function renderWelcome(){
+  document.getElementById('actionBar').style.display='none';
+  document.getElementById('app').innerHTML=`
+  <div class="welcome">
+    <h2>📋 ${t('title')}</h2>
+    <p>${t('welcome')}</p>
+    <div class="mode-cards">
+      <div class="mode-card mc-a">
+        <h3>🆕 ${t('newP')}</h3>
+        <p>${t('noCode')}</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text2)">${t('flowA')}</p>
+        <div class="mc-btns">
+          <button class="mc-btn primary" onclick="startMode('A')">${t('start')}</button>
+          <button class="mc-btn" onclick="startPreReview('A')">${t('mvp')}</button>
+        </div>
+      </div>
+      <div class="mode-card mc-b">
+        <h3>➕ ${t('addF')}</h3>
+        <p>${t('haveCode')}</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text2)">${t('flowBC')}</p>
+        <div class="mc-btns">
+          <button class="mc-btn primary" onclick="startMode('B')">${t('start')}</button>
+          <button class="mc-btn" onclick="startPreReview('B')">${t('mvp')}</button>
+        </div>
+      </div>
+      <div class="mode-card mc-c">
+        <h3>🔧 ${t('fixI')}</h3>
+        <p>${t('broken')}</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text2)">${t('flowBC')}</p>
+        <div class="mc-btns">
+          <button class="mc-btn primary" onclick="startMode('C')">${t('start')}</button>
+          <button class="mc-btn" onclick="startPreReview('C')">${t('mvp')}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
-function renderMain() {
-    const mode = MODES[currentMode];
-    let html = '';
-    // 流程图
-    html += '<div class="flow-bar">';
-    mode.flow.forEach((f, i) => {
-        if (i > 0) html += '<span class="flow-arrow">→</span>';
-        html += '<span class="flow-step'+(i===currentStage?' current':'')+'">'+f+'</span>';
-    });
-    html += '<span class="flow-loop">← 验证失败回退到编码</span>';
-    html += '</div>';
-    // 阶段卡片
-    mode.stages.forEach((s, i) => {
-        if (i > 0) html += '<div class="card-connector">↓</div>';
-        html += renderCard(s, i);
-    });
-    document.getElementById('main').innerHTML = html;
+function renderModeBtns(){
+  const btns=document.getElementById('modeBtns');
+  btns.innerHTML=['A','B','C'].map(k=>{
+    const m=P['mode'+k];
+    const cls=S&&S.mode===('mode'+k)?'mbtn on-'+k.toLowerCase():'mbtn';
+    const label=k==='A'?'🆕 '+t('newP'):k==='B'?'➕ '+t('addF'):'🔧 '+t('fixI');
+    return `<button class="${cls}" onclick="switchMode('${k}')">${label}</button>`;
+  }).join('');
 }
 
-function renderCard(s, idx) {
-    let h = '<div class="stage-card" id="'+s.id+'">';
-    h += '<div class="card-head"><div class="card-badge">'+s.num+'</div><div><h2>'+s.title+'</h2><p>'+s.desc+'</p></div></div>';
-    // 执行AI
-    if (s.exec) {
-        h += renderUsage(s.exec, '执行AI提示词');
-        h += '<div class="prompt-block"><div class="prompt-head"><span class="tag tag-e">E 执行AI提示词</span>';
-        h += '<button class="copy-btn" onclick="copyPrompt(this)">一键复制</button></div>';
-        h += '<div class="prompt-body">'+escHtml(s.execText)+'</div></div>';
-    }
-    // 策略AI
-    if (s.strat) {
-        h += renderUsage(s.strat, '策略AI提示词');
-        h += '<div class="prompt-block"><div class="prompt-head"><span class="tag tag-s">S 策略AI提示词</span>';
-        h += '<button class="copy-btn" onclick="copyPrompt(this)">一键复制</button></div>';
-        h += '<div class="prompt-body">'+escHtml(s.stratText)+'</div></div>';
-    }
-    // 检查清单
-    if (s.checks && s.checks.length) {
-        h += '<div class="checklist"><div class="checklist-title">✓ 人工复核检查点</div><ul>';
-        s.checks.forEach(c => { h += '<li><input type="checkbox"> '+c+'</li>'; });
-        h += '</ul></div>';
-    }
-    // 下一步引导
-    if (s.strat) {
-        h += '<div class="next-guide"><strong>⬇️ 审查通过后，策略AI会告诉你下一步去哪</strong></div>';
-    }
-    h += '</div>';
-    return h;
+function renderStep(){
+  const m=P[S.mode];
+  const s=m.steps[S.step];
+  const sd=S.stepsData[S.step];
+  const total=m.steps.length;
+  const isLayered=s.isLayered;
+  const L=lang==='en';
+
+  const curExec=isLayered?(L&&s.layers[S.layer].execEn?s.layers[S.layer].execEn:s.layers[S.layer].exec):(L&&s.execEn?s.execEn:s.exec);
+  const curStrat=L&&s.stratEn?s.stratEn:s.strat;
+  const stepName=L&&s.nameEn?s.nameEn:s.name;
+  const stepDesc=L&&s.descEn?s.descEn:s.desc;
+  const modeName=L&&m.nameEn?m.nameEn:m.name;
+  const checks=L&&s.checksEn?s.checksEn:s.checks;
+
+  let bc=`<div class="breadcrumb"><span>${modeName}</span>`;
+  S.branchStack.forEach(b=>{bc+=` > 🔀 ${b.name}`});
+  const layerName=isLayered?(L&&s.layers[S.layer].nameEn?s.layers[S.layer].nameEn:s.layers[S.layer].name):'';
+  bc+=` > <span>${stepName}${isLayered?' ('+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length+': '+layerName+')':''}</span></div>`;
+
+  let prog='<div class="progress">';
+  m.steps.forEach((st,i)=>{
+    if(i>0)prog+=`<div class="dot-line${i<=S.step?' done':''}"></div>`;
+    const cls=i<S.step?'done':i===S.step?'now':'';
+    const dotName=L&&st.nameEn?st.nameEn:st.name;
+    prog+=`<div class="dot-wrap"><div class="dot ${cls}"><span>${i+1}</span><div class="dot-label">${dotName}</div></div></div>`;
+  });
+  prog+='</div>';
+
+  const reviewText=sd.review||'';
+  const verdict=sd.verdict;
+
+  let html=bc+prog;
+  html+=`<div class="step-card">`;
+  html+=`<div class="step-head"><div class="step-num">${t('step')} ${S.step+1} / ${total}${isLayered?' · '+t('layer')+(S.layer+1)+'/'+t('of')+s.layers.length:''}</div>`;
+  html+=`<div class="step-title">${stepName}${isLayered?' - '+layerName:''}</div>`;
+  html+=`<div class="step-desc">${stepDesc}</div></div>`;
+
+  const eu=s.execU;
+  html+=`<div class="usage"><span class="ul">${t('usage')}</span><br>`;
+  html+=`<span class="ul">${t('sendTo')}</span><span class="uv">${L&&eu.toEn?eu.toEn:eu.to}</span><br>`;
+  html+=`<span class="ul">${t('timing')}</span><span class="uv">${L&&eu.whenEn?eu.whenEn:eu.when}</span><br>`;
+  html+=`<span class="ul">${t('expect')}</span><span class="uv">${L&&eu.expectEn?eu.expectEn:eu.expect}</span><br>`;
+  html+=`<span class="ul">${t('nextStep')}</span><span class="uv">${L&&eu.nextEn?eu.nextEn:eu.next}</span></div>`;
+  html+=`<div class="pblock"><div class="phead"><span class="ptag ptag-e">${t('execTag')}</span><button class="copybtn" onclick="cpBlock(this)">${t('copy')}</button></div>`;
+  html+=`<div class="pbody">${esc(curExec)}</div></div>`;
+
+  if(curStrat){
+    const su=s.stratU;
+    html+=`<div class="usage"><span class="ul">${t('usage')}</span><br>`;
+    html+=`<span class="ul">${t('sendTo')}</span><span class="uv">${L&&su.toEn?su.toEn:su.to}</span><br>`;
+    html+=`<span class="ul">${t('timing')}</span><span class="uv">${L&&su.whenEn?su.whenEn:su.when}</span><br>`;
+    html+=`<span class="ul">${t('expect')}</span><span class="uv">${L&&su.expectEn?su.expectEn:su.expect}</span><br>`;
+    html+=`<span class="ul">${t('nextStep')}</span><span class="uv">${L&&su.nextEn?su.nextEn:su.next}</span></div>`;
+    html+=`<div class="pblock"><div class="phead"><span class="ptag ptag-s">${t('stratTag')}</span><button class="copybtn" onclick="cpBlock(this)">${t('copy')}</button></div>`;
+    html+=`<div class="pbody">${esc(curStrat)}</div></div>`;
+  }
+
+  html+=`<div class="review"><h4>${t('review')}</h4>`;
+  html+=`<textarea placeholder="${t('reviewPh')}" oninput="onReviewInput(this)">${reviewText}</textarea>`;
+  html+=`<div class="radios">`;
+  html+=`<label><input type="radio" name="verdict" value="pass" ${verdict==='pass'?'checked':''} onclick="setVerdict('pass')"> ${t('pass')}</label>`;
+  html+=`<label><input type="radio" name="verdict" value="补充" ${verdict==='补充'?'checked':''} onclick="setVerdict('补充')"> ${t('need补充')}</label>`;
+  html+=`<label><input type="radio" name="verdict" value="fix" ${verdict==='fix'?'checked':''} onclick="setVerdict('fix')"> ${t('needFix')}</label>`;
+  html+=`</div></div>`;
+
+  html+=`<div class="checks"><h4>${t('checks')}</h4>`;
+  checks.forEach((c,i)=>{
+    const checked=sd.checks.includes(i)?'checked':'';
+    html+=`<label><input type="checkbox" ${checked} onchange="toggleCheck(${i},this)"> ${c}</label>`;
+  });
+  html+=`</div>`;
+
+  // 问题折叠
+  html+=`<div class="trouble"><button class="trouble-btn" onclick="this.nextElementSibling.classList.toggle('open')">${lang==='zh'?'⚠️ 遇到问题？':'⚠️ Having trouble?'}<span>▶</span></button>`;
+  html+=`<div class="trouble-body">${lang==='en'?TROUBLE_EN:TROUBLE}</div></div>`;
+
+  html+=`</div>`;
+  document.getElementById('app').innerHTML=html;
 }
 
-function renderUsage(info, label) {
-    return '<div class="usage-box">'
-        + '<div><span class="label">📋 使用说明</span></div>'
-        + '<div><span class="label">发给：</span><span class="val">'+info.to+'（'+info.tag+'）</span></div>'
-        + '<div><span class="label">时机：</span><span class="val">'+info.when+'</span></div>'
-        + '<div><span class="label">预期结果：</span><span class="val">'+info.expect+'</span></div>'
-        + '<div><span class="label">下一步：</span><span class="val">'+info.next+'</span></div>'
-        + '</div>';
+function renderMerge(){
+  const m=P[S.mode];
+  const top=S.branchStack[S.branchStack.length-1];
+  const fromStep=P[top.fromMode].steps[top.fromStep];
+
+  let html=`<div class="step-card"><div class="step-head">`;
+  html+=`<div class="step-num">🔀 分支合并</div>`;
+  html+=`<div class="step-title">${lang==='zh'?'合并计划':'Merge Plan'}</div>`;
+  html+=`<div class="step-desc">${lang==='zh'?'分支流程已完成，选择合并回主流程的位置':'Branch flow complete, choose where to merge back'}</div></div>`;
+
+  html+=`<div class="merge-plan"><h4>🔀 ${t('mergeTitle')}</h4>`;
+  html+=`<div class="summary">`;
+  html+=`<div><strong>${lang==='zh'?'分支类型：':'Branch type: '}</strong>${top.name}</div>`;
+  html+=`<div><strong>${lang==='zh'?'涉及阶段：':'Stages: '}</strong>${P[top.branchType].steps.map(s=>lang==='en'&&s.nameEn?s.nameEn:s.name).join(' → ')}</div>`;
+  html+=`<div><strong>${lang==='zh'?'插入点：':'Insert point: '}</strong>${lang==='en'&&fromStep.nameEn?fromStep.nameEn:fromStep.name}</div>`;
+  html+=`</div>`;
+
+  html+=`<div style="margin-bottom:12px;font-weight:600">${lang==='zh'?'合并后回到主流程的位置：':'Where to merge back:'}</div>`;
+  const fromName=lang==='en'&&fromStep.nameEn?fromStep.nameEn:fromStep.name;
+  html+=`<label><input type="radio" name="merge" value="current" checked> ${lang==='zh'?'回到':'Return to'}「${fromName}」${lang==='zh'?'阶段（继续主流程）':'stage (continue main flow)'}</label>`;
+  const nextIdx=top.fromStep+1;
+  if(nextIdx<m.steps.length){
+    const nextName=lang==='en'&&m.steps[nextIdx].nameEn?m.steps[nextIdx].nameEn:m.steps[nextIdx].name;
+    html+=`<label><input type="radio" name="merge" value="next"> ${lang==='zh'?'跳到':'Skip to'}「${nextName}」${lang==='zh'?'阶段（分支已完成该阶段工作）':'stage (branch already completed this)'}</label>`;
+  }
+  html+=`</div>`;
+
+  html+=`<div style="padding:16px 20px;text-align:center">`;
+  html+=`<button class="abtn primary" onclick="confirmMerge()" style="display:inline-flex">${t('mergeConfirm')}</button>`;
+  html+=`</div></div>`;
+
+  document.getElementById('app').innerHTML=html;
+  document.getElementById('actionBar').style.display='none';
 }
 
+function renderDone(){
+  const m=P[S.mode];
+  let branchCount=S.branchStack.length;
+  let html=`<div class="step-card"><div class="done-summary">`;
+  html+=`<h3>${t('doneTitle')}</h3>`;
+  html+=`<div class="stats">`;
+  html+=`<div><div class="stat-val">${m.steps.length}</div><div>${t('steps')}</div></div>`;
+  html+=`<div><div class="stat-val">${branchCount}</div><div>${t('branches')}</div></div>`;
+  html+=`</div>`;
+  html+=`<div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">`;
+  html+=`<button class="abtn" onclick="exportReport()">${t('exportR')}</button>`;
+  html+=`<button class="abtn primary" onclick="resetState()">${t('restart')}</button>`;
+  html+=`</div></div></div>`;
+  document.getElementById('app').innerHTML=html;
+  document.getElementById('actionBar').style.display='none';
+}
 
 // ========== 交互 ==========
-function goStage(i) {
-    currentStage = i;
-    renderSidebar();
-    const el = document.getElementById(MODES[currentMode].stages[i].id);
-    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+function startMode(mode){
+  S=defaultState('mode'+mode);
+  saveState();
+  render();
 }
 
-function copyPrompt(btn) {
-    const block = btn.closest('.prompt-block');
-    const body = block.querySelector('.prompt-body');
-    navigator.clipboard.writeText(body.textContent).then(() => {
-        btn.textContent = '已复制 ✓'; btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = '一键复制'; btn.classList.remove('copied'); }, 1500);
-    });
+// ========== 文档预审 ==========
+const PRE_REVIEW_PROMPT=`【文档预审】MVP文档质量审查
+
+你是一位资深技术负责人。请审查以下MVP文档，判断它是否具备进入工程执行的条件。
+
+MVP文档：
+{{粘贴你的MVP文档}}
+
+请按以下维度逐项审查，每项给出「✅ 具备 / ⚠️ 有缺口 / ❌ 缺失」：
+
+1. 【需求边界】功能范围是否清晰？有没有"等等""之类""相关"等模糊词？
+2. 【用户场景】这个功能给谁用？在什么场景下用？是否明确？
+3. 【技术选型】是否指定了技术栈（语言/框架/数据库/部署方式）？
+4. 【数据结构】核心数据有哪些字段？类型是什么？是否定义？
+5. 【接口定义】输入输出是否明确？参数和返回值有说明吗？
+6. 【验收标准】怎么证明这个功能"做完了"？有可验证的标准吗？
+7. 【异常处理】错误场景有考虑吗？（网络失败、数据为空、权限不足、并发冲突等）
+8. 【依赖关系】这个功能依赖哪些外部系统/模块/第三方服务？
+9. 【性能要求】有并发量、响应时间、数据量等要求吗？
+10. 【安全约束】有权限控制、鉴权机制、数据安全等要求吗？
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 文档质量评分：X / 10 分
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【评分标准】
+- 10分：10项全部✅具备，文档可直接进入编码
+- 8-9分：1-2项⚠️有缺口，补充后可直接推进
+- 5-7分：3-5项有缺口，需要补充信息后再进入工作流
+- 0-4分：超过5项缺失，建议重新梳理需求
+
+缺口清单（逐项列出有缺口/缺失的项）：
+- 缺口1：...（具体说明缺了什么）
+- 缺口2：...
+
+建议进入阶段：
+○ A. 文档完整 → 可直接进入「设计」阶段（技术选型已确认，只需细化架构）
+○ B. 有缺口 → 先进入「初始化」补充缺口信息，再按流程推进
+○ C. 质量不足 → 建议回退到「初始化」重新梳理需求，把现有文档当作原始输入
+
+如选B，请列出需要补充的具体问题清单（用户可以直接复制给执行AI）。`;
+
+const PRE_REVIEW_PROMPT_EN=`[Document Pre-Review] MVP Document Quality Review
+
+You are a senior technical lead. Please review the following MVP document and determine if it is ready for engineering execution.
+
+MVP Document:
+{{Paste your MVP document}}
+
+Please review each dimension and rate as "✅ Ready / ⚠️ Has Gaps / ❌ Missing":
+
+1. [Scope] Is the feature scope clear? Any vague words like "etc.", "similar", "related"?
+2. [User Scenarios] Who uses this? In what context? Is it clear?
+3. [Tech Stack] Is the tech stack specified (language/framework/database/deployment)?
+4. [Data Structure] Are core data fields and types defined?
+5. [Interface Definition] Are inputs/outputs clear? Parameters and return values documented?
+6. [Acceptance Criteria] How to prove this feature is "done"? Are there verifiable criteria?
+7. [Error Handling] Are error scenarios considered? (network failure, empty data, permission issues, concurrency)
+8. [Dependencies] What external systems/modules/third-party services does this depend on?
+9. [Performance] Any requirements for concurrency, response time, data volume?
+10. [Security] Any requirements for auth, access control, data safety?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Document Quality Score: X / 10
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Scoring]
+- 10: All 10 items ✅ Ready, can go directly to coding
+- 8-9: 1-2 items ⚠️ Has Gaps, can proceed after filling
+- 5-7: 3-5 items have gaps, need补充before entering workflow
+- 0-4: More than 5 missing, recommend re-scoping requirements
+
+Gap List (list each gap/missing item):
+- Gap 1: ... (specific description)
+- Gap 2: ...
+
+Recommended Entry Stage:
+○ A. Document Complete -> Enter "Design" stage directly
+○ B. Has Gaps -> Enter "Init" to fill gaps, then proceed
+○ C. Insufficient -> Enter "Init" to re-scope, use document as raw input
+
+If B, list specific questions to fill (user can copy to Execution AI).`;
+
+function startPreReview(mode){
+  S={mode:'mode'+mode,isPreReview:true,preReview:{document:'',verdict:null},step:0,layer:0,branchStack:[],stepsData:[],done:false};
+  document.body.className=P[S.mode].themeCls;
+  renderModeBtns();
+  saveState();
+  render();
 }
 
+function renderPreReview(){
+  const m=P[S.mode];
+  const pr=S.preReview;
+  const PRE_PROMPT=lang==='en'?PRE_REVIEW_PROMPT_EN:PRE_REVIEW_PROMPT;
+  document.getElementById('actionBar').style.display='none';
+  let h=`<div class="pre-card">`;
+  h+=`<div class="pre-head"><h2>${t('preTitle')}</h2><p>${t('preMode')}${m.name} ｜ ${t('preQuality')}</p></div>`;
 
-function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  h+=`<div class="pre-step"><h4>${t('preStep1')}</h4>`;
+  h+=`<textarea placeholder="${t('preStep1Ph')}" oninput="S.preReview.document=this.value;saveState()">${pr.document}</textarea></div>`;
+
+  h+=`<div class="pre-step"><h4>${t('preStep2')}</h4>`;
+  h+=`<div class="usage"><span class="ul">${t('usage')}</span><br>`;
+  h+=`<span class="ul">${t('sendTo')}</span><span class="uv">${lang==='zh'?'窗口A（策略AI / Kimi）':'Window A (Strategy AI / Kimi)'}</span><br>`;
+  h+=`<span class="ul">${t('timing')}</span><span class="uv">${lang==='zh'?'正式进入工作流之前，先审查文档质量':'Before entering workflow, review document quality'}</span><br>`;
+  h+=`<span class="ul">${t('expect')}</span><span class="uv">${lang==='zh'?'10项维度评分 + 缺口清单 + 分流建议':'10-dimension scoring + gap list + routing advice'}</span><br>`;
+  h+=`<span class="ul">${lang==='zh'?'注意：':'Note:'}</span><span class="uv">${lang==='zh'?'点击「复制」后，上方粘贴的文档会自动嵌入提示词':'Clicking Copy will embed your document into the prompt'}</span></div>`;
+  h+=`<div class="pblock"><div class="phead"><span class="ptag ptag-s">${lang==='zh'?'S 审查提示词':'S Review Prompt'}</span><button class="copybtn" onclick="copyReviewPrompt()">${t('preCopy')}</button></div>`;
+  h+=`<div class="pbody">${esc(PRE_PROMPT)}</div></div></div>`;
+
+  h+=`<div class="pre-step"><h4>${t('preStep3')}</h4>`;
+  h+=`<div class="pre-radios">`;
+  h+=`<label class="opt-a"><input type="radio" name="preVerdict" value="A" ${pr.verdict==='A'?'checked':''} onclick="S.preReview.verdict='A';saveState()"> ${t('preA')}</label>`;
+  h+=`<label class="opt-b"><input type="radio" name="preVerdict" value="B" ${pr.verdict==='B'?'checked':''} onclick="S.preReview.verdict='B';saveState()"> ${t('preB')}</label>`;
+  h+=`<label class="opt-c"><input type="radio" name="preVerdict" value="C" ${pr.verdict==='C'?'checked':''} onclick="S.preReview.verdict='C';saveState()"> ${t('preC')}</label>`;
+  h+=`</div></div>`;
+
+  h+=`<div style="padding:16px 24px;display:flex;gap:10px;border-top:1px solid var(--border)">`;
+  h+=`<button class="abtn" onclick="goHome()">${t('back')}</button>`;
+  h+=`<button class="abtn primary" onclick="enterWorkflowFromPreReview()" style="margin-left:auto">${t('confirm')}</button>`;
+  h+=`</div></div>`;
+
+  document.getElementById('app').innerHTML=h;
 }
 
-// 滚动监听
-const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-        if (e.isIntersecting) {
-            const mode = MODES[currentMode];
-            const idx = mode.stages.findIndex(s => s.id === e.target.id);
-            if (idx >= 0) {
-                currentStage = idx;
-                renderSidebar();
-            }
-        }
-    });
-}, {rootMargin:'-100px 0px -60% 0px'});
+function copyReviewPrompt(){
+  if(!S||!S.isPreReview)return;
+  const doc=S.preReview.document;
+  if(!doc||!doc.trim()){alert(t('docAlert'));return}
+  const tpl=lang==='en'?PRE_REVIEW_PROMPT_EN:PRE_REVIEW_PROMPT;
+  const full=tpl.replace(/{{[^}]+}}/g,doc);
+  navigator.clipboard.writeText(full).then(()=>{
+    const btns=document.querySelectorAll('.copybtn');
+    const btn=Array.from(btns).find(b=>b.textContent.includes(lang==='zh'?'复制审查':'Copy Review'));
+    if(btn){btn.textContent=t('copied');btn.classList.add('ok');setTimeout(()=>{btn.textContent=t('preCopy');btn.classList.remove('ok')},1500)}
+  });
+}
+
+function enterWorkflowFromPreReview(){
+  if(!S||!S.isPreReview)return;
+  const verdict=S.preReview.verdict;
+  if(!verdict){alert(t('confirmAlert'));return}
+  const mode=S.mode;
+  const pr=S.preReview;
+
+  S=defaultState(mode);
+  S.preReview=pr;
+
+  if(verdict==='A'){
+    S.step=1;
+    S.stepsData[0].review=pr.document;
+  } else if(verdict==='B'){
+    S.stepsData[0].review=(lang==='zh'?'参考文档（有缺口，需补充）：':'Reference doc (has gaps, needs补充): ')+'\n'+pr.document.substring(0,500)+'...';
+  } else {
+    S.stepsData[0].review=(lang==='zh'?'参考文档（质量不足，需重新梳理）：':'Reference doc (insufficient, needs re-scoping): ')+'\n'+pr.document.substring(0,500)+'...';
+  }
+  saveState();render();
+}
+
+function switchMode(mode){
+  if(S&&S.mode===('mode'+mode))return;
+  if(S&&S.step>0&&!confirm(t('switchConfirm')))return;
+  S=defaultState('mode'+mode);
+  saveState();
+  render();
+}
+
+function goNext(){
+  if(!S)return;
+  const m=P[S.mode];
+  const s=m.steps[S.step];
+  const sd=S.stepsData[S.step];
+
+  // 编码分层
+  if(s.isLayered && S.layer < s.layers.length-1){
+    S.layer++;
+    saveState();render();return;
+  }
+
+  if(S.step < m.steps.length-1){
+    S.step++;
+    S.layer=0;
+    if(!S.stepsData[S.step])S.stepsData[S.step]={review:'',verdict:null,checks:[]};
+    saveState();render();
+  } else {
+    S.done=true;
+    saveState();render();
+  }
+}
+
+function goPrev(){
+  if(!S)return;
+  if(S.layer>0){S.layer--;saveState();render();return}
+  if(S.step>0){S.step--;S.layer=0;saveState();render()}
+}
+
+function updateActionBtns(){
+  const m=P[S.mode];
+  const s=m.steps[S.step];
+  const btnPrev=document.getElementById('btnPrev');
+  const btnNext=document.getElementById('btnNext');
+  const btnBranch=document.getElementById('btnBranch');
+  btnPrev.disabled=S.step===0&&S.layer===0;
+  btnPrev.textContent=t('prev');
+  btnBranch.textContent=t('insert');
+  const isLastStep=S.step===m.steps.length-1;
+  const isLastLayer=!s.isLayered||S.layer===s.layers.length-1;
+  btnNext.textContent=isLastStep&&isLastLayer?t('done'):t('next');
+  btnBranch.style.display=(S.step>=1&&S.step<m.steps.length-1)?'flex':'none';
+}
+
+function onReviewInput(ta){
+  S.stepsData[S.step].review=ta.value;
+  const text=ta.value;
+  let detected=null;
+  for(const kw of REVIEW_KW.pass){if(text.includes(kw)){detected='pass';break}}
+  if(!detected)for(const kw of REVIEW_KW['补充']){if(text.includes(kw)){detected='补充';break}}
+  if(!detected)for(const kw of REVIEW_KW.fix){if(text.includes(kw)){detected='fix';break}}
+  if(detected){
+    S.stepsData[S.step].verdict=detected;
+    document.querySelectorAll('input[name=verdict]').forEach(r=>{r.checked=r.value===detected});
+  }
+  saveState();
+}
+
+function setVerdict(v){
+  S.stepsData[S.step].verdict=v;
+  saveState();
+}
+
+function toggleCheck(idx,el){
+  const sd=S.stepsData[S.step];
+  if(el.checked){if(!sd.checks.includes(idx))sd.checks.push(idx)}
+  else{sd.checks=sd.checks.filter(i=>i!==idx)}
+  saveState();
+}
+
+// ========== 分支 ==========
+function doBranch(){
+  if(!S)return;
+  const m=P[S.mode];
+  const s=m.steps[S.step];
+  const name=prompt(t('branchName'),t('branchDefault'));
+  if(!name)return;
+  S.branchStack.push({
+    name:name,
+    fromMode:S.mode,
+    fromStep:S.step,
+    branchType:'modeB',
+    savedState:JSON.parse(JSON.stringify({step:S.step,layer:S.layer,stepsData:S.stepsData})),
+    mergePending:false
+  });
+  S.mode='B';
+  S.step=0;
+  S.layer=0;
+  S.stepsData=P.modeB.steps.map(()=>({review:'',verdict:null,checks:[]}));
+  saveState();render();
+}
+
+function confirmMerge(){
+  if(!S||!S.branchStack.length)return;
+  const top=S.branchStack.pop();
+  const radio=document.querySelector('input[name=merge]:checked');
+  const val=radio?radio.value:'current';
+  S.mode=top.fromMode;
+  if(val==='current'){
+    S.step=top.fromStep;
+  } else {
+    S.step=Math.min(top.fromStep+1,P[top.fromMode].steps.length-1);
+  }
+  S.layer=0;
+  saveState();render();
+}
 
 // ========== 记事本 ==========
-let notepadType = 'req'; // 'req' or 'note'
-const NP_KEY = 'shutong_notepads';
+let npType='req';
+const NP_KEY='shutong_notepads';
 
-function loadNotepads() {
-    try { return JSON.parse(localStorage.getItem(NP_KEY)) || {req:[],note:[]}; }
-    catch(e) { return {req:[],note:[]}; }
+function loadNP(){try{return JSON.parse(localStorage.getItem(NP_KEY))||{req:[],note:[]}}catch(e){return{req:[],note:[]}}}
+function saveNP(d){localStorage.setItem(NP_KEY,JSON.stringify(d))}
+function setNPType(t){
+  npType=t;
+  document.querySelectorAll('.np-tab').forEach(el=>el.classList.remove('on'));
+  document.querySelector('.np-tab[onclick*="'+t+'"]').classList.add('on');
+  renderNP();
+}
+function addNP(){
+  const d=loadNP();
+  const now=new Date();
+  const ts=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  d[npType].unshift({id:Date.now(),title:npType==='req'?t('npNewReq'):t('npNewNote'),body:'',time:ts});
+  saveNP(d);renderNP();
+}
+function delNP(id){const d=loadNP();d[npType]=d[npType].filter(n=>n.id!==id);saveNP(d);renderNP()}
+function updateNP(id,f,v){const d=loadNP();const it=d[npType].find(n=>n.id===id);if(it){it[f]=v;saveNP(d)}}
+function cpNP(id){
+  const d=loadNP();const it=d[npType].find(n=>n.id===id);if(!it)return;
+  navigator.clipboard.writeText(it.body).then(()=>{
+    const btn=document.querySelector('[data-cp="'+id+'"]');
+    if(btn){btn.textContent=lang==='zh'?'已复制':'Copied';setTimeout(()=>btn.textContent=lang==='zh'?'复制':'Copy',1200)}
+  });
+}
+function exportNP(){
+  const d=loadNP();let t=lang==='zh'?'=== 需求 ===\n\n':'=== Requirements ===\n\n';
+  d.req.forEach(n=>{t+='## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'});
+  t+=lang==='zh'?'=== 笔记 ===\n\n':'=== Notes ===\n\n';
+  d.note.forEach(n=>{t+='## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));
+  a.download='notepads.txt';a.click();
+}
+function toggleNP(){
+  const panel=document.getElementById('npPanel');
+  const btn=document.getElementById('npToggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('shifted');
+  btn.textContent=panel.classList.contains('open')?'▶':'◀';
+}
+function renderNP(){
+  const d=loadNP();const list=d[npType];
+  const c=document.getElementById('npList');
+  if(!list.length){c.innerHTML=`<div class="np-empty">${t('npEmpty')}${npType==='req'?t('npReq'):t('npNote')}${t('npEmpty2')}</div>`;return}
+  let h='';
+  list.forEach(n=>{
+    h+=`<div class="np-card"><div class="np-card-head"><span class="np-card-time">${n.time}</span>`;
+    h+=`<div class="np-card-btns"><button data-cp="${n.id}" onclick="cpNP(${n.id})">${t('npCopy')}</button>`;
+    h+=`<button class="del" onclick="delNP(${n.id})">${t('npDel')}</button></div></div>`;
+    h+=`<input class="np-card-title" value="${n.title.replace(/"/g,'&quot;')}" onchange="updateNP(${n.id},'title',this.value)">`;
+    h+=`<textarea class="np-card-body" placeholder="${t('npPh')}" oninput="updateNP(${n.id},'body',this.value)">${n.body}</textarea></div>`;
+  });
+  c.innerHTML=h;
 }
 
-function saveNotepads(data) {
-    localStorage.setItem(NP_KEY, JSON.stringify(data));
+// ========== 工具 ==========
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function cp(el){
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    const o=el.textContent;el.textContent='已复制';el.style.color='var(--ok)';
+    setTimeout(()=>{el.textContent=o;el.style.color=''},1200);
+  });
+}
+function cpBlock(btn){
+  const body=btn.closest('.pblock').querySelector('.pbody');
+  navigator.clipboard.writeText(body.textContent).then(()=>{
+    btn.textContent='已复制 ✓';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='一键复制';btn.classList.remove('ok')},1500);
+  });
 }
 
-function setNotepadType(type) {
-    notepadType = type;
-    document.querySelectorAll('.notepad-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('.notepad-tab[onclick*="'+type+'"]').classList.add('active');
-    renderNotepads();
+function exportState(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='shutong-progress.json';a.click();
+}
+function importState(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{try{S=JSON.parse(ev.target.result);saveState();render();alert(lang==='zh'?'导入成功':'Import successful')}catch(e){alert(lang==='zh'?'导入失败：文件格式错误':'Import failed: invalid file format')}};
+    reader.readAsText(file);
+  };
+  input.click();
+}
+function resetState(){
+  if(!confirm(t('resetConfirm')))return;
+  S=null;localStorage.removeItem(STATE_KEY);render();
+}
+function goHome(){
+  S=null;render();
+}
+function exportReport(){
+  const m=P[S.mode];
+  let r=`${lang==='zh'?'书童开发工作流':'Shutong Dev Workflow'} - ${lang==='zh'?'执行报告':'Execution Report'}\n${'='.repeat(40)}\n\n`;
+  r+=(lang==='zh'?'模式：':'Mode: ')+`${m.name}\n`;
+  r+=(lang==='zh'?'总步骤：':'Total steps: ')+`${m.steps.length}\n`;
+  r+=(lang==='zh'?'分支数：':'Branches: ')+`${S.branchStack.length}\n\n`;
+  r+=(lang==='zh'?'步骤明细：':'Step details:')+`\n`;
+  m.steps.forEach((s,i)=>{
+    const sd=S.stepsData[i]||{};
+    const v=sd.verdict||'未审查';
+    r+=`  ${i+1}. ${lang==='en'&&s.nameEn?s.nameEn:s.name} [${v}]\n`;
+  });
+  const blob=new Blob([r],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='shutong-report.txt';a.click();
 }
 
-function addNotepad() {
-    const data = loadNotepads();
-    const now = new Date();
-    const ts = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    const item = {id:Date.now(), title:notepadType==='req'?'新需求':'新笔记', body:'', time:ts};
-    data[notepadType].unshift(item);
-    saveNotepads(data);
-    renderNotepads();
-}
-
-function deleteNotepad(id) {
-    const data = loadNotepads();
-    data[notepadType] = data[notepadType].filter(n => n.id !== id);
-    saveNotepads(data);
-    renderNotepads();
-}
-
-function updateNotepad(id, field, value) {
-    const data = loadNotepads();
-    const item = data[notepadType].find(n => n.id === id);
-    if (item) { item[field] = value; saveNotepads(data); }
-}
-
-function copyNotepadBody(id) {
-    const data = loadNotepads();
-    const item = data[notepadType].find(n => n.id === id);
-    if (!item) return;
-    navigator.clipboard.writeText(item.body).then(() => {
-        const btn = document.querySelector('[data-copy="'+id+'"]');
-        if (btn) { btn.textContent='已复制 ✓'; setTimeout(()=>btn.textContent='复制',1200); }
-    });
-}
-
-function exportNotepads() {
-    const data = loadNotepads();
-    let text = '=== 需求 ===\n\n';
-    data.req.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
-    text += '=== 笔记 ===\n\n';
-    data.note.forEach(n => { text += '## '+n.title+' ('+n.time+')\n'+n.body+'\n\n'; });
-    const blob = new Blob([text], {type:'text/plain'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'shutong-notepads.txt'; a.click();
-}
-
-function toggleNotepad() {
-    const panel = document.getElementById('notepadPanel');
-    const btn = document.getElementById('notepadToggle');
-    panel.classList.toggle('hidden');
-    btn.textContent = panel.classList.contains('hidden') ? '▶' : '◀';
-    document.querySelector('.main-content').style.marginRight = panel.classList.contains('hidden') ? '0' : '320px';
-}
-
-function renderNotepads() {
-    const data = loadNotepads();
-    const list = data[notepadType];
-    const container = document.getElementById('notepadList');
-    if (!list.length) {
-        container.innerHTML = '<div class="notepad-empty">暂无'+(notepadType==='req'?'需求':'笔记')+'<br>点击「＋ 新建」创建</div>';
-        return;
-    }
-    let html = '';
-    list.forEach(n => {
-        html += '<div class="notepad-card">';
-        html += '<div class="notepad-card-head">';
-        html += '<span class="notepad-card-time">'+n.time+'</span>';
-        html += '<div class="notepad-card-actions">';
-        html += '<button data-copy="'+n.id+'" onclick="copyNotepadBody('+n.id+')">复制</button>';
-        html += '<button class="del" onclick="deleteNotepad('+n.id+')">删除</button>';
-        html += '</div></div>';
-        html += '<input class="notepad-card-title" value="'+n.title.replace(/"/g,'&quot;')+'" onchange="updateNotepad('+n.id+',\'title\',this.value)">';
-        html += '<textarea class="notepad-card-body" placeholder="输入内容..." oninput="updateNotepad('+n.id+',\'body\',this.value)">'+n.body+'</textarea>';
-        html += '</div>';
-    });
-    container.innerHTML = html;
-}
-
-function initNotepad() { renderNotepads(); }
+// 键盘快捷键
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowRight'||e.key==='Enter'){e.preventDefault();goNext()}
+  if(e.key==='ArrowLeft'){e.preventDefault();goPrev()}
+});
 
 // 初始化
-setMode('b');
-setTimeout(() => {
-    MODES[currentMode].stages.forEach(s => {
-        const el = document.getElementById(s.id);
-        if (el) observer.observe(el);
-    });
-}, 100);
-initNotepad();
+S=loadState();
+render();
+renderNP();
 </script>
 </body>
 </html>
